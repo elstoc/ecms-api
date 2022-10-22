@@ -1,5 +1,8 @@
+import { getConfig } from './utilities/config';
+
 const start = async () => {
-    console.log('started');
+    const config = getConfig();
+    console.log(`started with content dir: ${config.contentDir}`);
 };
 
 start();

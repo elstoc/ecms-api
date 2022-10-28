@@ -1,4 +1,4 @@
-import { getConfig } from './utilities/config';
+import { getConfig } from './utils/config';
 
 const start = async () => {
     const config = getConfig();

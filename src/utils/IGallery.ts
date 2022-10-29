@@ -1,9 +1,3 @@
-export type Image = {
-    fileName: string;
-    width: number;
-    height: number;
-};
-
 export type Exif = {
     title: string | undefined;
     dateTaken: Date | undefined;
@@ -20,6 +14,12 @@ export type Dimensions = {
     height: number | undefined;
 };
 
+export type ImageData = {
+    fileName: string;
+    exif: Exif;
+    thumbDimensions: Dimensions;
+}
+
 export interface IGallery {
-    listDir: (fullPath: string) => Promise<Image[]>;
+    getGalleryData(): Promise<ImageData[]>;
 }

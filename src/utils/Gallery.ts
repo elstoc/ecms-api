@@ -19,18 +19,18 @@ export class Gallery implements IGallery {
     /* Return selected Exif data from the given file */
     private async getExif (fullPath: string): Promise<Exif> {
 
-        const parseExifDate = (date: string | undefined): Date | undefined => {
-            if (date) {
-                const a = date.split(/:| /).map((el: string) => parseInt(el));
-                return new Date(a[0], a[1] - 1, a[2], a[3], a[4], a[5]);
-            }
-        };
-
         const tags = await ExifReader.load(fullPath, { expanded: true });
+        const exifDateTaken = tags.exif?.DateTimeOriginal?.description;
+
+        let dateTaken;
+        if (exifDateTaken) {
+            const a = exifDateTaken.split(/:| /).map((el: string) => parseInt(el));
+            dateTaken = new Date(a[0], a[1] - 1, a[2], a[3], a[4], a[5]);
+        }
 
         return {
             title: tags.xmp?.title?.description,
-            dateTaken: parseExifDate(tags.exif?.DateTimeOriginal?.description),
+            dateTaken,
             camera: tags.exif?.Model?.description,
             lens: tags.exif?.LensModel?.description,
             exposure: tags.exif?.ExposureTime?.description,

@@ -80,25 +80,25 @@ export class Gallery implements IGallery {
         // get list of original images
         const galleryDir = '/home/chris/coding/javascript/home-api/content/gallery/portfolio/';
         const cacheDir = '/home/chris/coding/javascript/home-api/cache/gallery/portfolio/';
-        const outData: ImageData[] = [];
+        const galleryData: ImageData[] = [];
 
         const imageList = this.getImageList(galleryDir).sort();
 
         for(const image of imageList) {
             const origFile = `${galleryDir}/${image}`;
-            const exif = await this.getExif(origFile);
             const thumbFile = `${cacheDir}/thumbs/${image}`;
+            const exif = await this.getExif(origFile);
             if (!fs.existsSync(thumbFile)) {
                 await this.resizeImage(origFile, thumbFile);
             }
-            outData.push({
+            galleryData.push({
                 fileName: image,
                 exif,
                 thumbDimensions: this.getDimensions(thumbFile)
             });
         }
 
-        return outData;
+        return galleryData;
     }
 
 }

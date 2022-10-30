@@ -1,0 +1,1 @@
+export { getGalleryRouter } from './gallery';

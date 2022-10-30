@@ -4,7 +4,7 @@ import sizeOf from 'image-size';
 import ExifReader from 'exifreader';
 import gm from 'gm';
 import { Dimensions, Exif, IGallery, ImageData } from './IGallery';
-import { Config } from '../utils/config';
+import { Config } from '../utils';
 
 const im = gm.subClass({ imageMagick: true });
 

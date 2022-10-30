@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { RequestHandler } from '../handlers/RequestHandler';
+import { RequestHandler } from '../handlers';
 
 export const getGalleryRouter = (getImageHandler: RequestHandler, getImageListHandler: RequestHandler): Router => {
     const router = Router();

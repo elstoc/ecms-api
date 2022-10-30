@@ -1,9 +1,8 @@
 import { createExpressApp } from './app';
-import { createGetImageHandler } from './handlers/getImageHandler';
-import { createGetImageListHandler } from './handlers/getImageListHandler';
-import { getGalleryRouter } from './routes/gallery';
-import { Gallery } from './utils';
-import { getConfig } from './utils/config';
+import { createGetImageHandler, createGetImageListHandler } from './handlers';
+import { getGalleryRouter } from './routes';
+import { Gallery } from './services';
+import { getConfig } from './utils';
 
 const start = async () => {
     const config = getConfig();

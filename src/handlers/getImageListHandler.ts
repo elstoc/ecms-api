@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { RequestHandler } from './RequestHandler';
-import { Gallery } from '../services/Gallery';
+import { Gallery } from '../services';
 
 export const createGetImageListHandler = (gallery: Gallery): RequestHandler => async (req: Request, res: Response) => {
     const { path } = req.params;

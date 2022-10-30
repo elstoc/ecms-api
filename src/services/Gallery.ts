@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import sizeOf from 'image-size';
 import ExifReader from 'exifreader';
 import gm from 'gm';
@@ -14,6 +15,35 @@ export class Gallery implements IGallery {
     public constructor (config: Config) {
         this.contentDir = config.contentDir;
         this.cacheDir = config.cacheDir;
+    }
+
+    public async getGalleryData(): Promise<ImageData[]> {
+        // get list of original images
+        const galleryDir = '/home/chris/coding/javascript/home-api/content/gallery/portfolio/';
+        const cacheDir = '/home/chris/coding/javascript/home-api/cache/gallery/portfolio/';
+        const galleryData: ImageData[] = [];
+
+        const imageList = this.getImageList(galleryDir).sort();
+
+        for(const image of imageList) {
+            const origFile = `${galleryDir}/${image}`;
+            const thumbFile = `${cacheDir}/thumbs/${image}`;
+            const exif = await this.getExif(origFile);
+            if (!fs.existsSync(thumbFile)) {
+                await this.resizeImage(origFile, thumbFile);
+            }
+            galleryData.push({
+                fileName: image,
+                exif,
+                thumbDimensions: this.getDimensions(thumbFile)
+            });
+        }
+
+        return galleryData;
+    }
+
+    public async getImagePath(relPath: string): Promise<string> {
+        return path.resolve((`${this.cacheDir}/gallery/${path.dirname(relPath)}/thumbs/${path.basename(relPath)}`));
     }
 
     /* Return selected Exif data from the given file */
@@ -74,31 +104,6 @@ export class Gallery implements IGallery {
         });
 
         return output;
-    }
-
-    public async getGalleryData(): Promise<ImageData[]> {
-        // get list of original images
-        const galleryDir = '/home/chris/coding/javascript/home-api/content/gallery/portfolio/';
-        const cacheDir = '/home/chris/coding/javascript/home-api/cache/gallery/portfolio/';
-        const galleryData: ImageData[] = [];
-
-        const imageList = this.getImageList(galleryDir).sort();
-
-        for(const image of imageList) {
-            const origFile = `${galleryDir}/${image}`;
-            const thumbFile = `${cacheDir}/thumbs/${image}`;
-            const exif = await this.getExif(origFile);
-            if (!fs.existsSync(thumbFile)) {
-                await this.resizeImage(origFile, thumbFile);
-            }
-            galleryData.push({
-                fileName: image,
-                exif,
-                thumbDimensions: this.getDimensions(thumbFile)
-            });
-        }
-
-        return galleryData;
     }
 
 }

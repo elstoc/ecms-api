@@ -13,8 +13,8 @@ export class Gallery implements IGallery {
     private cacheDir: string;
 
     public constructor (config: Config) {
-        this.contentDir = config.contentDir;
-        this.cacheDir = config.cacheDir;
+        this.contentDir = `${config.contentDir}/gallery/`;
+        this.cacheDir = `${config.cacheDir}/gallery/`;
     }
 
     public async getGalleryData(): Promise<ImageData[]> {
@@ -42,8 +42,21 @@ export class Gallery implements IGallery {
         return galleryData;
     }
 
-    public async getImagePath(relPath: string): Promise<string> {
-        return path.resolve((`${this.cacheDir}/gallery/${path.dirname(relPath)}/thumbs/${path.basename(relPath)}`));
+    private getGalleryImagePath(relPath: string): string {
+        return path.resolve(`${this.contentDir}/${relPath}`);
+    }
+
+    public async getResizedImagePath(relPath: string): Promise<string> {
+        const galleryPath = this.getGalleryImagePath(relPath);
+        const thumbPath = path.resolve(`${this.cacheDir}/${path.dirname(relPath)}/thumbs/${path.basename(relPath)}`);
+        if (fs.existsSync(galleryPath)) {
+            if (!fs.existsSync(thumbPath)) {
+                await this.resizeImage(galleryPath, thumbPath);
+            }
+            return thumbPath;
+        } else {
+            throw new Error('file not found');
+        }
     }
 
     /* Return selected Exif data from the given file */
@@ -90,6 +103,7 @@ export class Gallery implements IGallery {
         });
     }
 
+    /* Get a list of jpg images in the given directory */
     private getImageList(inDir: string): string[] {
         return fs.readdirSync(inDir)
             .filter((file) => file.endsWith('.jpg'));

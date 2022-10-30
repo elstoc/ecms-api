@@ -14,8 +14,10 @@ const start = async () => {
 
     const app = createExpressApp(galleryRouter);
 
-    app.listen(3012, () => {
-        console.log('app started, listening on port 3012');
+    const { port } = config;
+
+    app.listen(port, () => {
+        console.log(`app started, listening on port ${port}`);
     });
 };
 

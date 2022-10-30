@@ -29,7 +29,7 @@ export class Gallery implements IGallery {
 
         const galleryData: ImageData[] = [];
 
-        const imageList = this.getImageList(galleryDir).sort();
+        const imageList = this.getImageList(galleryDir).sort().reverse();
 
         for(const image of imageList) {
             const origFile = this.getGalleryImagePath(`${relPath}/${image}`);

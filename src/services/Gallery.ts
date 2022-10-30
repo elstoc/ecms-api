@@ -17,21 +17,24 @@ export class Gallery implements IGallery {
         this.cacheDir = `${config.cacheDir}/gallery/`;
     }
 
-    public async getGalleryData(): Promise<ImageData[]> {
-        // get list of original images
-        const galleryDir = '/home/chris/coding/javascript/home-api/content/gallery/portfolio/';
-        const cacheDir = '/home/chris/coding/javascript/home-api/cache/gallery/portfolio/';
+    /* return an array of image data for the given gallery */
+    public async getGalleryData(relPath: string): Promise<ImageData[]> {
+
+        const galleryDir = path.resolve(`${this.contentDir}/${relPath}`);
+
+        if (!fs.existsSync(galleryDir)) {
+            console.log(galleryDir);
+            throw new Error('directory does not exist');
+        }
+
         const galleryData: ImageData[] = [];
 
         const imageList = this.getImageList(galleryDir).sort();
 
         for(const image of imageList) {
-            const origFile = `${galleryDir}/${image}`;
-            const thumbFile = `${cacheDir}/thumbs/${image}`;
+            const origFile = this.getGalleryImagePath(`${relPath}/${image}`);
+            const thumbFile = await this.getResizedImagePath(`${relPath}/${image}`);
             const exif = await this.getExif(origFile);
-            if (!fs.existsSync(thumbFile)) {
-                await this.resizeImage(origFile, thumbFile);
-            }
             galleryData.push({
                 fileName: image,
                 exif,

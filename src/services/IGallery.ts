@@ -21,6 +21,6 @@ export type ImageData = {
 }
 
 export interface IGallery {
-    getGalleryData(): Promise<ImageData[]>;
+    getGalleryData(relPath: string): Promise<ImageData[]>;
     getResizedImagePath(relPath: string): Promise<string>;
 }

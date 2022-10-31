@@ -99,7 +99,10 @@ export class Gallery implements IGallery {
             im(inPath)
                 .resize(1000000, height)
                 .strip()
-                .quality(50).write(outPath, (err) => {
+                .quality(65)
+                .borderColor('rgb(32,32,32)')
+                .border(2, 2)
+                .write(outPath, (err) => {
                     if (err) reject(new Error('Image resize failed'));
                     else resolve();
                 });

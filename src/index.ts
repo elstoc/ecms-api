@@ -11,7 +11,7 @@ const start = async () => {
     const getImageListHandler = createGetImageListHandler(gallery);
     const galleryRouter = getGalleryRouter(getImageHandler, getImageListHandler);
 
-    const app = createExpressApp(galleryRouter);
+    const app = createExpressApp(galleryRouter, config);
 
     const { port } = config;
 

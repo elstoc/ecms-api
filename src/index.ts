@@ -1,8 +1,14 @@
+import * as dotenv from 'dotenv';
+
 import { createExpressApp } from './app';
 import { createGetImageHandler, createGetImageListHandler } from './handlers';
 import { getGalleryRouter } from './routes';
 import { Gallery } from './services';
 import { getConfig } from './utils';
+
+if (process.env.NODE_ENV !== 'production') {
+    dotenv.config();
+}
 
 const start = async () => {
     const config = getConfig();

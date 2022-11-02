@@ -1,0 +1,13 @@
+version: "0.1"
+services:
+  home-api:
+    image: "home-api"
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - ${CACHE_DIR}:${CACHE_DIR}
+      - ${CONTENT_DIR}:${CONTENT_DIR}
+    

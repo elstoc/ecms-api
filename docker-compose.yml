@@ -10,4 +10,3 @@ services:
     volumes:
       - ${CACHE_DIR}:${CACHE_DIR}
       - ${CONTENT_DIR}:${CONTENT_DIR}
-    

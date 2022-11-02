@@ -1,2 +1,2 @@
 export { Gallery } from './Gallery';
-export { Exif, Dimensions, ImageData, IGallery } from './IGallery';
+export { Exif, Dimensions, ImageData, IGallery, SizeDesc } from './IGallery';

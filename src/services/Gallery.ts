@@ -3,7 +3,7 @@ import path from 'path';
 import sizeOf from 'image-size';
 import ExifReader from 'exifreader';
 import gm from 'gm';
-import { Dimensions, Exif, IGallery, ImageData } from './IGallery';
+import { Dimensions, Exif, IGallery, ImageData, SizeDesc } from './IGallery';
 import { Config } from '../utils';
 
 const im = gm.subClass({ imageMagick: true });
@@ -33,7 +33,7 @@ export class Gallery implements IGallery {
 
         for(const image of imageList) {
             const origFile = this.getGalleryImagePath(`${relPath}/${image}`);
-            const thumbFile = await this.getResizedImagePath(`${relPath}/${image}`);
+            const thumbFile = await this.getResizedImagePath(`${relPath}/${image}`, 'thumb');
             const exif = await this.getExif(origFile);
             galleryData.push({
                 fileName: image,
@@ -49,12 +49,18 @@ export class Gallery implements IGallery {
         return path.resolve(`${this.contentDir}/${relPath}`);
     }
 
-    public async getResizedImagePath(relPath: string): Promise<string> {
+    public async getResizedImagePath(relPath: string, sizeDesc: SizeDesc): Promise<string> {
+        if (!['full', 'thumb'].includes(sizeDesc)) throw new Error('incorrect size description');
+
+        const quality = sizeDesc === 'thumb' ? 60 : 95;
+        const width = sizeDesc === 'thumb' ? 100000 : 1920;
+        const height = sizeDesc === 'thumb' ? 350 : 1080;
+
         const galleryPath = this.getGalleryImagePath(relPath);
-        const thumbPath = path.resolve(`${this.cacheDir}/${path.dirname(relPath)}/thumbs/${path.basename(relPath)}`);
+        const thumbPath = path.resolve(`${this.cacheDir}/${path.dirname(relPath)}/${sizeDesc}/${path.basename(relPath)}`);
         if (fs.existsSync(galleryPath)) {
             if (!fs.existsSync(thumbPath)) {
-                await this.resizeImage(galleryPath, thumbPath);
+                await this.resizeImage(galleryPath, thumbPath, width, height, quality);
             }
             return thumbPath;
         } else {
@@ -94,12 +100,16 @@ export class Gallery implements IGallery {
     }
 
     /* Create a resized version of the given image, and save it to the given path */
-    private resizeImage (inPath: string, outPath: string, height = 350): Promise<void> {
+    private resizeImage (inPath: string, outPath: string, width: number, height: number, quality: number ): Promise<void> {
+        const outDir = path.dirname(outPath);
+        if (!fs.existsSync(outDir)) {
+            fs.mkdirSync(outDir, { recursive: true });
+        }
         return new Promise((resolve, reject) => {
             im(inPath)
-                .resize(1000000, height)
+                .resize(width, height)
                 .strip()
-                .quality(65)
+                .quality(quality)
                 .borderColor('rgb(32,32,32)')
                 .border(2, 2)
                 .write(outPath, (err) => {

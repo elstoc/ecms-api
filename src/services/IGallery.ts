@@ -20,7 +20,9 @@ export type ImageData = {
     thumbDimensions: Dimensions;
 }
 
+export type SizeDesc = 'thumb' | 'full'
+
 export interface IGallery {
     getGalleryData(relPath: string): Promise<ImageData[]>;
-    getResizedImagePath(relPath: string): Promise<string>;
+    getResizedImagePath(relPath: string, sizeDesc: SizeDesc): Promise<string>;
 }

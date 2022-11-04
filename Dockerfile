@@ -1,4 +1,4 @@
-FROM node:16.18-alpine3.16 AS BUILDER
+FROM node:hydrogen-alpine3.16 AS BUILDER
 ENV NODE_ENV development
 
 RUN ["mkdir", "-p", "/app"]
@@ -10,7 +10,7 @@ WORKDIR ./app
 RUN ["npm", "install"]
 RUN ["npm", "run", "build"]
 
-FROM node:16.18-alpine3.16
+FROM node:hydrogen-alpine3.16
 ENV NODE_ENV production
 
 RUN ["apk", "update"]

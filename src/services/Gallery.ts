@@ -29,9 +29,7 @@ export class Gallery implements IGallery {
 
         const galleryData: ImageData[] = [];
 
-        const imageList = this.getImageList(galleryDir).sort().reverse();
-
-        for(const image of imageList) {
+        for(const image of this.getImageList(galleryDir).sort().reverse()) {
             const origFile = this.getGalleryImagePath(`${relPath}/${image}`);
             const thumbFile = await this.getResizedImagePath(`${relPath}/${image}`, 'thumb');
             const exif = await this.getExif(origFile);
@@ -57,7 +55,8 @@ export class Gallery implements IGallery {
         const height = sizeDesc === 'thumb' ? 350 : 1080;
 
         const galleryPath = this.getGalleryImagePath(relPath);
-        const thumbPath = path.resolve(`${this.cacheDir}/${path.dirname(relPath)}/${sizeDesc}/${path.basename(relPath)}`);
+        const [dirName, baseName] = [path.dirname(relPath), path.basename(relPath)];
+        const thumbPath = path.resolve(`${this.cacheDir}/${dirName}/${sizeDesc}/${baseName}`);
         if (fs.existsSync(galleryPath)) {
             if (!fs.existsSync(thumbPath)) {
                 await this.resizeImage(galleryPath, thumbPath, width, height, quality);

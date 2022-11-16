@@ -6,7 +6,7 @@ export const getMarkdownRouter = (getMarkdownHandler: RequestHandler): Router =>
     const router = Router();
 
     router.get(
-        '/',
+        '/mdfile/:mdPath(*)',
         getMarkdownHandler
     );
 

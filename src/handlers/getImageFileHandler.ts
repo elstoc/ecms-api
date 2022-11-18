@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { RequestHandler } from './RequestHandler';
 import { Gallery } from '../services';
 
-export const createGetImageHandler = (gallery: Gallery): RequestHandler => async (req: Request, res: Response) => {
+export const createGetImageFileHandler = (gallery: Gallery): RequestHandler => async (req: Request, res: Response) => {
     const { path } = req.params;
     try {
         const size = req.query.size || 'thumb';

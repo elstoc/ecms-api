@@ -1,4 +1,4 @@
-export { createGetImageHandler } from './getImageHandler';
+export { createGetImageFileHandler } from './getImageFileHandler';
 export { createGetImageListHandler } from './getImageListHandler';
-export { createGetMarkdownHandler } from './getMarkdownHandler';
+export { createGetMarkdownFileHandler } from './getMarkdownFileHandler';
 export { RequestHandler } from './RequestHandler';

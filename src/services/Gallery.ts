@@ -13,8 +13,8 @@ export class Gallery implements IGallery {
     private cacheDir: string;
 
     public constructor (config: Config) {
-        this.contentDir = `${config.contentDir}/gallery/`;
-        this.cacheDir = `${config.cacheDir}/gallery/`;
+        this.contentDir = config.contentDir;
+        this.cacheDir = config.cacheDir;
     }
 
     /* return an array of image data for the given gallery */

@@ -5,10 +5,12 @@ import { RequestHandler } from './RequestHandler';
 
 export const createGetMarkdownFileHandler = (): RequestHandler => async (req: Request, res: Response) => {
     const { mdPath } = req.params;
-    const contenDir = '/home/chris/coding/javascript/home-api/content/markdown/';
-    let filePath = path.resolve(contenDir, `${mdPath}.md`);
+    const contenDir = '/home/chris/coding/javascript/home-api/content/';
+    let filePath = mdPath === '/' ? path.resolve(contenDir, 'index.md')
+                                  : path.resolve(contenDir, mdPath, `${mdPath}.md`);
     if (!fs.existsSync(filePath)) {
         filePath = path.resolve(contenDir, mdPath, 'index.md');
+        console.log(mdPath);
     }
     try {
         res.sendFile(filePath);

@@ -22,6 +22,12 @@ export class Markdown implements IMarkdown {
             filePath = path.resolve(this.contentDir, mdPath, 'index.md');
         }
 
+        console.log(filePath);
+
+        if (!fs.existsSync(filePath)) {
+            throw new Error(`${filePath} not found`);
+        }
+
         return {
             uiPath: mdPath,
             filePath
@@ -30,12 +36,16 @@ export class Markdown implements IMarkdown {
 
     /* return Nav structure of md files in a given path
        currently returns dummy content */
-    public getMdNavContents(path: string): MdNavContents {
+    public getMdNavContents(rootPath: string): MdNavContents {
+
+        const fullPath = path.resolve(this.contentDir, rootPath);
+
+        if (!fs.existsSync(fullPath)) {
+            throw new Error(`${fullPath} not found`);
+        }
+
         return {
-            meta: {
-                uiPath: path,
-                filePath: path
-            }
+            meta: this.getMdFileMeta(rootPath)
         };
     }
 }

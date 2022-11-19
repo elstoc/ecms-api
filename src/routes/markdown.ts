@@ -2,12 +2,17 @@ import { Router } from 'express';
 
 import { RequestHandler } from '../handlers';
 
-export const getMarkdownRouter = (getMarkdownHandler: RequestHandler): Router => {
+export const getMarkdownRouter = (getMarkdownFileHandler: RequestHandler, getMarkdownNavHandler: RequestHandler): Router => {
     const router = Router();
 
     router.get(
         '/mdfile/:mdPath(*)',
-        getMarkdownHandler
+        getMarkdownFileHandler
+    );
+
+    router.get(
+        '/mdnav/:rootPath(*)',
+        getMarkdownNavHandler
     );
 
     return router;

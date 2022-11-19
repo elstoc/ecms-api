@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 
 import { createExpressApp } from './app';
-import { createGetImageFileHandler, createGetImageListHandler, createGetMarkdownFileHandler } from './handlers';
+import { createGetImageFileHandler, createGetImageListHandler, createGetMarkdownFileHandler, createGetMarkdownNavHandler } from './handlers';
 import { getGalleryRouter, getMarkdownRouter } from './routes';
 import { Gallery } from './services';
 import { Markdown } from './services';
@@ -17,9 +17,10 @@ const start = async () => {
     const markdown = new Markdown(config);
     const getImageFileHandler = createGetImageFileHandler(gallery);
     const getMarkdownFileHandler = createGetMarkdownFileHandler(markdown);
+    const getMarkdownNavHandler = createGetMarkdownNavHandler(markdown);
     const getImageListHandler = createGetImageListHandler(gallery);
     const galleryRouter = getGalleryRouter(getImageFileHandler, getImageListHandler);
-    const markdownRouter = getMarkdownRouter(getMarkdownFileHandler);
+    const markdownRouter = getMarkdownRouter(getMarkdownFileHandler, getMarkdownNavHandler);
 
     const app = createExpressApp(galleryRouter, markdownRouter, config);
 

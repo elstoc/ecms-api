@@ -11,6 +11,7 @@ export type MdNavContents = {
 }
 
 export interface IMarkdown {
-    getMdFileMeta(path: string): MdFileMeta;
-    getMdNavContents(path: string): MdNavContents;
+    getMdFilePath(uiPath: string): string;
+    getMdFileMeta(uiPath: string): MdFileMeta;
+    getMdNavContents(uiPath: string): MdNavContents;
 }

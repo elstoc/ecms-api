@@ -4,9 +4,9 @@ import { Markdown } from '../services';
 
 export const createGetMarkdownFileHandler = (markdown: Markdown): RequestHandler => async (req: Request, res: Response) => {
     const { mdPath } = req.params;
-    const mdMeta = markdown.getMdFileMeta(mdPath);
+    const filePath = markdown.getMdFilePath(mdPath);
     try {
-        res.sendFile(mdMeta.filePath);
+        res.sendFile(filePath);
     } catch {
         res.sendStatus(404);
     }

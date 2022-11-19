@@ -22,8 +22,6 @@ export class Markdown implements IMarkdown {
             filePath = path.resolve(this.contentDir, mdPath, 'index.md');
         }
 
-        console.log(filePath);
-
         if (!fs.existsSync(filePath)) {
             throw new Error(`${filePath} not found`);
         }

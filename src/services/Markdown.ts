@@ -33,26 +33,49 @@ export class Markdown implements IMarkdown {
     /* return metadata for the given file
        currently just the paths */
     public getMdFileMeta(uiPath: string):MdFileMeta {
-        const filePath = this.getMdFilePath(uiPath);
+        // const filePath = this.getMdFilePath(uiPath);
+        // ToDo: get metadata from yaml frontmatter
 
         return {
             uiPath: uiPath,
-            filePath
         };
     }
 
-    /* return Nav structure of md files in a given path
-       currently returns dummy content */
-    public getMdNavContents(rootPath: string): MdNavContents {
-
+    /* return Nav structure of md child files in a given path
+       recurse until all files read */
+    private recurseDir(rootPath: string): MdNavContents[] {
         const fullPath = path.resolve(this.contentDir, rootPath);
 
         if (!fs.existsSync(fullPath)) {
             throw new Error(`${fullPath} not found`);
         }
 
-        return {
-            meta: this.getMdFileMeta(rootPath)
-        };
+        const children: MdNavContents[] = [];
+
+        fs.readdirSync(fullPath).forEach((file) => {
+            const uiPath = `${rootPath}/${file}`.replace('.md','');
+            const stats = fs.statSync(path.resolve(fullPath, file));
+            if (file.endsWith('.md') && !file.endsWith('index.md')) {
+                children.push({
+                    meta: this.getMdFileMeta(uiPath)
+                });
+            } else if (stats.isDirectory()) {
+                children.push({
+                    meta: this.getMdFileMeta(uiPath),
+                    children: this.recurseDir(uiPath)
+                });
+            }
+        });
+
+        return children;
+    }
+
+    /* return Nav structure of md files in a given path */
+    public getMdNavContents(rootPath: string): MdNavContents[] {
+
+        return [{
+            meta: this.getMdFileMeta(rootPath),
+            children: this.recurseDir(rootPath)
+        }];
     }
 }

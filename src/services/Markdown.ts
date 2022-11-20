@@ -36,6 +36,7 @@ export class Markdown implements IMarkdown {
     public async getMdFileMeta(uiPath: string): Promise<MdFileMeta> {
         // const filePath = this.getMdFilePath(uiPath);
         // ToDo: get metadata from yaml frontmatter
+        //       but handle non-existent index files
 
         return {
             uiPath: uiPath,

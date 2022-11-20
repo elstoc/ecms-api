@@ -55,14 +55,14 @@ export class Markdown implements IMarkdown {
         fs.readdirSync(fullPath).forEach((file) => {
             const uiPath = `${rootPath}/${file}`.replace('.md','');
             const stats = fs.statSync(path.resolve(fullPath, file));
-            if (file.endsWith('.md') && !file.endsWith('index.md')) {
-                children.push({
-                    meta: this.getMdFileMeta(uiPath)
-                });
-            } else if (stats.isDirectory()) {
+            if (stats.isDirectory()) {
                 children.push({
                     meta: this.getMdFileMeta(uiPath),
                     children: this.recurseDir(uiPath)
+                });
+            } else if (file.endsWith('.md') && !file.endsWith('index.md')) {
+                children.push({
+                    meta: this.getMdFileMeta(uiPath)
                 });
             }
         });

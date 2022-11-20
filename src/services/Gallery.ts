@@ -29,7 +29,8 @@ export class Gallery implements IGallery {
 
         const galleryData: ImageData[] = [];
 
-        for(const image of this.getImageList(galleryDir).sort().reverse()) {
+        const imageList = await this.getImageList(galleryDir);
+        for(const image of imageList.sort().reverse()) {
             const origFile = this.getGalleryImagePath(`${relPath}/${image}`);
             const thumbFile = await this.getResizedImagePath(`${relPath}/${image}`, 'thumb');
             const exif = await this.getExif(origFile);
@@ -57,14 +58,16 @@ export class Gallery implements IGallery {
         const galleryPath = this.getGalleryImagePath(relPath);
         const [dirName, baseName] = [path.dirname(relPath), path.basename(relPath)];
         const thumbPath = path.resolve(`${this.cacheDir}/${dirName}/${sizeDesc}/${baseName}`);
-        if (fs.existsSync(galleryPath)) {
-            if (!fs.existsSync(thumbPath)) {
-                await this.resizeImage(galleryPath, thumbPath, width, height, quality);
-            }
-            return thumbPath;
-        } else {
+
+        if (!fs.existsSync(galleryPath)) {
             throw new Error('file not found');
         }
+
+        if (!fs.existsSync(thumbPath)) {
+            await this.resizeImage(galleryPath, thumbPath, width, height, quality);
+        }
+
+        return thumbPath;
     }
 
     /* Return selected Exif data from the given file */
@@ -119,18 +122,20 @@ export class Gallery implements IGallery {
     }
 
     /* Get a list of jpg images in the given directory */
-    private getImageList(inDir: string): string[] {
-        return fs.readdirSync(inDir)
-            .filter((file) => file.endsWith('.jpg'));
+    private async getImageList(inDir: string): Promise<string[]> {
+        const dir = await fs.promises.readdir(inDir);
+        return dir.filter((file) => file.endsWith('.jpg'));
     }
 
     /* Get list of jpegs and their last modified times for a given directory */
-    private getImageStats(inDir: string): { [key: string]: number } {
+    private async getImageStats(inDir: string): Promise<{ [key: string]: number }> {
         const output: { [key: string]: number} = {};
+        const imageList = await this.getImageList(inDir);
 
-        this.getImageList(inDir).forEach((fileName) => {
-            output[fileName] = fs.statSync(fileName).mtimeMs;
-        });
+        for(const fileName of imageList) {
+            const stats = await fs.promises.stat(fileName);
+            output[fileName] = stats.mtimeMs;
+        }
 
         return output;
     }

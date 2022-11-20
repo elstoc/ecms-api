@@ -32,7 +32,7 @@ export class Markdown implements IMarkdown {
 
     /* return metadata for the given file
        currently just the paths */
-    public getMdFileMeta(uiPath: string):MdFileMeta {
+    public async getMdFileMeta(uiPath: string): Promise<MdFileMeta> {
         // const filePath = this.getMdFilePath(uiPath);
         // ToDo: get metadata from yaml frontmatter
 
@@ -43,7 +43,7 @@ export class Markdown implements IMarkdown {
 
     /* return Nav structure of md child files in a given path
        recurse until all files read */
-    private recurseDir(rootPath: string): MdNavContents[] {
+    private async recurseDir(rootPath: string): Promise<MdNavContents[]> {
         const fullPath = path.resolve(this.contentDir, rootPath);
 
         if (!fs.existsSync(fullPath)) {
@@ -52,30 +52,37 @@ export class Markdown implements IMarkdown {
 
         const children: MdNavContents[] = [];
 
-        fs.readdirSync(fullPath).forEach((file) => {
+        const dir = await fs.promises.readdir(fullPath);
+        for (const file of dir) {
             const uiPath = `${rootPath}/${file}`.replace('.md','');
-            const stats = fs.statSync(path.resolve(fullPath, file));
+            const stats = await fs.promises.stat(path.resolve(fullPath, file));
             if (stats.isDirectory()) {
+                const childChildren = await this.recurseDir(uiPath);
+                const meta = await this.getMdFileMeta(uiPath);
                 children.push({
-                    meta: this.getMdFileMeta(uiPath),
-                    children: this.recurseDir(uiPath)
+                    meta,
+                    children: childChildren
                 });
             } else if (file.endsWith('.md') && !file.endsWith('index.md')) {
+                const meta = await this.getMdFileMeta(uiPath);
                 children.push({
-                    meta: this.getMdFileMeta(uiPath)
+                    meta
                 });
             }
-        });
+        }
 
         return children;
     }
 
     /* return Nav structure of md files in a given path */
-    public getMdNavContents(rootPath: string): MdNavContents[] {
+    public async getMdNavContents(rootPath: string): Promise<MdNavContents[]> {
+
+        const children = await this.recurseDir(rootPath);
+        const meta = await this.getMdFileMeta(rootPath);
 
         return [{
-            meta: this.getMdFileMeta(rootPath),
-            children: this.recurseDir(rootPath)
+            meta,
+            children
         }];
     }
 }

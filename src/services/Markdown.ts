@@ -38,6 +38,7 @@ export class Markdown implements IMarkdown {
 
         return {
             uiPath: uiPath,
+            title: path.basename(uiPath)
         };
     }
 

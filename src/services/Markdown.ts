@@ -75,14 +75,14 @@ export class Markdown implements IMarkdown {
     }
 
     /* return Nav structure of md files in a given path */
-    public async getMdNavContents(rootPath: string): Promise<MdNavContents[]> {
+    public async getMdNavContents(rootPath: string): Promise<MdNavContents> {
 
         const children = await this.recurseDir(rootPath);
         const meta = await this.getMdFileMeta(rootPath);
 
-        return [{
+        return {
             meta,
             children
-        }];
+        };
     }
 }

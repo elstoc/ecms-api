@@ -16,18 +16,19 @@ export class Markdown implements IMarkdown {
     /* return the actual file path of a markdown file
        given the Route path in the ui */
     public getMdFilePath(uiPath: string): string {
-        let filePath = uiPath === '/' ? path.resolve(this.contentDir, 'index.md')
-                                      : path.resolve(this.contentDir, `${uiPath}.md`);
 
-        if (!fs.existsSync(filePath)) {
-            filePath = path.resolve(this.contentDir, uiPath, 'index.md');
+        let mdFilePath = '';
+
+        const fullUiPath = uiPath === '/' ? this.contentDir
+                                          : path.resolve(this.contentDir, uiPath);
+        
+        if (fs.existsSync(fullUiPath)) {
+            mdFilePath = path.resolve(fullUiPath, 'index.md');
+        } else {
+            mdFilePath = `${fullUiPath}.md`;
         }
 
-        if (!fs.existsSync(filePath)) {
-            throw new Error(`${filePath} not found`);
-        }
-
-        return filePath;
+        return mdFilePath;
     }
 
     /* return metadata for the given file

@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import YAML from 'yaml';
 
 import { IMarkdown, MdFileMeta, MdNavContents } from './IMarkdown';
 import { Config } from '../utils/config';
@@ -31,16 +32,38 @@ export class Markdown implements IMarkdown {
         return mdFilePath;
     }
 
+    private splitFrontMatter(file: string): [yaml: string, content: string] {
+        const lines = file.split('\n');
+        if (lines[0] != '---') {
+            return ['', file];
+        } else {
+            const endIndex = lines.indexOf('---', 1);
+            if (endIndex === -1) {
+                return ['', lines.slice(1).join('\n')];
+            } else {
+                return [lines.slice(1, endIndex).join('\n'), lines.slice(endIndex + 1).join('\n')];
+            }
+        }
+    }
+
     /* return metadata for the given file
        currently just the paths */
     public async getMdFileMeta(uiPath: string): Promise<MdFileMeta> {
-        // const filePath = this.getMdFilePath(uiPath);
-        // ToDo: get metadata from yaml frontmatter
-        //       but handle non-existent index files
+        const filePath = this.getMdFilePath(uiPath);
+
+        let yamlTitle;
+
+        if (fs.existsSync(filePath)) {
+            const file = fs.readFileSync(filePath, 'utf-8');
+            const [yaml] = this.splitFrontMatter(file);
+            yamlTitle = YAML.parse(yaml)?.title;
+        }
+
+        const title = yamlTitle || path.basename(uiPath);
 
         return {
             uiPath: uiPath,
-            title: path.basename(uiPath)
+            title
         };
     }
 

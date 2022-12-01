@@ -1,12 +1,14 @@
 import fs from 'fs';
 import path from 'path';
-import sizeOf from 'image-size';
+import sizeOfSync from 'image-size';
 import ExifReader from 'exifreader';
 import gm from 'gm';
 import { Dimensions, Exif, IGallery, ImageData, SizeDesc } from './IGallery';
 import { Config } from '../utils';
+import { promisify } from 'util';
 
 const im = gm.subClass({ imageMagick: true });
+const sizeOf = promisify(sizeOfSync);
 
 export class Gallery implements IGallery {
     private contentDir: string;
@@ -30,14 +32,16 @@ export class Gallery implements IGallery {
         const galleryData: ImageData[] = [];
 
         const imageList = await this.getImageList(galleryDir);
+
         for(const image of imageList.sort().reverse()) {
             const origFile = this.getGalleryImagePath(`${relPath}/${image}`);
             const thumbFile = await this.getResizedImagePath(`${relPath}/${image}`, 'thumb');
             const exif = await this.getExif(origFile);
+            const thumbDimensions = await this.getDimensions(thumbFile);
             galleryData.push({
                 fileName: image,
                 exif,
-                thumbDimensions: this.getDimensions(thumbFile)
+                thumbDimensions
             });
         }
 
@@ -96,9 +100,9 @@ export class Gallery implements IGallery {
     }
 
     /* Return the dimensions of the given file */
-    private getDimensions (fullPath: string): Dimensions {
-        const { width, height } = sizeOf(fullPath);
-        return { width, height };
+    private async getDimensions (fullPath: string): Promise<Dimensions> {
+        const size = await sizeOf(fullPath);
+        return { width: size?.width, height: size?.height };
     }
 
     /* Create a resized version of the given image, and save it to the given path */

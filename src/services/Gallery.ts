@@ -21,35 +21,39 @@ export class Gallery implements IGallery {
 
     /* return an array of image data for the given gallery */
     public async getGalleryData(relPath: string): Promise<ImageData[]> {
-
         const galleryDir = path.resolve(`${this.contentDir}/${relPath}`);
 
         if (!fs.existsSync(galleryDir)) {
-            console.log(galleryDir);
             throw new Error('directory does not exist');
         }
 
-        const galleryData: ImageData[] = [];
-
         const imageList = await this.getImageList(galleryDir);
+        const imageListSorted = imageList.sort().reverse();
+        const imageRelPathList = imageListSorted.map((image) => `${relPath}/${image}`);
+        const origFileList = await this.getGalleryImagePathList(imageRelPathList);
+        const thumbFileList = await this.getResizedImagePathList(imageRelPathList, 'thumb');
+        const exifList = await this.getExifList(origFileList);
+        const thumbDimensionsList = await this.getDimensionsList(thumbFileList);
 
-        for(const image of imageList.sort().reverse()) {
-            const origFile = this.getGalleryImagePath(`${relPath}/${image}`);
-            const thumbFile = await this.getResizedImagePath(`${relPath}/${image}`, 'thumb');
-            const exif = await this.getExif(origFile);
-            const thumbDimensions = await this.getDimensions(thumbFile);
-            galleryData.push({
-                fileName: image,
-                exif,
-                thumbDimensions
-            });
-        }
+        return imageListSorted.map((fileName, index) => {
+            return {
+                fileName,
+                exif: exifList[index],
+                thumbDimensions: thumbDimensionsList[index]
+            };
+        });
+    }
 
-        return galleryData;
+    private getGalleryImagePathList(relPaths: string[]): Promise<string[]> {
+        return Promise.all(relPaths.map((relPath) => this.getGalleryImagePath(relPath)));
     }
 
     private getGalleryImagePath(relPath: string): string {
         return path.resolve(`${this.contentDir}/${relPath}`);
+    }
+
+    public getResizedImagePathList(relPaths: string[], sizeDesc: SizeDesc): Promise<string[]> {
+        return Promise.all(relPaths.map((relPath) => this.getResizedImagePath(relPath, sizeDesc)));
     }
 
     public async getResizedImagePath(relPath: string, sizeDesc: SizeDesc): Promise<string> {
@@ -72,6 +76,10 @@ export class Gallery implements IGallery {
         }
 
         return thumbPath;
+    }
+
+    private getExifList(fullPaths: string[]): Promise<Exif[]> {
+        return Promise.all(fullPaths.map((fullPath) => this.getExif(fullPath)));
     }
 
     /* Return selected Exif data from the given file */
@@ -97,6 +105,10 @@ export class Gallery implements IGallery {
             focalLength: tags.exif?.FocalLength?.description,
         };
 
+    }
+
+    private getDimensionsList(fullPaths: string[]): Promise<Dimensions[]> {
+        return Promise.all(fullPaths.map((fullPath) => this.getDimensions(fullPath)));
     }
 
     /* Return the dimensions of the given file */

@@ -27,19 +27,21 @@ export class Gallery implements IGallery {
             throw new Error('directory does not exist');
         }
 
-        const imageList = await this.getImageList(galleryDir);
-        const imageListSorted = imageList.sort().reverse();
-        const imageRelPathList = imageListSorted.map((image) => `${relPath}/${image}`);
-        const origFileList = await this.getGalleryImagePathList(imageRelPathList);
-        const thumbFileList = await this.getResizedImagePathList(imageRelPathList, 'thumb');
-        const exifList = await this.getExifList(origFileList);
-        const thumbDimensionsList = await this.getDimensionsList(thumbFileList);
+        const imageListUnsorted = await this.getImageList(galleryDir);
+        const imageList = imageListUnsorted.sort().reverse();
+        const imageRelPathList = imageList.map((image) => `${relPath}/${image}`);
+        const imageListOrig = await this.getGalleryImagePathList(imageRelPathList);
+        const [imageListThumb, imageListExif] = await Promise.all([
+            this.getResizedImagePathList(imageRelPathList, 'thumb'),
+            this.getExifList(imageListOrig)
+        ]);
+        const imageListThumbDimensions = await this.getDimensionsList(imageListThumb);
 
-        return imageListSorted.map((fileName, index) => {
+        return imageList.map((fileName, index) => {
             return {
                 fileName,
-                exif: exifList[index],
-                thumbDimensions: thumbDimensionsList[index]
+                exif: imageListExif[index],
+                thumbDimensions: imageListThumbDimensions[index]
             };
         });
     }

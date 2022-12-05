@@ -3,7 +3,7 @@ import path from 'path';
 import sizeOfSync from 'image-size';
 import ExifReader from 'exifreader';
 import gm from 'gm';
-import { Dimensions, Exif, IGallery, ImageData, SizeDesc } from './IGallery';
+import { Dimensions, Exif, IGallery, GalleryData, SizeDesc } from './IGallery';
 import { Config } from '../utils';
 import { promisify } from 'util';
 
@@ -20,7 +20,7 @@ export class Gallery implements IGallery {
     }
 
     /* return an array of image data for the given gallery */
-    public async getGalleryData(relPath: string): Promise<ImageData[]> {
+    public async getGalleryData(relPath: string, limit = 0): Promise<GalleryData> {
         const galleryDir = path.resolve(`${this.contentDir}/${relPath}`);
 
         if (!fs.existsSync(galleryDir)) {
@@ -28,7 +28,8 @@ export class Gallery implements IGallery {
         }
 
         const imageListUnsorted = await this.getImageList(galleryDir);
-        const imageList = imageListUnsorted.sort().reverse();
+        let imageList = imageListUnsorted.sort().reverse();
+        if (limit > 0) imageList = imageList.slice(0, limit);
         const imageRelPathList = imageList.map((image) => `${relPath}/${image}`);
         const imageListOrig = await this.getGalleryImagePathList(imageRelPathList);
         const [imageListThumb, imageListExif] = await Promise.all([
@@ -37,13 +38,16 @@ export class Gallery implements IGallery {
         ]);
         const imageListThumbDimensions = await this.getDimensionsList(imageListThumb);
 
-        return imageList.map((fileName, index) => {
-            return {
-                fileName,
-                exif: imageListExif[index],
-                thumbDimensions: imageListThumbDimensions[index]
-            };
-        });
+        return {
+            imageCount: imageListUnsorted.length,
+            imageList: imageList.map((fileName, index) => {
+                return {
+                    fileName,
+                    exif: imageListExif[index],
+                    thumbDimensions: imageListThumbDimensions[index]
+                };
+            })
+        };
     }
 
     private getGalleryImagePathList(relPaths: string[]): Promise<string[]> {

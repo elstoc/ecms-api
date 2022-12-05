@@ -4,10 +4,10 @@ import { RequestHandler } from './RequestHandler';
 import { Gallery } from '../services';
 
 export const createGetImageListHandler = (gallery: Gallery, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
-    const { path } = req.params;
-    logger.log('info', `getting image list ${path}`);
     try {
+        const { path } = req.params;
         const limit = parseInt(req.query.limit?.toString() || '0');
+        logger.log('info', `getting image list ${path} (${limit})`);
         const imageList = await gallery.getGalleryData(path, limit);
         res.json(imageList);
     } catch {

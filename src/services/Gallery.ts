@@ -82,7 +82,7 @@ export class Gallery implements IGallery {
 
         let dateTaken;
         if (exifDateTaken) {
-            const a = exifDateTaken.split(/:| /).map((el: string) => parseInt(el));
+            const a = exifDateTaken.split(/[: ]/).map((el: string) => parseInt(el));
             dateTaken = new Date(a[0], a[1] - 1, a[2], a[3], a[4], a[5]);
         }
 

@@ -99,10 +99,6 @@ export class Gallery implements IGallery {
 
     }
 
-    private getDimensionsList(fullPaths: string[]): Promise<Dimensions[]> {
-        return Promise.all(fullPaths.map((fullPath) => this.getDimensions(fullPath)));
-    }
-
     /* Return the dimensions of the given file */
     private async getDimensions (fullPath: string): Promise<Dimensions> {
         const size = await sizeOf(fullPath);

@@ -1,14 +1,3 @@
-export type Exif = {
-    title: string | undefined;
-    dateTaken: Date | undefined;
-    camera: string | undefined;
-    lens: string | undefined;
-    exposure: string | undefined;
-    iso: string | undefined;
-    aperture: string | undefined;
-    focalLength: string | undefined;
-};
-
 export type Dimensions = {
     width: number | undefined;
     height: number | undefined;
@@ -16,7 +5,7 @@ export type Dimensions = {
 
 export type ImageData = {
     fileName: string;
-    exif: Exif;
+    exif: { [key: string]: string | undefined };
     thumbDimensions: Dimensions;
 }
 
@@ -28,6 +17,6 @@ export type GalleryData = {
 export type SizeDesc = 'thumb' | 'full'
 
 export interface IGallery {
-    getGalleryData(relPath: string): Promise<GalleryData>;
-    getResizedImagePath(relPath: string, sizeDesc: SizeDesc): Promise<string>;
+    getGalleryMetadata(relPath: string): Promise<GalleryData>;
+    resizeImageAndGetPath(relPath: string, sizeDesc: SizeDesc): Promise<string>;
 }

@@ -1,12 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 import sizeOfSync from 'image-size';
+import { promisify } from 'util';
+
 import { Dimensions, IGallery, GalleryData, SizeDesc, ImageData } from './IGallery';
 import { Config } from '../utils';
-import { promisify } from 'util';
 import { SitePaths } from './SitePaths';
 import { getExif } from '../utils/getExif';
-import resizeImage from '../utils/resizeImage';
+import { resizeImage } from '../utils/resizeImage';
 
 const sizeOf = promisify(sizeOfSync);
 

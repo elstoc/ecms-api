@@ -1,6 +1,6 @@
 import gm from 'gm';
 
-const resizeImage = (inPath: string, outPath: string, width: number, height: number, quality: number): Promise<void> => {
+export const resizeImage = (inPath: string, outPath: string, width: number, height: number, quality: number): Promise<void> => {
     return new Promise((resolve, reject) => {
         gm(inPath)
             .resize(width, height)
@@ -14,5 +14,3 @@ const resizeImage = (inPath: string, outPath: string, width: number, height: num
             });
     });
 };
-
-export default resizeImage;

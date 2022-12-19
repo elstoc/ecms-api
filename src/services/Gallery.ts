@@ -13,7 +13,7 @@ export class Gallery {
     public async getMetadata(relPath: string, limit = 0): Promise<GalleryData> {
         const galleryDir = this.paths.getContentPathIfExists(relPath);
 
-        let imageFileNames = (await this.getImageFileNames(galleryDir)).sort().reverse();
+        let imageFileNames = (await this.getJpegFileNames(galleryDir)).sort().reverse();
         const imageCount = imageFileNames.length;
 
         if (limit > 0) imageFileNames = imageFileNames.slice(0, limit);
@@ -24,7 +24,7 @@ export class Gallery {
     }
 
     /* Get a list of jpg images in the given directory */
-    private async getImageFileNames(inDir: string): Promise<string[]> {
+    private async getJpegFileNames(inDir: string): Promise<string[]> {
         const dir = await fs.promises.readdir(inDir);
         return dir.filter((file) => file.endsWith('.jpg'));
     }

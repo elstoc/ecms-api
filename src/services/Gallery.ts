@@ -23,7 +23,6 @@ export class Gallery {
         return { imageCount, imageList };
     }
 
-    /* Get a list of jpg images in the given directory */
     private async getJpegFileNames(inDir: string): Promise<string[]> {
         const dir = await fs.promises.readdir(inDir);
         return dir.filter((file) => file.endsWith('.jpg'));

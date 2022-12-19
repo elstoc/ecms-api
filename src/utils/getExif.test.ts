@@ -10,7 +10,7 @@ describe('That getExif', () => {
 
         await getExif('/path/to/file');
 
-        expect(ExifReader.load).toBeCalledWith('/path/to/file', { expanded: true });
+        expect(ExifReader.load).toBeCalledWith('/path/to/file', { expanded: true, length: 128 * 1024 });
     });
 
     it('correctly reformats dateTaken to ISO format', async () => {

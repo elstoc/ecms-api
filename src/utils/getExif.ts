@@ -7,7 +7,7 @@ const exifDateToISO = (date: string | undefined): string | undefined => {
 };
 
 export const getExif = async (fullPath: string): Promise<{ [key: string]: string | undefined }> => {
-    const tags = await ExifReader.load(fullPath, { expanded: true });
+    const tags = await ExifReader.load(fullPath, { expanded: true, length: 128*1024 });
     return {
         title: tags.xmp?.title?.description,
         dateTaken: exifDateToISO(tags.exif?.DateTimeOriginal?.description),

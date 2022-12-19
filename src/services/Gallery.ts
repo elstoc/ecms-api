@@ -5,7 +5,10 @@ import { GalleryImage } from './GalleryImage';
 import { SitePaths } from './SitePaths';
 
 export class Gallery {
-    public constructor(private paths: SitePaths, private galleryImage: GalleryImage) {}
+    public constructor(
+        private paths: SitePaths,
+        private galleryImage: GalleryImage
+    ) { }
 
     public async getMetadata(relPath: string, limit = 0): Promise<GalleryData> {
         const galleryDir = this.paths.getContentPathIfExists(relPath);

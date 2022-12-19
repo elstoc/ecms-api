@@ -8,7 +8,7 @@ export const createGetImageListHandler = (gallery: Gallery, logger: winston.Logg
         const { path } = req.params;
         const limit = parseInt(req.query.limit?.toString() || '0');
         logger.log('info', `getting image list ${path} (${limit})`);
-        const imageList = await gallery.getGalleryMetadata(path, limit);
+        const imageList = await gallery.getMetadata(path, limit);
         res.json(imageList);
     } catch {
         res.sendStatus(404);

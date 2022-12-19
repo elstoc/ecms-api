@@ -4,8 +4,8 @@ import winston from 'winston';
 import { createExpressApp } from './app';
 import { createGetImageFileHandler, createGetImageListHandler, createGetMarkdownFileHandler, createGetMarkdownNavHandler } from './handlers';
 import { getGalleryRouter, getMarkdownRouter } from './routes';
-import { Gallery } from './services';
-import { Markdown } from './services';
+import { Gallery, Markdown } from './services';
+import {GalleryImage } from './services/GalleryImage';
 import { SitePaths } from './services/SitePaths';
 import { getConfig } from './utils';
 
@@ -24,9 +24,10 @@ const start = async () => {
 
     const config = getConfig();
     const sitePaths = new SitePaths(config);
-    const gallery = new Gallery(sitePaths);
+    const galleryImage = new GalleryImage(sitePaths);
+    const gallery = new Gallery(sitePaths, galleryImage);
     const markdown = new Markdown(sitePaths);
-    const getImageFileHandler = createGetImageFileHandler(gallery);
+    const getImageFileHandler = createGetImageFileHandler(galleryImage);
     const getMarkdownFileHandler = createGetMarkdownFileHandler(markdown, logger);
     const getMarkdownNavHandler = createGetMarkdownNavHandler(markdown, logger);
     const getImageListHandler = createGetImageListHandler(gallery, logger);

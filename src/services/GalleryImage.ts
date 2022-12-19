@@ -1,15 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import { promisify } from 'util';
-import sizeOfSync from 'image-size';
 
-import { Dimensions, ImageData } from './IGallery';
+import { ImageData } from './IGallery';
 import { getExif } from '../utils/getExif';
 import { resizeImage } from '../utils/resizeImage';
+import { getImageDimensions } from '../utils/getImageDimensions';
 
 import { SitePaths } from './SitePaths';
-
-const sizeOf = promisify(sizeOfSync);
 
 export class GalleryImage {
     public constructor(private paths: SitePaths) {}
@@ -21,7 +18,7 @@ export class GalleryImage {
             this.resizeAndGetPath(imageRelPath, 'thumb'),
             getExif(origFilePath)
         ]);
-        const thumbDimensions = await this.getDimensions(thumbPath);
+        const thumbDimensions = await getImageDimensions(thumbPath);
         return { fileName, exif, thumbDimensions };
     }
 
@@ -42,11 +39,4 @@ export class GalleryImage {
 
         return thumbPath;
     }
-
-    /* Return the dimensions of the given file */
-    private async getDimensions (fullPath: string): Promise<Dimensions> {
-        const size = await sizeOf(fullPath);
-        return { width: size?.width, height: size?.height };
-    }
-
 }

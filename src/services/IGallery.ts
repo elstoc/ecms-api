@@ -13,10 +13,3 @@ export type GalleryData = {
     imageCount: number;
     imageList: ImageData[];
 }
-
-export type SizeDesc = 'thumb' | 'full'
-
-export interface IGallery {
-    getGalleryMetadata(relPath: string): Promise<GalleryData>;
-    resizeImageAndGetPath(relPath: string, sizeDesc: SizeDesc): Promise<string>;
-}

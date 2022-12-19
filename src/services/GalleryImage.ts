@@ -3,7 +3,7 @@ import path from 'path';
 import { promisify } from 'util';
 import sizeOfSync from 'image-size';
 
-import { Dimensions, ImageData, SizeDesc } from './IGallery';
+import { Dimensions, ImageData } from './IGallery';
 import { getExif } from '../utils/getExif';
 import { resizeImage } from '../utils/resizeImage';
 
@@ -25,7 +25,7 @@ export class GalleryImage {
         return { fileName, exif, thumbDimensions };
     }
 
-    public async resizeAndGetPath(relPath: string, sizeDesc: SizeDesc): Promise<string> {
+    public async resizeAndGetPath(relPath: string, sizeDesc: 'thumb' | 'full'): Promise<string> {
         if (!['full', 'thumb'].includes(sizeDesc)) throw new Error('incorrect size description');
 
         const quality = sizeDesc === 'thumb' ? 60 : 95;

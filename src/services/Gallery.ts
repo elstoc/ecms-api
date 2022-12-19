@@ -18,11 +18,7 @@ export class Gallery implements IGallery {
     }
 
     public async getGalleryMetadata(relPath: string, limit = 0): Promise<GalleryData> {
-        const galleryDir = this.sitePaths.getContentPath(relPath);
-
-        if (!fs.existsSync(galleryDir)) {
-            throw new Error('directory does not exist');
-        }
+        const galleryDir = this.sitePaths.getContentPathIfExists(relPath);
 
         let imageFileNames = (await this.getImageFileNames(galleryDir)).sort().reverse();
         const imageCount = imageFileNames.length;
@@ -52,13 +48,9 @@ export class Gallery implements IGallery {
         const width = sizeDesc === 'thumb' ? 100000 : 1920;
         const height = sizeDesc === 'thumb' ? 350 : 1080;
 
-        const galleryPath = this.sitePaths.getContentPath(relPath);
+        const galleryPath = this.sitePaths.getContentPathIfExists(relPath);
         const [dirName, baseName] = [path.dirname(relPath), path.basename(relPath)];
         const thumbPath = this.sitePaths.getCachePath(dirName, sizeDesc, baseName);
-
-        if (!fs.existsSync(galleryPath)) {
-            throw new Error('file not found');
-        }
 
         if (!fs.existsSync(thumbPath)) {
             await resizeImage(galleryPath, thumbPath, width, height, quality);

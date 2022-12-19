@@ -3,15 +3,10 @@ import fs from 'fs';
 import YAML from 'yaml';
 
 import { IMarkdown, MdFileMeta, MdNavContents } from './IMarkdown';
-import { Config } from '../utils/config';
 import { SitePaths } from './SitePaths';
 
 export class Markdown implements IMarkdown {
-    private sitePaths: SitePaths;
-
-    public constructor (config: Config) {
-        this.sitePaths = new SitePaths(config);
-    }
+    public constructor (private paths: SitePaths) {}
 
     /* return the actual file path of a markdown file
        given the Route path in the ui */
@@ -19,7 +14,7 @@ export class Markdown implements IMarkdown {
 
         let mdFilePath = '';
 
-        const fullUiPath = this.sitePaths.getContentPath(uiPath === '/' ? '' : uiPath);
+        const fullUiPath = this.paths.getContentPath(uiPath === '/' ? '' : uiPath);
         
         if (fs.existsSync(fullUiPath)) {
             mdFilePath = path.resolve(fullUiPath, 'index.md');
@@ -68,7 +63,7 @@ export class Markdown implements IMarkdown {
     /* return Nav structure of md child files in a given path
        recurse until all files read */
     private async recurseDir(rootPath: string): Promise<MdNavContents[]> {
-        const fullPath = this.sitePaths.getContentPath(rootPath); 
+        const fullPath = this.paths.getContentPath(rootPath); 
 
         if (!fs.existsSync(fullPath)) {
             throw new Error(`${fullPath} not found`);

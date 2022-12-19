@@ -4,7 +4,6 @@ import sizeOfSync from 'image-size';
 import { promisify } from 'util';
 
 import { Dimensions, IGallery, GalleryData, SizeDesc, ImageData } from './IGallery';
-import { Config } from '../utils';
 import { SitePaths } from './SitePaths';
 import { getExif } from '../utils/getExif';
 import { resizeImage } from '../utils/resizeImage';
@@ -12,14 +11,10 @@ import { resizeImage } from '../utils/resizeImage';
 const sizeOf = promisify(sizeOfSync);
 
 export class Gallery implements IGallery {
-    private sitePaths: SitePaths;
-
-    public constructor (config: Config) {
-        this.sitePaths = new SitePaths(config);
-    }
+    public constructor(private paths: SitePaths) {}
 
     public async getGalleryMetadata(relPath: string, limit = 0): Promise<GalleryData> {
-        const galleryDir = this.sitePaths.getContentPathIfExists(relPath);
+        const galleryDir = this.paths.getContentPathIfExists(relPath);
 
         let imageFileNames = (await this.getImageFileNames(galleryDir)).sort().reverse();
         const imageCount = imageFileNames.length;
@@ -33,7 +28,7 @@ export class Gallery implements IGallery {
 
     private async getImageMetadata(galleryRelPath: string, fileName: string): Promise<ImageData> {
         const imageRelPath = `${galleryRelPath}/${fileName}`;
-        const origFilePath = this.sitePaths.getContentPath(imageRelPath);
+        const origFilePath = this.paths.getContentPath(imageRelPath);
         const [thumbPath, exif] = await Promise.all([
             this.resizeImageAndGetPath(imageRelPath, 'thumb'),
             getExif(origFilePath)
@@ -49,9 +44,9 @@ export class Gallery implements IGallery {
         const width = sizeDesc === 'thumb' ? 100000 : 1920;
         const height = sizeDesc === 'thumb' ? 350 : 1080;
 
-        const galleryPath = this.sitePaths.getContentPathIfExists(relPath);
+        const galleryPath = this.paths.getContentPathIfExists(relPath);
         const [dirName, baseName] = [path.dirname(relPath), path.basename(relPath)];
-        const thumbPath = this.sitePaths.getCachePath(dirName, sizeDesc, baseName);
+        const thumbPath = this.paths.getCachePath(dirName, sizeDesc, baseName);
 
         if (!fs.existsSync(thumbPath)) {
             await resizeImage(galleryPath, thumbPath, width, height, quality);

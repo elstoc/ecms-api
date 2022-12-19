@@ -6,6 +6,7 @@ import { createGetImageFileHandler, createGetImageListHandler, createGetMarkdown
 import { getGalleryRouter, getMarkdownRouter } from './routes';
 import { Gallery } from './services';
 import { Markdown } from './services';
+import { SitePaths } from './services/SitePaths';
 import { getConfig } from './utils';
 
 if (process.env.NODE_ENV !== 'production') {
@@ -22,8 +23,9 @@ const start = async () => {
     });
 
     const config = getConfig();
-    const gallery = new Gallery(config);
-    const markdown = new Markdown(config);
+    const sitePaths = new SitePaths(config);
+    const gallery = new Gallery(sitePaths);
+    const markdown = new Markdown(sitePaths);
     const getImageFileHandler = createGetImageFileHandler(gallery);
     const getMarkdownFileHandler = createGetMarkdownFileHandler(markdown, logger);
     const getMarkdownNavHandler = createGetMarkdownNavHandler(markdown, logger);

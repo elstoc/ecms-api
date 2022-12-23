@@ -41,7 +41,7 @@ export class GalleryImage {
 
     private getFileModifiedTime(size: string): number {
         try {
-            return fs.statSync(this.getFullPath(size)).atimeMs;
+            return fs.statSync(this.getFullPath(size)).mtimeMs;
         } catch {
             return 0;
         }

@@ -35,7 +35,7 @@ describe('That GalleryImage.resizeAndGetPath', () => {
 
     beforeEach(() => {
         sitePaths = new SitePaths(config);
-        (fs.statSync as jest.Mock).mockReturnValue({ atimeMs: 1234 });
+        (fs.statSync as jest.Mock).mockReturnValue({ mtimeMs: 1234 });
     });
 
     it.each([
@@ -68,7 +68,7 @@ describe('That GalleryImage.resizeAndGetPath', () => {
 
     it('does not resize the cached file if it is newer than the source and returns correct path', async () => {
         (fs.statSync as jest.Mock).mockImplementation((filePath: string) => (
-            filePath.startsWith('/path/to/cache') ? { atimeMs: 5000 } : { atimeMs: 1000 }
+            filePath.startsWith('/path/to/cache') ? { mtimeMs: 5000 } : { mtimeMs: 1000 }
         ));
 
         const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
@@ -84,7 +84,7 @@ describe('That GalleryImage.resizeAndGetPath', () => {
     ])('resizes the cached file with correct params if it is older than the source and returns correct path', async (size, imgParams) => {
 
         (fs.statSync as jest.Mock).mockImplementation((filePath: string) => (
-            filePath.startsWith('/path/to/cache') ? { atimeMs: 1000 } : { atimeMs: 5000 }
+            filePath.startsWith('/path/to/cache') ? { mtimeMs: 1000 } : { mtimeMs: 5000 }
         ));
 
         const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
@@ -106,7 +106,7 @@ describe('That GalleryImage.resizeAndGetPath', () => {
         'fhd'
     ])('attempts to create the cached image directory when resizing if it does not exist', async (size) => {
         (fs.statSync as jest.Mock).mockImplementation((filePath: string) => (
-            filePath.startsWith('/path/to/cache') ? { atimeMs: 0 } : { atimeMs: 5000 }
+            filePath.startsWith('/path/to/cache') ? { mtimeMs: 0 } : { mtimeMs: 5000 }
         ));
         (fs.existsSync as jest.Mock).mockReturnValue(false);
 
@@ -121,7 +121,7 @@ describe('That GalleryImage.resizeAndGetPath', () => {
         'fhd'
     ])('does not attempt to create the cached image directory when resizing if it does exist', async (size) => {
         (fs.statSync as jest.Mock).mockImplementation((filePath: string) => (
-            filePath.startsWith('/path/to/cache') ? { atimeMs: 1000 } : { atimeMs: 5000 }
+            filePath.startsWith('/path/to/cache') ? { mtimeMs: 1000 } : { mtimeMs: 5000 }
         ));
         (fs.existsSync as jest.Mock).mockReturnValue(true);
 
@@ -137,7 +137,7 @@ describe('That GalleryImage.getMetadata', () => {
 
     beforeEach(() => {
         sitePaths = new SitePaths(config);
-        (fs.statSync as jest.Mock).mockReturnValue({ atimeMs: 1234 });
+        (fs.statSync as jest.Mock).mockReturnValue({ mtimeMs: 1234 });
         (getExif as jest.Mock).mockReturnValue({ title: 'my image', ISO: '1000' });
         (getImageDimensions as jest.Mock).mockReturnValue({ width: 100, height: 200 });
     });
@@ -160,7 +160,7 @@ describe('That GalleryImage.getMetadata', () => {
         };
 
         (fs.statSync as jest.Mock).mockImplementation((filePath: string) => (
-            filePath.startsWith('/path/to/cache') ? { atimeMs: 0 } : { atimeMs: 5000 }
+            filePath.startsWith('/path/to/cache') ? { mtimeMs: 0 } : { mtimeMs: 5000 }
         ));
 
         const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
@@ -180,7 +180,7 @@ describe('That GalleryImage.getMetadata', () => {
         };
 
         (fs.statSync as jest.Mock).mockImplementation((filePath: string) => (
-            filePath.startsWith('/path/to/cache') ? { atimeMs: 100 } : { atimeMs: 5000 }
+            filePath.startsWith('/path/to/cache') ? { mtimeMs: 100 } : { mtimeMs: 5000 }
         ));
 
         const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
@@ -211,14 +211,14 @@ describe('That GalleryImage.getMetadata', () => {
         };
 
         (fs.statSync as jest.Mock).mockImplementation((filePath: string) => (
-            filePath.startsWith('/path/to/cache') ? { atimeMs: 100 } : { atimeMs: 5000 }
+            filePath.startsWith('/path/to/cache') ? { mtimeMs: 100 } : { mtimeMs: 5000 }
         ));
 
         const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
         const metadata1 = await galleryImage.getMetadata();
 
         (fs.statSync as jest.Mock).mockImplementation((filePath: string) => (
-            filePath.startsWith('/path/to/cache') ? { atimeMs: 6000 } : { atimeMs: 7000 }
+            filePath.startsWith('/path/to/cache') ? { mtimeMs: 6000 } : { mtimeMs: 7000 }
         ));
 
         (getExif as jest.Mock).mockReturnValue({ title: 'my image title', ISO: '2000' });

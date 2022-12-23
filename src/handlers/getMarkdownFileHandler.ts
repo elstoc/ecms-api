@@ -8,7 +8,7 @@ export const createGetMarkdownFileHandler = (markdown: Markdown, logger: winston
     const { mdPath } = req.params;
     logger.log('info', `getting md file ${mdPath}`);
     try {
-        const filePath = await markdown.getMdFilePath(mdPath);
+        const filePath = markdown.getMdFilePath(mdPath);
         if (fs.existsSync(filePath)) {
             res.sendFile(filePath);
         } else {

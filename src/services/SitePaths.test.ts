@@ -67,7 +67,7 @@ describe('That SitePaths.getContentPathIfExists', () => {
     it('throws an error if path does not exist', () => {
         jest.spyOn(fs, 'existsSync').mockReturnValue(false);
         const sitePaths = new SitePaths(config);
-        expect(() => sitePaths.getContentPathIfExists('')).toThrow('File does not exist');
+        expect(() => sitePaths.getContentPathIfExists('')).toThrow('File "/path/to/content" does not exist');
     });
 });
 
@@ -83,6 +83,6 @@ describe('That SitePaths.getCachePathIfExists', () => {
     it('throws an error if path does not exist', () => {
         jest.spyOn(fs, 'existsSync').mockReturnValue(false);
         const sitePaths = new SitePaths(config);
-        expect(() => sitePaths.getCachePathIfExists('')).toThrow('File does not exist');
+        expect(() => sitePaths.getCachePathIfExists('')).toThrow('File "/path/to/cache" does not exist');
     });
 });

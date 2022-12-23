@@ -22,7 +22,7 @@ export class SitePaths {
     
     private getPathIfExists(fullPath: string): string {
         if (!fs.existsSync(fullPath)) {
-            throw new Error('File does not exist');
+            throw new Error(`File "${fullPath}" does not exist`);
         }
         return fullPath;
     }

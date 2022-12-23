@@ -5,6 +5,7 @@ export type Dimensions = {
 
 export type ImageData = {
     fileName: string;
+    sourceModificationTime: number;
     exif: { [key: string]: string | undefined };
     thumbDimensions: Dimensions;
 }

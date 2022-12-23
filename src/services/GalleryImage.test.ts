@@ -154,6 +154,7 @@ describe('That GalleryImage.getMetadata', () => {
     it('retrieves and returns expected data from image files on first run with no thumb (thumb file resized)', async () => {
         const expectedMetadata = {
             fileName: 'image.jpg',
+            sourceModificationTime: 5000,
             exif: { title: 'my image', ISO: '1000' },
             thumbDimensions: { width: 100, height: 200 }
         };
@@ -173,6 +174,7 @@ describe('That GalleryImage.getMetadata', () => {
     it('returns identical metadata on second run without resizing and using cached data', async () => {
         const expectedMetadata = {
             fileName: 'image.jpg',
+            sourceModificationTime: 5000,
             exif: { title: 'my image', ISO: '1000' },
             thumbDimensions: { width: 100, height: 200 }
         };
@@ -196,12 +198,14 @@ describe('That GalleryImage.getMetadata', () => {
     it('resizes thumb, re-reads exif/dimensions, when called a second time and source has changed', async () => {
         const expectedMetadata = {
             fileName: 'image.jpg',
+            sourceModificationTime: 5000,
             exif: { title: 'my image', ISO: '1000' },
             thumbDimensions: { width: 100, height: 200 }
         };
 
         const expectedMetadata2 = {
             fileName: 'image.jpg',
+            sourceModificationTime: 7000,
             exif: { title: 'my image title', ISO: '2000' },
             thumbDimensions: { width: 200, height: 300 }
         };

@@ -69,6 +69,7 @@ export class GalleryImage {
         return {
             fileName: path.basename(this.relPath),
             exif: this.exif,
+            sourceModificationTime: this.sourceFileModifiedTimeForCache,
             thumbDimensions: this.thumbDimensions
         };
     }

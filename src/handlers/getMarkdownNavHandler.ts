@@ -7,7 +7,7 @@ export const createGetMarkdownNavHandler = (markdown: Markdown, logger: winston.
     const { rootPath } = req.params;
     logger.log('info', `getting md nav contents ${rootPath}`);
     try {
-        const mdNavContents = await markdown.getMdNavContents(rootPath);
+        const mdNavContents = await markdown.getNavContents(rootPath);
         res.json(mdNavContents);
     } catch {
         res.sendStatus(404);

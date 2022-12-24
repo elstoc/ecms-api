@@ -6,10 +6,10 @@ import { SitePaths } from './SitePaths';
 import { MdFileMeta } from './IMarkdown';
 import { splitFrontMatter } from '../utils/splitFrontMatter';
 
-export class MarkdownFile {
+export class MarkdownPage {
     public constructor (private paths: SitePaths) {}
 
-    public getMdFilePath(uiPath: string): string {
+    public getFullPath(uiPath: string): string {
 
         let mdFilePath = '';
 
@@ -24,8 +24,8 @@ export class MarkdownFile {
         return mdFilePath;
     }
 
-    public async getMdFileMeta(uiPath: string): Promise<MdFileMeta> {
-        const filePath = this.getMdFilePath(uiPath);
+    public async getMetadata(uiPath: string): Promise<MdFileMeta> {
+        const filePath = this.getFullPath(uiPath);
 
         let yamlTitle;
 

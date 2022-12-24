@@ -1,14 +1,14 @@
 import fs from 'fs';
 
-import { MarkdownFile } from './MarkdownFile';
+import { MarkdownPage } from './MarkdownPage';
 import { MdNavContents } from './IMarkdown';
 import { SitePaths } from './SitePaths';
 
 export class Markdown {
-    private markdownFile: MarkdownFile;
+    private markdownPage: MarkdownPage;
 
     public constructor(private paths: SitePaths) {
-        this.markdownFile = new MarkdownFile(paths);
+        this.markdownPage = new MarkdownPage(paths);
     }
 
     private async recurseDir(relPath: string): Promise<MdNavContents[]> {
@@ -23,13 +23,13 @@ export class Markdown {
             const stats = await fs.promises.stat(this.paths.getContentPath(relPath, file));
             if (stats.isDirectory()) {
                 const dirChildren = await this.recurseDir(uiPath);
-                const meta = await this.markdownFile.getMdFileMeta(uiPath);
+                const meta = await this.markdownPage.getMetadata(uiPath);
                 children.push({
                     meta,
                     children: dirChildren
                 });
             } else if (file.endsWith('.md') && !file.endsWith('index.md')) {
-                const meta = await this.markdownFile.getMdFileMeta(uiPath);
+                const meta = await this.markdownPage.getMetadata(uiPath);
                 children.push({
                     meta
                 });
@@ -40,13 +40,13 @@ export class Markdown {
     }
 
     public getMdFilePath(mdPath: string) {
-        return this.markdownFile.getMdFilePath(mdPath);
+        return this.markdownPage.getFullPath(mdPath);
     }
 
-    public async getMdNavContents(rootPath: string): Promise<MdNavContents> {
+    public async getNavContents(rootPath: string): Promise<MdNavContents> {
 
         const children = await this.recurseDir(rootPath);
-        const meta = await this.markdownFile.getMdFileMeta(rootPath);
+        const meta = await this.markdownPage.getMetadata(rootPath);
 
         return {
             meta,

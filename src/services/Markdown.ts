@@ -4,6 +4,7 @@ import YAML from 'yaml';
 
 import { IMarkdown, MdFileMeta, MdNavContents } from './IMarkdown';
 import { SitePaths } from './SitePaths';
+import { splitFrontMatter } from '../utils/splitFrontMatter';
 
 export class Markdown implements IMarkdown {
     public constructor (private paths: SitePaths) {}
@@ -25,20 +26,6 @@ export class Markdown implements IMarkdown {
         return mdFilePath;
     }
 
-    private splitFrontMatter(file: string): [yaml: string, content: string] {
-        const lines = file.split('\n');
-        if (lines[0] != '---') {
-            return ['', file];
-        } else {
-            const endIndex = lines.indexOf('---', 1);
-            if (endIndex === -1) {
-                return ['', lines.slice(1).join('\n')];
-            } else {
-                return [lines.slice(1, endIndex).join('\n'), lines.slice(endIndex + 1).join('\n')];
-            }
-        }
-    }
-
     /* return metadata for the given file
        currently just the paths */
     public async getMdFileMeta(uiPath: string): Promise<MdFileMeta> {
@@ -48,7 +35,7 @@ export class Markdown implements IMarkdown {
 
         if (fs.existsSync(filePath)) {
             const file = fs.readFileSync(filePath, 'utf-8');
-            const [yaml] = this.splitFrontMatter(file);
+            const [yaml] = splitFrontMatter(file);
             yamlTitle = YAML.parse(yaml)?.title;
         }
 

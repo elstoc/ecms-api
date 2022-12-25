@@ -19,17 +19,17 @@ export class Markdown {
         const dir = await fs.promises.readdir(fullPath);
 
         for (const file of dir) {
-            const uiPath = `${relPath}/${file}`.replace('.md','');
+            const childRelPath = `${relPath}/${file}`.replace('.md','');
             const stats = await fs.promises.stat(this.paths.getContentPath(relPath, file));
             if (stats.isDirectory()) {
-                const dirChildren = await this.recurseDir(uiPath);
-                const meta = await this.markdownPage.getMetadata(uiPath);
+                const grandChildren = await this.recurseDir(childRelPath);
+                const meta = await this.markdownPage.getMetadata(childRelPath);
                 children.push({
                     meta,
-                    children: dirChildren
+                    children: grandChildren
                 });
             } else if (file.endsWith('.md') && !file.endsWith('index.md')) {
-                const meta = await this.markdownPage.getMetadata(uiPath);
+                const meta = await this.markdownPage.getMetadata(childRelPath);
                 children.push({
                     meta
                 });
@@ -39,14 +39,14 @@ export class Markdown {
         return children;
     }
 
-    public getMdFilePath(mdPath: string) {
-        return this.markdownPage.getFullPath(mdPath);
+    public getMdFilePath(relPath: string) {
+        return this.markdownPage.getFullPath(relPath);
     }
 
-    public async getNavContents(rootPath: string): Promise<MdNavContents> {
+    public async getNavContents(relPath: string): Promise<MdNavContents> {
 
-        const children = await this.recurseDir(rootPath);
-        const meta = await this.markdownPage.getMetadata(rootPath);
+        const children = await this.recurseDir(relPath);
+        const meta = await this.markdownPage.getMetadata(relPath);
 
         return {
             meta,

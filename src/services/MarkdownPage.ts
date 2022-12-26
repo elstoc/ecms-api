@@ -10,36 +10,29 @@ export class MarkdownPage {
     public constructor (private paths: SitePaths) {}
 
     public getFullPath(relPath: string): string {
-
-        let mdFilePath = '';
-
         const fullPath = this.paths.getContentPath(relPath === '/' ? '' : relPath);
-        
-        if (fs.existsSync(fullPath)) {
-            mdFilePath = path.resolve(fullPath, 'index.md');
-        } else {
-            mdFilePath = `${fullPath}.md`;
-        }
-
-        return mdFilePath;
+        return fs.existsSync(fullPath)
+            ? path.resolve(fullPath, 'index.md')
+            : `${fullPath}.md`;
     }
 
     public async getMetadata(relPath: string): Promise<MdFileMeta> {
-        const filePath = this.getFullPath(relPath);
-
-        let yamlTitle;
-
-        if (fs.existsSync(filePath)) {
-            const file = await fs.promises.readFile(filePath, 'utf-8');
-            const [yaml] = splitFrontMatter(file);
-            yamlTitle = YAML.parse(yaml)?.title;
-        }
-
-        const title = yamlTitle || path.basename(relPath);
-
+        const yaml = await this.parseFrontMatter(relPath);
         return {
             uiPath: relPath,
-            title
+            title: yaml?.title || path.basename(relPath)
         };
+    }
+    
+    private async parseFrontMatter(relPath: string): Promise<{ [key: string]: string }> {
+        const fullPath = this.getFullPath(relPath);
+
+        if (!fs.existsSync(fullPath)) {
+            return {};
+        }
+
+        const file = await fs.promises.readFile(fullPath, 'utf-8');
+        const [yaml] = splitFrontMatter(file);
+        return YAML.parse(yaml);
     }
 }

@@ -5,7 +5,7 @@ import { GalleryImage, ImageSize } from './GalleryImage';
 import { SitePaths } from './SitePaths';
 
 export class Gallery {
-    private galleryImageCache: { [key: string]: GalleryImage } = {};
+    private imageCache: { [key: string]: GalleryImage } = {};
 
     public constructor(
         private paths: SitePaths
@@ -37,10 +37,10 @@ export class Gallery {
     }
 
     private getImage(relPath: string): GalleryImage {
-        let image = this.galleryImageCache[relPath];
+        let image = this.imageCache[relPath];
         if (!image) {
             image = new GalleryImage(this.paths, relPath);
-            this.galleryImageCache[relPath] = image;
+            this.imageCache[relPath] = image;
         }
         return image;
     }

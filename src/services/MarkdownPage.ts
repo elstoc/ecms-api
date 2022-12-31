@@ -34,10 +34,14 @@ export class MarkdownPage {
     }
 
     public getContentPath(): string {
-        const fullPath = this.paths.getContentPath(this.relPath === '/' ? '' : this.relPath);
-        return fs.existsSync(fullPath)
+        const fullPath = this.paths.getContentPath(this.relPath.replace(/^\//,''));
+        return this.extantDirectory(fullPath)
             ? path.resolve(fullPath, 'index.md')
             : `${fullPath}.md`;
+    }
+
+    private extantDirectory(fullPath: string): boolean {
+        return fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory();
     }
 
     public async getMetadata(): Promise<undefined | { [key: string]: string | undefined}> {
@@ -47,14 +51,13 @@ export class MarkdownPage {
 
     private async refreshMetadata(): Promise<void> {
         this.clearCacheIfOutdated();
-        if (!this.metadata) {
-            const yaml = await this.parseFrontMatter();
-            this.metadata = {
-                uiPath: this.relPath,
-                title: yaml?.title || path.basename(this.relPath)
-            };
-        }
+        if (this.metadata) return;
 
+        const yaml = await this.parseFrontMatter();
+        this.metadata = {
+            uiPath: this.relPath,
+            title: yaml?.title || path.basename(this.relPath)
+        };
     }
     
     private async parseFrontMatter(): Promise<{ [key: string]: string }> {

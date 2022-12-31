@@ -25,10 +25,10 @@ export class GalleryImage {
     public constructor(paths: SitePaths, relPath: string) {
         this.paths = paths;
         this.relPath = relPath;
-        this.checkSourceInvalidateCache();
+        this.clearCacheIfOutdated();
     }
     
-    private checkSourceInvalidateCache(): void {
+    private clearCacheIfOutdated(): void {
         const sourceFileModifiedTime = this.getFileModifiedTime('source');
         if (sourceFileModifiedTime === 0) {
             throw new Error(`File ${this.getFullPath('source')} does not exist`);
@@ -56,7 +56,7 @@ export class GalleryImage {
     }
 
     public async getMetadata(): Promise<ImageData> {
-        this.checkSourceInvalidateCache();
+        this.clearCacheIfOutdated();
         await Promise.all([
             this.refreshThumbDimensions(),
             this.refreshExif()
@@ -91,7 +91,7 @@ export class GalleryImage {
         if (!['fhd', 'thumb'].includes(size)) {
             throw new Error('Incorrect size description');
         }
-        this.checkSourceInvalidateCache();
+        this.clearCacheIfOutdated();
         await this.resizeStaleImage(size);
         return this.getFullPath(size);
     }

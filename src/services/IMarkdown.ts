@@ -1,12 +1,9 @@
 export type MdFileMeta = {
-    uiPath: string;
-    filePath?: string;
-    title?: string;
-    weight?: number;
-}
+    [key: string]: string | undefined;
+};
 
 export type MdNavContents = {
-    meta: MdFileMeta;
+    meta?: MdFileMeta;
     children?: MdNavContents[];
 }
 

@@ -3,29 +3,62 @@ import path from 'path';
 import YAML from 'yaml';
 
 import { SitePaths } from './SitePaths';
-import { MdFileMeta } from './IMarkdown';
 import { splitFrontMatter } from '../utils/splitFrontMatter';
 
 export class MarkdownPage {
-    public constructor (private paths: SitePaths) {}
+    private paths: SitePaths;
+    private relPath: string;
+    private sourceFileModifiedTimeForCache = 0;
+    private metadata?: { [key: string]: string };
 
-    public getFullPath(relPath: string): string {
-        const fullPath = this.paths.getContentPath(relPath === '/' ? '' : relPath);
+    public constructor(paths: SitePaths, relPath: string) {
+        this.paths = paths;
+        this.relPath = relPath;
+        this.clearCacheIfOutdated();
+    }
+
+    private clearCacheIfOutdated(): void {
+        const sourceFileModifiedTime = this.getFileModifiedTime();
+        if (sourceFileModifiedTime !== this.sourceFileModifiedTimeForCache) {
+            this.metadata = undefined;
+            this.sourceFileModifiedTimeForCache = sourceFileModifiedTime;
+        }
+    }
+
+    private getFileModifiedTime(): number {
+        try {
+            return fs.statSync(this.getContentPath()).mtimeMs;
+        } catch {
+            return 0;
+        }
+    }
+
+    public getContentPath(): string {
+        const fullPath = this.paths.getContentPath(this.relPath === '/' ? '' : this.relPath);
         return fs.existsSync(fullPath)
             ? path.resolve(fullPath, 'index.md')
             : `${fullPath}.md`;
     }
 
-    public async getMetadata(relPath: string): Promise<MdFileMeta> {
-        const yaml = await this.parseFrontMatter(relPath);
-        return {
-            uiPath: relPath,
-            title: yaml?.title || path.basename(relPath)
-        };
+    public async getMetadata(): Promise<undefined | { [key: string]: string | undefined}> {
+        await this.refreshMetadata();
+        return this.metadata;
+    }
+
+    private async refreshMetadata(): Promise<void> {
+        this.clearCacheIfOutdated();
+        if (!this.metadata) {
+            const yaml = await this.parseFrontMatter();
+            this.metadata = {
+                uiPath: this.relPath,
+                title: yaml?.title || path.basename(this.relPath)
+            };
+        }
+
     }
     
-    private async parseFrontMatter(relPath: string): Promise<{ [key: string]: string }> {
-        const fullPath = this.getFullPath(relPath);
+    private async parseFrontMatter(): Promise<{ [key: string]: string }> {
+        const fullPath = this.getContentPath();
 
         if (!fs.existsSync(fullPath)) {
             return {};

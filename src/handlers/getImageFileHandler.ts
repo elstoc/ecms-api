@@ -7,7 +7,6 @@ export const createGetImageFileHandler = (gallery: Gallery): RequestHandler => a
     const { path } = req.params;
     try {
         const size = req.query.size || 'thumb';
-        if (size !== 'thumb' && size !== 'fhd') throw new Error('incorrect size description given');
         const fullPath = await gallery.resizeImageAndGetPath(path, (size as ImageSize));
         res.sendFile(fullPath);
     } catch {

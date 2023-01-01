@@ -104,3 +104,37 @@ describe('That Gallery.getMetadata', () => {
     });
 
 });
+
+describe('That Gallery.resizeImageAndGetPath', () => {
+    let sitePaths: SitePaths;
+    let gallery: Gallery;
+
+    beforeEach(() => {
+        sitePaths = new SitePaths(config);
+        gallery = new Gallery(sitePaths);
+    });
+
+    it('creates a new image object and calls image.resizeAndGetPath the first time it is called', async () => {
+        (GalleryImage as jest.Mock).mockImplementation((_, filePath) => ({
+            resizeAndGetPath: (size: string) => `${filePath}/${size}`
+        }));
+
+        const path = await gallery.resizeImageAndGetPath('gallery/image1.jpg', 'thumb');
+
+        expect(GalleryImage).toBeCalledTimes(1);
+        expect(path).toBe('gallery/image1.jpg/thumb');
+    });
+
+    it('calls image.resizeAndGetPath on the existing object the second time it is called', async () => {
+        (GalleryImage as jest.Mock).mockImplementation((_, filePath) => ({
+            resizeAndGetPath: (size: string) => `${filePath}/${size}`
+        }));
+
+        const path = await gallery.resizeImageAndGetPath('gallery/image1.jpg', 'thumb');
+        const path2 = await gallery.resizeImageAndGetPath('gallery/image1.jpg', 'fhd');
+
+        expect(GalleryImage).toBeCalledTimes(1);
+        expect(path).toBe('gallery/image1.jpg/thumb');
+        expect(path2).toBe('gallery/image1.jpg/fhd');
+    });
+});

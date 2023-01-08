@@ -1,6 +1,7 @@
 import { Config } from '../utils';
 import { hashPassword, verifyPasswordWithHash } from '../utils/hash';
 import * as jwt from '../utils/jwt';
+import { SitePaths } from './SitePaths';
 
 export type User = {
     id: string;
@@ -17,6 +18,7 @@ export type Tokens = {
 }
 
 export class Auth {
+    private sitePaths: SitePaths;
     private jwtIssuer: string; //TODO: Add issuer validation
     private jwtAudience: string; //TODO: Add audience validation
     private jwtRefreshExpires: string;
@@ -25,7 +27,7 @@ export class Auth {
     private jwtAccessSecret: string;
     private users: { [key: string]: User } = {};
 
-    public constructor(config: Config) {
+    public constructor(config: Config, sitePaths: SitePaths) {
         ({
             jwtIssuer: this.jwtIssuer,
             jwtAudience: this.jwtAudience,
@@ -34,6 +36,8 @@ export class Auth {
             jwtRefreshSecret: this.jwtRefreshSecret,
             jwtAccessSecret: this.jwtAccessSecret
         } = config);
+
+        this.sitePaths = sitePaths;
     }
 
     public createUser(id: string, fullName?: string, roles?: string[]): void {

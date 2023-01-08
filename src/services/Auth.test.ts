@@ -2,6 +2,7 @@
 import { Auth } from './Auth';
 import * as hash from '../utils/hash';
 import * as jwt from '../utils/jwt';
+import { SitePaths } from './SitePaths';
 
 const config = {
     adminDir: '/path/to/admin',
@@ -19,9 +20,11 @@ describe('After creating an Auth object', () => {
     const userRoles = ['admin'];
     const userPassword = 'This-is-my-password';
     let auth: Auth;
+    let sitePaths: SitePaths;
     
     beforeEach(() => {
-        auth = new Auth(config);
+        sitePaths = new SitePaths(config);
+        auth = new Auth(config, sitePaths);
     });
 
     describe('running createUser', () => {

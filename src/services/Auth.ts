@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { Config } from '../utils';
 import { hashPassword, verifyPasswordWithHash } from '../utils/hash';
 import * as jwt from '../utils/jwt';
@@ -26,6 +27,7 @@ export class Auth {
     private jwtRefreshSecret: string;
     private jwtAccessSecret: string;
     private users: { [key: string]: User } = {};
+    private usersFile = 'users.json';
 
     public constructor(config: Config, sitePaths: SitePaths) {
         ({
@@ -38,6 +40,15 @@ export class Auth {
         } = config);
 
         this.sitePaths = sitePaths;
+        this.readUsersFromFile();
+    }
+
+    private readUsersFromFile(): void {
+        const fullPath = this.sitePaths.getAdminPath(this.usersFile);
+        if (fs.existsSync(fullPath)) {
+            const usersJson = fs.readFileSync(fullPath, 'utf-8');
+            this.users = JSON.parse(usersJson);
+        }
     }
 
     public createUser(id: string, fullName?: string, roles?: string[]): void {
@@ -45,6 +56,12 @@ export class Auth {
             throw new Error('user already exists');
         }
         this.users[id] = { id, fullName, roles };
+        this.writeUsersToFile();
+    }
+
+    private writeUsersToFile(): void {
+        const fullPath = this.sitePaths.getAdminPath(this.usersFile);
+        fs.writeFileSync(fullPath, JSON.stringify(this.users));
     }
 
     public async setPassword(id: string, newPassword: string, oldPassword?: string): Promise<void> {
@@ -59,6 +76,7 @@ export class Auth {
         }
         const hashed = await hashPassword(newPassword);
         this.users[id].hashedPassword = hashed;
+        this.writeUsersToFile();
     }
 
     private throwIfNoUser(id: string): void {

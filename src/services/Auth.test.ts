@@ -1,8 +1,12 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
+/* eslint-disable  @typescript-eslint/no-unused-vars */
+import fs from 'fs';
 import { Auth } from './Auth';
 import * as hash from '../utils/hash';
 import * as jwt from '../utils/jwt';
 import { SitePaths } from './SitePaths';
+
+jest.mock('fs');
 
 const config = {
     adminDir: '/path/to/admin',
@@ -14,6 +18,28 @@ const config = {
     jwtAccessSecret: 'accessSecret',
 } as any;
 
+const initialUsers = { 'thefirstuser': { id: 'thefirstuser', fullName: 'The first user', roles: ['admin'] } };
+
+describe('When creating an Auth Object', () => {
+    it('Loads users from the users file if it exists', () => {
+        (fs.existsSync as jest.Mock).mockReturnValue(true);
+        const mockReadFileSync = (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers));
+        const sitePaths = new SitePaths(config);
+        const auth = new Auth(config, sitePaths);
+        expect(mockReadFileSync).toBeCalledTimes(1);
+        const readFromLocation = mockReadFileSync.mock.calls[0][0];
+        expect(readFromLocation).toBe('/path/to/admin/users.json');
+    });
+
+    it('Does not load from the users file if it does not exist', () => {
+        (fs.existsSync as jest.Mock).mockReturnValue(false);
+        const mockReadFileSync = (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers));
+        const sitePaths = new SitePaths(config);
+        const auth = new Auth(config, sitePaths);
+        expect(mockReadFileSync).not.toBeCalled();
+    });
+});
+
 describe('After creating an Auth object', () => {
     const user = 'thefirstuser';
     const userFullName = 'The first user';
@@ -21,30 +47,41 @@ describe('After creating an Auth object', () => {
     const userPassword = 'This-is-my-password';
     let auth: Auth;
     let sitePaths: SitePaths;
+    let mockWriteFileSync: jest.Mock;
     
     beforeEach(() => {
+        (fs.existsSync as jest.Mock).mockReturnValue(true);
+        (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers));
+        mockWriteFileSync = (fs.writeFileSync as jest.Mock);
         sitePaths = new SitePaths(config);
         auth = new Auth(config, sitePaths);
     });
 
     describe('running createUser', () => {
         it('does not throw an error for a new user', () => {
-            expect(() => auth.createUser(user, userFullName, userRoles)).not.toThrow();
+            expect(() => auth.createUser('anotheruser', userFullName, userRoles)).not.toThrow();
+        });
+
+        it('writes users to a file after creation', () => {
+            const expectedUsers = { ...initialUsers, anotheruser: { id: 'anotheruser', fullName: 'The first user', roles: ['admin'] } };
+            auth.createUser('anotheruser', userFullName, userRoles);
+            const writeFileLocation = mockWriteFileSync.mock.calls[0][0];
+            const writeFileContent = mockWriteFileSync.mock.calls[0][1];
+            expect(writeFileLocation).toBe('/path/to/admin/users.json');
+            expect(writeFileContent).toBe(JSON.stringify(expectedUsers));
         });
 
         it('throws an error if a user already exists', () => {
-            auth.createUser(user, userFullName, userRoles);
-            expect(() => auth.createUser(user, 'again')).toThrow('user already exists');
+            expect(() => auth.createUser(user, userFullName)).toThrow('user already exists');
         });
     });
 
     describe('running setPassword', () => {
         it('throws error for a non-existent user', async () => {
-            await expect(auth.setPassword(user, userPassword)).rejects.toThrow('user does not exist');
+            await expect(auth.setPassword('anotheruser', userPassword)).rejects.toThrow('user does not exist');
         });
 
         it('runs successfully (attempts to hash password) for an existing user with no password stored and no old password given', async () => {
-            auth.createUser(user, userFullName, userRoles);
             const spiedHashPassword = jest.spyOn(hash, 'hashPassword');
 
             await expect(auth.setPassword(user, userPassword)).resolves.toBeUndefined();
@@ -55,16 +92,21 @@ describe('After creating an Auth object', () => {
             spiedHashPassword.mockRestore();
         });
 
+        it('writes the users file', async () => {
+            await auth.setPassword(user, userPassword);
+            expect(mockWriteFileSync).toBeCalledTimes(1);
+            const writeFilePath = mockWriteFileSync.mock.calls[0][0];
+            expect(writeFilePath).toBe('/path/to/admin/users.json');
+        });
+
         it('throws error for an existing user with a previous password stored and no old password given', async () => {
             const newPassword = 'This-is-my-new-password';
-            auth.createUser(user, userFullName, userRoles);
             await auth.setPassword(user, userPassword);
             await expect(auth.setPassword(user, newPassword)).rejects.toThrow('old password not entered');
         });
 
         it('throws error for an existing user with a previous password stored and incorrect old password given', async () => {
             const newPassword = 'This-is-my-new-password';
-            auth.createUser(user, userFullName, userRoles);
             await auth.setPassword(user, userPassword);
             await expect(auth.setPassword(user, newPassword, newPassword))
                 .rejects.toThrow('passwords do not match');
@@ -72,7 +114,6 @@ describe('After creating an Auth object', () => {
 
         it('runs successfully for an existing user with a previous password stored and correct old password given', async () => {
             const newPassword = 'This-is-my-new-password';
-            auth.createUser(user, userFullName, userRoles);
             await auth.setPassword(user, userPassword);
             await expect(auth.setPassword(user, newPassword, userPassword))
                 .resolves.toBeUndefined();
@@ -80,7 +121,6 @@ describe('After creating an Auth object', () => {
 
         it('verifies hashed password by calling verifyPasswordWithHash using appropriate params, then creates new hash', async () => {
             const newPassword = 'This-is-my-new-password';
-            auth.createUser(user, userFullName, userRoles);
             const spiedHashPassword = jest.spyOn(hash, 'hashPassword').mockResolvedValue('oldHash');
             const spiedVerifyPasswordWithHash = jest.spyOn(hash, 'verifyPasswordWithHash').mockResolvedValue(true);
 
@@ -104,7 +144,6 @@ describe('After creating an Auth object', () => {
         it('throws error when called with incorrect password', async () => {
             const notPassword = 'This-is-not-my-password';
 
-            auth.createUser(user, userFullName, userRoles);
             await auth.setPassword(user, userPassword);
             await expect(auth.getTokensFromPassword(user, notPassword))
                 .rejects.toThrow('incorrect password');
@@ -117,7 +156,6 @@ describe('After creating an Auth object', () => {
             spiedJwtSign.mockResolvedValueOnce('access-token')
                 .mockResolvedValueOnce('refresh-token');
 
-            auth.createUser(user, userFullName, userRoles);
             await auth.setPassword(user, userPassword);
 
             await expect(auth.getTokensFromPassword(user, userPassword))
@@ -129,7 +167,6 @@ describe('After creating an Auth object', () => {
         it('generates jwt tokens using the appropriate parameters', async () => {
             const spiedJwtSign = jest.spyOn(jwt, 'sign');
 
-            auth.createUser(user, userFullName, userRoles);
             await auth.setPassword(user, userPassword);
             await auth.getTokensFromPassword(user, userPassword);
 
@@ -182,7 +219,6 @@ describe('After creating an Auth object', () => {
         it('returns a pair of jwt tokens (generated with correct params) when called with correct refresh token', async () => {
             const expectedTokens = { accessToken: 'access-token', refreshToken: 'refresh-token' };
 
-            auth.createUser(user, userFullName, userRoles);
             await auth.setPassword(user, userPassword);
 
             const { refreshToken } = await auth.getTokensFromPassword(user, userPassword);
@@ -198,7 +234,6 @@ describe('After creating an Auth object', () => {
         });
 
         it('generates jwt tokens using the appropriate parameters', async () => {
-            auth.createUser(user, userFullName, userRoles);
             await auth.setPassword(user, userPassword);
             const { refreshToken } = await auth.getTokensFromPassword(user, userPassword);
 
@@ -238,7 +273,6 @@ describe('After creating an Auth object', () => {
         });
 
         it('returns appropriate user data when called using a token generated by getTokensFromPassword', async () => {
-            auth.createUser(user, userFullName, userRoles);
             await auth.setPassword(user, userPassword);
             const { accessToken } = await auth.getTokensFromPassword(user, userPassword);
             const expectedAccessPayload = { id: user, fullName: userFullName, roles: userRoles };

@@ -23,7 +23,7 @@ const initialUsers = { 'thefirstuser': { id: 'thefirstuser', fullName: 'The firs
 describe('When creating an Auth Object', () => {
     it('Loads users from the users file if it exists', () => {
         (fs.existsSync as jest.Mock).mockReturnValue(true);
-        const mockReadFileSync = (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers));
+        const mockReadFileSync = (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers, null, 4));
         const sitePaths = new SitePaths(config);
         const auth = new Auth(config, sitePaths);
         expect(mockReadFileSync).toBeCalledTimes(1);
@@ -33,7 +33,7 @@ describe('When creating an Auth Object', () => {
 
     it('Does not load from the users file if it does not exist', () => {
         (fs.existsSync as jest.Mock).mockReturnValue(false);
-        const mockReadFileSync = (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers));
+        const mockReadFileSync = (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers, null, 4));
         const sitePaths = new SitePaths(config);
         const auth = new Auth(config, sitePaths);
         expect(mockReadFileSync).not.toBeCalled();
@@ -51,7 +51,7 @@ describe('After creating an Auth object', () => {
     
     beforeEach(() => {
         (fs.existsSync as jest.Mock).mockReturnValue(true);
-        (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers));
+        (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers, null, 4));
         mockWriteFileSync = (fs.writeFileSync as jest.Mock);
         sitePaths = new SitePaths(config);
         auth = new Auth(config, sitePaths);
@@ -68,7 +68,7 @@ describe('After creating an Auth object', () => {
             const writeFileLocation = mockWriteFileSync.mock.calls[0][0];
             const writeFileContent = mockWriteFileSync.mock.calls[0][1];
             expect(writeFileLocation).toBe('/path/to/admin/users.json');
-            expect(writeFileContent).toBe(JSON.stringify(expectedUsers));
+            expect(writeFileContent).toBe(JSON.stringify(expectedUsers, null, 4));
         });
 
         it('throws an error if a user already exists', () => {

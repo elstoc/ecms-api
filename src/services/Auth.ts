@@ -61,7 +61,7 @@ export class Auth {
 
     private writeUsersToFile(): void {
         const fullPath = this.sitePaths.getAdminPath(this.usersFile);
-        fs.writeFileSync(fullPath, JSON.stringify(this.users));
+        fs.writeFileSync(fullPath, JSON.stringify(this.users, null, 4));
     }
 
     public async setPassword(id: string, newPassword: string, oldPassword?: string): Promise<void> {

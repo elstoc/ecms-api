@@ -2,7 +2,7 @@ import express, { Express, Router } from 'express';
 import cors from 'cors';
 import { Config } from './utils';
 
-export const createExpressApp = (galleryRouter: Router, markdownRouter: Router, config: Config): Express => {
+export const createExpressApp = (galleryRouter: Router, markdownRouter: Router, authRouter: Router, config: Config): Express => {
     const app = express();
     const allowedOrigins = [config.uiSiteUrl];
 
@@ -10,6 +10,7 @@ export const createExpressApp = (galleryRouter: Router, markdownRouter: Router, 
     app.use(cors(options));
     app.use('/gallery', galleryRouter);
     app.use('/markdown', markdownRouter);
+    app.use('/auth', authRouter);
 
     return app;
 };

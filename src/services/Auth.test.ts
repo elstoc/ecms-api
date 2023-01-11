@@ -92,7 +92,7 @@ describe('After creating an Auth object', () => {
             spiedHashPassword.mockRestore();
         });
 
-        it('writes the users file', async () => {
+        it('writes the users file when the password is successfully changed', async () => {
             await auth.setPassword(user, userPassword);
             expect(mockWriteFileSync).toBeCalledTimes(1);
             const writeFilePath = mockWriteFileSync.mock.calls[0][0];

@@ -2,11 +2,11 @@ import fs from 'fs';
 import path from 'path';
 
 import { Dimensions, IGalleryImage, ImageData, ImageSize } from './IGalleryImage';
-import { getExif } from '../utils/getExif';
-import { resizeImage } from '../utils/resizeImage';
-import { getImageDimensions } from '../utils/getImageDimensions';
+import { getExif } from '../../utils/getExif';
+import { resizeImage } from '../../utils/resizeImage';
+import { getImageDimensions } from '../../utils/getImageDimensions';
 
-import { SitePaths } from './SitePaths';
+import { SitePaths } from '../site/SitePaths';
 
 const RESIZE_OPTIONS = {
     thumb: { width: 100000, height: 350, quality: 60 },

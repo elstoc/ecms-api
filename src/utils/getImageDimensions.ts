@@ -1,6 +1,6 @@
 import { promisify } from 'util';
 import sizeOfSync from 'image-size';
-import { Dimensions } from '../services/IGalleryImage';
+import { Dimensions } from '../services/gallery/IGalleryImage';
 
 const sizeOf = promisify(sizeOfSync);
 

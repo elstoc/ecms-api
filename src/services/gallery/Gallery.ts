@@ -2,7 +2,7 @@ import fs from 'fs';
 
 import { IGallery, GalleryData } from './IGallery';
 import { GalleryImage } from './GalleryImage';
-import { SitePaths } from './SitePaths';
+import { SitePaths } from '../site/SitePaths';
 import { ImageData, ImageSize } from './IGalleryImage';
 
 export class Gallery implements IGallery {

@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { Config } from '../utils';
+import { Config } from '../../utils';
 
 export class SitePaths {
     private contentDir: string;

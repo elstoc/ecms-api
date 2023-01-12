@@ -1,8 +1,8 @@
 import fs from 'fs';
-import { Config } from '../utils';
-import { hashPassword, verifyPasswordWithHash } from '../utils/hash';
-import * as jwt from '../utils/jwt';
-import { SitePaths } from './SitePaths';
+import { Config } from '../../utils';
+import { hashPassword, verifyPasswordWithHash } from '../../utils/hash';
+import * as jwt from '../../utils/jwt';
+import { SitePaths } from '../site/SitePaths';
 import { User, Token, Tokens, IAuth } from './IAuth';
 
 export class Auth implements IAuth {

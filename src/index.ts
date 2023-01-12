@@ -5,7 +5,7 @@ import { createExpressApp } from './app';
 import { createGetImageFileHandler, createGetImageListHandler, createGetMarkdownFileHandler, createGetMarkdownNavHandler, createPostAuthChangePasswordHandler, createPostAuthLoginHandler, createPostAuthLogoutHandler, createPostAuthRefreshHandler } from './handlers';
 import { getAuthRouter, getGalleryRouter, getMarkdownRouter } from './routes';
 import { Gallery, Markdown } from './services';
-import { SitePaths } from './services/SitePaths';
+import { SitePaths } from './services/site/SitePaths';
 import { getConfig } from './utils';
 
 if (process.env.NODE_ENV !== 'production') {

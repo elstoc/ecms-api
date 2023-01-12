@@ -2,16 +2,16 @@
 import fs from 'fs';
 
 import { GalleryImage } from './GalleryImage';
-import { getExif } from '../utils/getExif';
-import { resizeImage } from '../utils/resizeImage';
-import { getImageDimensions } from '../utils/getImageDimensions';
+import { getExif } from '../../utils/getExif';
+import { resizeImage } from '../../utils/resizeImage';
+import { getImageDimensions } from '../../utils/getImageDimensions';
 
-import { SitePaths } from './SitePaths';
+import { SitePaths } from '../site/SitePaths';
 
 jest.mock('fs');
-jest.mock('../utils/getExif');
-jest.mock('../utils/getImageDimensions');
-jest.mock('../utils/resizeImage');
+jest.mock('../../utils/getExif');
+jest.mock('../../utils/getImageDimensions');
+jest.mock('../../utils/resizeImage');
 
 const config = {
     cacheDir: '/path/to/cache',

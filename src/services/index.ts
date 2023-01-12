@@ -1,4 +1,4 @@
-export { Gallery } from './Gallery';
-export { Markdown } from './Markdown';
-export { IMarkdown } from './IMarkdown';
-export { Dimensions, ImageData } from './IGalleryImage';
+export { Gallery } from './gallery/Gallery';
+export { Markdown } from './markdown/Markdown';
+export { IMarkdown } from './markdown/IMarkdown';
+export { Dimensions, ImageData } from './gallery/IGalleryImage';

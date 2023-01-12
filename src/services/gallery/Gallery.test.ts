@@ -3,7 +3,7 @@ import fs from 'fs';
 
 import { GalleryImage } from './GalleryImage';
 import { Gallery } from './Gallery';
-import { SitePaths } from './SitePaths';
+import { SitePaths } from '../site/SitePaths';
 
 jest.mock('fs', () => ({
     existsSync: jest.fn(),

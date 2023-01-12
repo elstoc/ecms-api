@@ -1,17 +1,17 @@
 import fs from 'fs';
 
 import { MarkdownPage } from './MarkdownPage';
-import { MdNavContents as MdNavData } from './IMarkdown';
+import { IMarkdown, MdNavContents } from './IMarkdown';
 import { SitePaths } from './SitePaths';
 
-export class Markdown {
+export class Markdown implements IMarkdown {
     private pageCache: { [key: string]: MarkdownPage } = {};
 
     public constructor(
         private paths: SitePaths
     ) { }
 
-    public getSourcePath(relPath: string) {
+    public getSourcePath(relPath: string): string {
         const page = this.getPage(relPath);
         return page.getContentPath();
     }
@@ -25,7 +25,7 @@ export class Markdown {
         return page;
     }
 
-    public async getNavData(relPath: string): Promise<MdNavData | undefined> {
+    public async getNavData(relPath: string): Promise<MdNavContents | undefined> {
         const contentPath = this.paths.getContentPath(relPath);
         if (fs.existsSync(contentPath) && fs.statSync(contentPath).isDirectory()) {
             return {
@@ -39,8 +39,8 @@ export class Markdown {
         }
     }
 
-    private async getNavChildren(relPath: string): Promise<MdNavData[]> {
-        const children: MdNavData[] = [];
+    private async getNavChildren(relPath: string): Promise<MdNavContents[]> {
+        const children: MdNavContents[] = [];
         const fullPath = this.paths.getContentPathIfExists(relPath);
         const files = await fs.promises.readdir(fullPath);
 

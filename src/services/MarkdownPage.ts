@@ -4,8 +4,9 @@ import YAML from 'yaml';
 
 import { SitePaths } from './SitePaths';
 import { splitFrontMatter } from '../utils/splitFrontMatter';
+import { IMarkdownPage } from './IMarkdownPage';
 
-export class MarkdownPage {
+export class MarkdownPage implements IMarkdownPage {
     private paths: SitePaths;
     private relPath: string;
     private sourceFileModifiedTimeForCache = 0;

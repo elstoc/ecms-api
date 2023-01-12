@@ -3,22 +3,9 @@ import { Config } from '../utils';
 import { hashPassword, verifyPasswordWithHash } from '../utils/hash';
 import * as jwt from '../utils/jwt';
 import { SitePaths } from './SitePaths';
+import { User, Token, Tokens, IAuth } from './IAuth';
 
-export type User = {
-    id: string;
-    fullName?: string;
-    roles?: string[];
-    hashedPassword?: string;
-};
-
-export type Token = string | undefined;
-
-export type Tokens = {
-    accessToken: Token;
-    refreshToken: Token;
-}
-
-export class Auth {
+export class Auth implements IAuth {
     private sitePaths: SitePaths;
     private jwtIssuer: string; //TODO: Add issuer validation
     private jwtAudience: string; //TODO: Add audience validation

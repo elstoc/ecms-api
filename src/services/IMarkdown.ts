@@ -8,7 +8,6 @@ export type MdNavContents = {
 }
 
 export interface IMarkdown {
-    getMdFilePath(uiPath: string): string;
-    getMdFileMeta(uiPath: string): Promise<MdFileMeta>;
-    getMdNavContents(uiPath: string): Promise<MdNavContents>;
+    getSourcePath(relPath: string): string,
+    getNavData(relPath: string): Promise<MdNavContents | undefined>,
 }

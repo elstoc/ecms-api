@@ -13,30 +13,30 @@ export class SitePaths {
         this.adminDir = config.adminDir;
     }
 
-    public getContentPath(...sitePaths: string[]): string {
-        return path.resolve(this.contentDir, ...sitePaths);
+    public getContentPath(...paths: string[]): string {
+        return path.resolve(this.contentDir, ...paths);
     }
 
-    public getContentPathIfExists(...sitePaths: string[]): string {
-        const fullPath = this.getContentPath(...sitePaths);
+    public getContentPathIfExists(...paths: string[]): string {
+        const fullPath = this.getContentPath(...paths);
         return this.getPathIfExists(fullPath);
     }
 
-    public getCachePath(...sitePaths: string[]): string {
-        return path.resolve(this.cacheDir, ...sitePaths);
+    public getCachePath(...paths: string[]): string {
+        return path.resolve(this.cacheDir, ...paths);
     }
 
-    public getCachePathIfExists(...sitePaths: string[]): string {
-        const fullPath = this.getCachePath(...sitePaths);
+    public getCachePathIfExists(...paths: string[]): string {
+        const fullPath = this.getCachePath(...paths);
         return this.getPathIfExists(fullPath);
     }
     
-    public getAdminPath(...sitePaths: string[]): string {
-        return path.resolve(this.adminDir, ...sitePaths);
+    public getAdminPath(...paths: string[]): string {
+        return path.resolve(this.adminDir, ...paths);
     }
 
-    public getAdminPathIfExists(...sitePaths: string[]): string {
-        const fullPath = this.getAdminPath(...sitePaths);
+    public getAdminPathIfExists(...paths: string[]): string {
+        const fullPath = this.getAdminPath(...paths);
         return this.getPathIfExists(fullPath);
     }
     

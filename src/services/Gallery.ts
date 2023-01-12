@@ -1,10 +1,11 @@
 import fs from 'fs';
 
-import { GalleryData, ImageData } from './IGallery';
-import { GalleryImage, ImageSize } from './GalleryImage';
+import { IGallery, GalleryData } from './IGallery';
+import { GalleryImage } from './GalleryImage';
 import { SitePaths } from './SitePaths';
+import { ImageData, ImageSize } from './IGalleryImage';
 
-export class Gallery {
+export class Gallery implements IGallery {
     private imageCache: { [key: string]: GalleryImage } = {};
 
     public constructor(

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { Dimensions, ImageData } from './IGallery';
+import { Dimensions, IGalleryImage, ImageData, ImageSize } from './IGalleryImage';
 import { getExif } from '../utils/getExif';
 import { resizeImage } from '../utils/resizeImage';
 import { getImageDimensions } from '../utils/getImageDimensions';
@@ -13,9 +13,7 @@ const RESIZE_OPTIONS = {
     fhd:  { width: 1920, height: 1080, quality: 95 }
 };
 
-export type ImageSize = 'thumb' | 'fhd';
-
-export class GalleryImage {
+export class GalleryImage implements IGalleryImage {
     private paths: SitePaths;
     private relPath: string;
     private sourceFileModifiedTimeForCache = 0;

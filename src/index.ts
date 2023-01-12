@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import winston from 'winston';
 
 import { createExpressApp } from './app';
-import { createGetImageFileHandler, createGetImageListHandler, createGetMarkdownFileHandler, createGetMarkdownNavHandler, createPostAuthLoginHandler, createPostAuthLogoutHandler, createPostAuthRefreshHandler } from './handlers';
+import { createGetImageFileHandler, createGetImageListHandler, createGetMarkdownFileHandler, createGetMarkdownNavHandler, createPostAuthChangePasswordHandler, createPostAuthLoginHandler, createPostAuthLogoutHandler, createPostAuthRefreshHandler } from './handlers';
 import { getAuthRouter, getGalleryRouter, getMarkdownRouter } from './routes';
 import { Gallery, Markdown } from './services';
 import { SitePaths } from './services/SitePaths';
@@ -33,10 +33,11 @@ const start = async () => {
     const postAuthLoginHandler = createPostAuthLoginHandler();
     const postAuthRefreshHandler = createPostAuthRefreshHandler();
     const postAuthLogoutHandler = createPostAuthLogoutHandler();
+    const postAuthChangePasswordHandler = createPostAuthChangePasswordHandler();
 
     const galleryRouter = getGalleryRouter(getImageFileHandler, getImageListHandler);
     const markdownRouter = getMarkdownRouter(getMarkdownFileHandler, getMarkdownNavHandler);
-    const authRouter = getAuthRouter(postAuthLoginHandler, postAuthRefreshHandler, postAuthLogoutHandler);
+    const authRouter = getAuthRouter(postAuthLoginHandler, postAuthRefreshHandler, postAuthLogoutHandler, postAuthChangePasswordHandler);
 
     const app = createExpressApp(galleryRouter, markdownRouter, authRouter, config);
 

@@ -3,7 +3,7 @@ import fs from 'fs';
 import YAML from 'yaml';
 
 import { SitePaths } from '../site';
-import { splitFrontMatter } from '../../utils/splitFrontMatter';
+import { splitFrontMatter } from '../../utils';
 import { MarkdownPage } from './MarkdownPage';
 
 jest.mock('yaml');
@@ -16,7 +16,7 @@ jest.mock('fs', () => ({
     }
 }));
 
-jest.mock('../../utils/splitFrontMatter');
+jest.mock('../../utils');
 
 const config = {
     cacheDir: '/path/to/cache',

@@ -1,7 +1,5 @@
 import fs from 'fs';
-import { Config } from '../../utils';
-import { hashPassword, verifyPasswordWithHash } from '../../utils/hash';
-import * as jwt from '../../utils/jwt';
+import { Config, sign as jwtSign, verify as jwtVerify, hashPassword, verifyPasswordWithHash } from '../../utils';
 import { SitePaths } from './SitePaths';
 import { User, Token, Tokens, IAuth } from './IAuth';
 
@@ -93,7 +91,7 @@ export class Auth implements IAuth {
     }
 
     private async verifyRefreshTokenAndGetId(token: string): Promise<string> {
-        const payload = await jwt.verify(token, this.jwtRefreshSecret);
+        const payload = await jwtVerify(token, this.jwtRefreshSecret);
         const { id } = payload as User;
         if (!id) {
             throw new Error('id not stored in payload');
@@ -114,16 +112,16 @@ export class Auth implements IAuth {
             fullName: this.users[id].fullName,
             roles: this.users[id].roles
         };
-        return await jwt.sign(payload, this.jwtAccessSecret, this.jwtAccessExpires);
+        return await jwtSign(payload, this.jwtAccessSecret, this.jwtAccessExpires);
     }
 
     private async getRefreshToken(id: string): Promise<Token> {
         const payload = { id };
-        return await jwt.sign(payload, this.jwtRefreshSecret, this.jwtRefreshExpires);
+        return await jwtSign(payload, this.jwtRefreshSecret, this.jwtRefreshExpires);
     }
 
     public async getUserInfoFromAccessToken(token: string): Promise<User> {
-        const payload = await jwt.verify(token, this.jwtAccessSecret);
+        const payload = await jwtVerify(token, this.jwtAccessSecret);
         const { id, fullName, roles } = payload as User;
         return { id, fullName, roles };
     }

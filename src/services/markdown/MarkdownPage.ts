@@ -3,7 +3,7 @@ import path from 'path';
 import YAML from 'yaml';
 
 import { SitePaths } from '../site';
-import { splitFrontMatter } from '../../utils/splitFrontMatter';
+import { splitFrontMatter } from '../../utils';
 import { IMarkdownPage } from './IMarkdownPage';
 
 export class MarkdownPage implements IMarkdownPage {

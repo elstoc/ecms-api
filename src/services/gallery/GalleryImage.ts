@@ -2,9 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { Dimensions, IGalleryImage, ImageData, ImageSize } from './IGalleryImage';
-import { getExif } from '../../utils/getExif';
-import { resizeImage } from '../../utils/resizeImage';
-import { getImageDimensions } from '../../utils/getImageDimensions';
+import { getExif, resizeImage, getImageDimensions } from '../../utils';
 
 import { SitePaths } from '../site/SitePaths';
 

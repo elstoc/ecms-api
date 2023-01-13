@@ -3,17 +3,12 @@ import winston from 'winston';
 
 import { createExpressApp } from './app';
 import {
-    createGetImageFileHandler,
-    createGetImageListHandler,
-    createGetMarkdownFileHandler,
-    createGetMarkdownNavHandler,
-    createPostAuthChangePasswordHandler,
-    createPostAuthLoginHandler,
-    createPostAuthLogoutHandler,
-    createPostAuthRefreshHandler,
+    createGetImageFileHandler, createGetImageListHandler, createGetMarkdownFileHandler,
+    createGetMarkdownNavHandler, createPostAuthChangePasswordHandler, createPostAuthLoginHandler,
+    createPostAuthLogoutHandler, createPostAuthRefreshHandler,
 } from './handlers';
 import { getAuthRouter, getGalleryRouter, getMarkdownRouter } from './routes';
-import { Gallery, Markdown, SitePaths } from './services';
+import { Auth, Gallery, Markdown, SitePaths } from './services';
 import { getConfig } from './utils';
 
 if (process.env.NODE_ENV !== 'production') {
@@ -33,6 +28,7 @@ const start = async () => {
     const sitePaths = new SitePaths(config);
     const gallery = new Gallery(sitePaths);
     const markdown = new Markdown(sitePaths);
+    const auth = new Auth(config, sitePaths);
 
     const getImageFileHandler = createGetImageFileHandler(gallery);
     const getMarkdownFileHandler = createGetMarkdownFileHandler(markdown, logger);
@@ -41,7 +37,7 @@ const start = async () => {
     const postAuthLoginHandler = createPostAuthLoginHandler();
     const postAuthRefreshHandler = createPostAuthRefreshHandler();
     const postAuthLogoutHandler = createPostAuthLogoutHandler();
-    const postAuthChangePasswordHandler = createPostAuthChangePasswordHandler();
+    const postAuthChangePasswordHandler = createPostAuthChangePasswordHandler(auth, logger);
 
     const galleryRouter = getGalleryRouter(getImageFileHandler, getImageListHandler);
     const markdownRouter = getMarkdownRouter(getMarkdownFileHandler, getMarkdownNavHandler);

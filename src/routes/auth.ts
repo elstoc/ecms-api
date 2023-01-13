@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 
 import { RequestHandler } from '../handlers';
 
@@ -17,6 +17,7 @@ export const getAuthRouter = (
 
     router.post(
         '/changepassword',
+        express.json(),
         postAuthChangePasswordHandler
     );
 

@@ -2,10 +2,18 @@ import * as dotenv from 'dotenv';
 import winston from 'winston';
 
 import { createExpressApp } from './app';
-import { createGetImageFileHandler, createGetImageListHandler, createGetMarkdownFileHandler, createGetMarkdownNavHandler, createPostAuthChangePasswordHandler, createPostAuthLoginHandler, createPostAuthLogoutHandler, createPostAuthRefreshHandler } from './handlers';
+import {
+    createGetImageFileHandler,
+    createGetImageListHandler,
+    createGetMarkdownFileHandler,
+    createGetMarkdownNavHandler,
+    createPostAuthChangePasswordHandler,
+    createPostAuthLoginHandler,
+    createPostAuthLogoutHandler,
+    createPostAuthRefreshHandler,
+} from './handlers';
 import { getAuthRouter, getGalleryRouter, getMarkdownRouter } from './routes';
-import { Gallery, Markdown } from './services';
-import { SitePaths } from './services/site/SitePaths';
+import { Gallery, Markdown, SitePaths } from './services';
 import { getConfig } from './utils';
 
 if (process.env.NODE_ENV !== 'production') {

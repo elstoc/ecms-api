@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { RequestHandler } from './RequestHandler';
-import { Gallery } from '../services';
-import { ImageSize } from '../services/gallery/IGalleryImage';
+import { Gallery, ImageSize } from '../services';
 
 export const createGetImageFileHandler = (gallery: Gallery): RequestHandler => async (req: Request, res: Response) => {
     const { path } = req.params;

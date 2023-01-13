@@ -3,7 +3,7 @@
 import fs from 'fs';
 
 import { MarkdownPage } from './MarkdownPage';
-import { SitePaths } from '../site/SitePaths';
+import { SitePaths } from '../site';
 import { Markdown } from './Markdown';
 
 jest.mock('fs', () => ({

@@ -2,8 +2,8 @@ import fs from 'fs';
 
 import { IGallery, GalleryData } from './IGallery';
 import { GalleryImage } from './GalleryImage';
-import { SitePaths } from '../site/SitePaths';
 import { ImageData, ImageSize } from './IGalleryImage';
+import { SitePaths } from '../site';
 
 export class Gallery implements IGallery {
     private imageCache: { [key: string]: GalleryImage } = {};

@@ -2,7 +2,7 @@ import fs from 'fs';
 
 import { MarkdownPage } from './MarkdownPage';
 import { IMarkdown, MdNavContents } from './IMarkdown';
-import { SitePaths } from '../site/SitePaths';
+import { SitePaths } from '../site';
 
 export class Markdown implements IMarkdown {
     private pageCache: { [key: string]: MarkdownPage } = {};

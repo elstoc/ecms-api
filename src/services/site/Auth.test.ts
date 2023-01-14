@@ -262,14 +262,14 @@ describe('After creating an Auth object', () => {
         it('throws error when called with an expired token', async () => {
             const payload = { id: 'notanid' };
             const accessToken = await jwt.jwtSign(payload, config.jwtAccessSecret, '-1s');
-            await expect(auth.getUserInfoFromAccessToken(accessToken as string))
+            await expect(auth.getUserInfoFromAuthHeader(`Bearer ${accessToken}`))
                 .rejects.toThrow('jwt expired');
         });
 
         it('throws error when called with an incorrectly signed token', async () => {
             const payload = { id: 'notanid' };
             const accessToken = await jwt.jwtSign(payload, 'not-a-secret', config.jwtAccessExpires);
-            await expect(auth.getUserInfoFromAccessToken(accessToken as string))
+            await expect(auth.getUserInfoFromAuthHeader(`Bearer ${accessToken}`))
                 .rejects.toThrow('invalid signature');
         });
 
@@ -278,7 +278,23 @@ describe('After creating an Auth object', () => {
             const { accessToken } = await auth.getTokensFromPassword(user, userPassword);
             const expectedAccessPayload = { id: user, fullName: userFullName, roles: userRoles };
 
-            const accessPayload = await auth.getUserInfoFromAccessToken(accessToken as string);
+            const accessPayload = await auth.getUserInfoFromAuthHeader(`Bearer ${accessToken}`);
+
+            expect(accessPayload).toStrictEqual(expectedAccessPayload);
+        });
+
+        it('returns guest user data when called without a bearer token', async () => {
+            const expectedAccessPayload = { id: 'guest', fullName: 'Guest', roles: [] };
+
+            const accessPayload = await auth.getUserInfoFromAuthHeader(undefined);
+
+            expect(accessPayload).toStrictEqual(expectedAccessPayload);
+        });
+
+        it('returns guest user data when called with a string that does not start with "Bearer"', async () => {
+            const expectedAccessPayload = { id: 'guest', fullName: 'Guest', roles: [] };
+
+            const accessPayload = await auth.getUserInfoFromAuthHeader('some string');
 
             expect(accessPayload).toStrictEqual(expectedAccessPayload);
         });

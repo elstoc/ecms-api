@@ -122,9 +122,16 @@ export class Auth implements IAuth {
         return await jwtSign(payload, this.jwtRefreshSecret, this.jwtRefreshExpires);
     }
 
-    public async getUserInfoFromAccessToken(token: string): Promise<User> {
-        const payload = await jwtVerify(token, this.jwtAccessSecret);
-        const { id, fullName, roles } = payload as User;
-        return { id, fullName, roles };
+    public async getUserInfoFromAuthHeader(authHeader: string | undefined): Promise<User> {
+        let user: User;
+        if (authHeader?.startsWith('Bearer ')) {
+            const bearerToken = authHeader?.substring(7);
+            const payload = await jwtVerify(bearerToken, this.jwtAccessSecret);
+            const { id, fullName, roles } = payload as User;
+            user = { id, fullName, roles };
+        } else {
+            user = { id: 'guest', fullName: 'Guest', roles: [] };
+        }
+        return user;
     }
 }

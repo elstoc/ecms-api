@@ -8,6 +8,7 @@ export const getAuthRouter = (
     postAuthRefreshHandler: RequestHandler,
     postAuthLogoutHandler: RequestHandler,
     postAuthChangePasswordHandler: RequestHandler,
+    getAuthTestHandler: RequestHandler
 ): Router => {
     const router = Router();
 
@@ -32,6 +33,11 @@ export const getAuthRouter = (
     router.post(
         '/logout',
         postAuthLogoutHandler
+    );
+
+    router.get(
+        '/testaccess',
+        getAuthTestHandler
     );
 
     return router;

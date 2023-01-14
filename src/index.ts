@@ -5,7 +5,7 @@ import { createExpressApp } from './app';
 import {
     createGetImageFileHandler, createGetImageListHandler, createGetMarkdownFileHandler,
     createGetMarkdownNavHandler, createPostAuthChangePasswordHandler, createPostAuthLoginHandler,
-    createPostAuthLogoutHandler, createPostAuthRefreshHandler,
+    createPostAuthLogoutHandler, createPostAuthRefreshHandler, createGetAuthTestHandler
 } from './handlers';
 import { getAuthRouter, getGalleryRouter, getMarkdownRouter } from './routes';
 import { Auth, Gallery, Markdown, SitePaths } from './services';
@@ -38,10 +38,11 @@ const start = async () => {
     const postAuthRefreshHandler = createPostAuthRefreshHandler(auth, logger);
     const postAuthLogoutHandler = createPostAuthLogoutHandler(logger);
     const postAuthChangePasswordHandler = createPostAuthChangePasswordHandler(auth, logger);
+    const getAuthTestHandler = createGetAuthTestHandler(logger);
 
     const galleryRouter = getGalleryRouter(getImageFileHandler, getImageListHandler);
     const markdownRouter = getMarkdownRouter(getMarkdownFileHandler, getMarkdownNavHandler);
-    const authRouter = getAuthRouter(postAuthLoginHandler, postAuthRefreshHandler, postAuthLogoutHandler, postAuthChangePasswordHandler);
+    const authRouter = getAuthRouter(postAuthLoginHandler, postAuthRefreshHandler, postAuthLogoutHandler, postAuthChangePasswordHandler, getAuthTestHandler);
 
     const app = createExpressApp(galleryRouter, markdownRouter, authRouter, config);
 

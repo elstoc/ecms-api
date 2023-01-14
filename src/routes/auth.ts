@@ -12,6 +12,7 @@ export const getAuthRouter = (
 
     router.post(
         '/login',
+        express.json(),
         postAuthLoginHandler
     );
 

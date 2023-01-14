@@ -1,7 +1,8 @@
 import fs from 'fs';
-import { Config, sign as jwtSign, verify as jwtVerify, hashPassword, verifyPasswordWithHash } from '../../utils';
+import { Config, jwtSign, jwtVerify, jwtDecode, hashPassword, verifyPasswordWithHash } from '../../utils';
 import { SitePaths } from './SitePaths';
 import { User, Token, Tokens, IAuth } from './IAuth';
+import { JwtPayload } from 'jsonwebtoken';
 
 export class Auth implements IAuth {
     private sitePaths: SitePaths;
@@ -103,7 +104,8 @@ export class Auth implements IAuth {
     private async getTokensFromId(id: string): Promise<Tokens> {
         const accessToken = await this.getAccessToken(id);
         const refreshToken = await this.getRefreshToken(id);
-        return { accessToken, refreshToken };
+        const accessTokenExpiry = (jwtDecode(accessToken as string) as JwtPayload).exp || 0;
+        return { id, accessToken, refreshToken, accessTokenExpiry };
     }
 
     private async getAccessToken (id: string): Promise<Token> {

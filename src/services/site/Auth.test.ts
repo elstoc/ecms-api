@@ -52,6 +52,7 @@ describe('After creating an Auth object', () => {
     beforeEach(() => {
         (fs.existsSync as jest.Mock).mockReturnValue(true);
         (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers, null, 4));
+        jest.spyOn(jwt, 'jwtDecode').mockReturnValue({ exp: 123 });
         mockWriteFileSync = (fs.writeFileSync as jest.Mock);
         sitePaths = new SitePaths(config);
         auth = new Auth(config, sitePaths);
@@ -150,8 +151,8 @@ describe('After creating an Auth object', () => {
         });
 
         it('returns a pair of jwt tokens (generated with correct params) when called with correct password', async () => {
-            const spiedJwtSign = jest.spyOn(jwt, 'sign');
-            const expectedTokens = { accessToken: 'access-token', refreshToken: 'refresh-token' };
+            const spiedJwtSign = jest.spyOn(jwt, 'jwtSign');
+            const expectedTokens = { id: 'thefirstuser', accessToken: 'access-token', accessTokenExpiry: 123, refreshToken: 'refresh-token' };
 
             spiedJwtSign.mockResolvedValueOnce('access-token')
                 .mockResolvedValueOnce('refresh-token');
@@ -165,7 +166,7 @@ describe('After creating an Auth object', () => {
         });
 
         it('generates jwt tokens using the appropriate parameters', async () => {
-            const spiedJwtSign = jest.spyOn(jwt, 'sign');
+            const spiedJwtSign = jest.spyOn(jwt, 'jwtSign');
 
             await auth.setPassword(user, userPassword);
             await auth.getTokensFromPassword(user, userPassword);
@@ -190,40 +191,40 @@ describe('After creating an Auth object', () => {
     describe('running getTokensFromRefreshToken', () => {
         it('throws error when called with an expired token', async () => {
             const payload = { id: 'notanid' };
-            const refreshToken = await jwt.sign(payload, config.jwtRefreshSecret, '-1s');
+            const refreshToken = await jwt.jwtSign(payload, config.jwtRefreshSecret, '-1s');
             await expect(auth.getTokensFromRefreshToken(refreshToken as string))
                 .rejects.toThrow('jwt expired');
         });
 
         it('throws error when called with an incorrectly signed token', async () => {
             const payload = { id: 'notanid' };
-            const refreshToken = await jwt.sign(payload, 'not-a-secret', config.jwtRefreshExpires);
+            const refreshToken = await jwt.jwtSign(payload, 'not-a-secret', config.jwtRefreshExpires);
             await expect(auth.getTokensFromRefreshToken(refreshToken as string))
                 .rejects.toThrow('invalid signature');
         });
 
         it('throws error when called for a token that does not contain an id', async () => {
             const payload = { notId: 'notanid' };
-            const refreshToken = await jwt.sign(payload, config.jwtRefreshSecret, config.jwtRefreshExpires);
+            const refreshToken = await jwt.jwtSign(payload, config.jwtRefreshSecret, config.jwtRefreshExpires);
             await expect(auth.getTokensFromRefreshToken(refreshToken as string)).
                 rejects.toThrow('id not stored in payload');
         });
 
         it('throws error when called for a token containing a non-existent id', async () => {
             const payload = { id: 'notanid' };
-            const refreshToken = await jwt.sign(payload, config.jwtRefreshSecret, config.jwtRefreshExpires);
+            const refreshToken = await jwt.jwtSign(payload, config.jwtRefreshSecret, config.jwtRefreshExpires);
             await expect(auth.getTokensFromRefreshToken(refreshToken as string))
                 .rejects.toThrow('user does not exist');
         });
 
         it('returns a pair of jwt tokens (generated with correct params) when called with correct refresh token', async () => {
-            const expectedTokens = { accessToken: 'access-token', refreshToken: 'refresh-token' };
+            const expectedTokens = { id: 'thefirstuser', accessToken: 'access-token', accessTokenExpiry: 123, refreshToken: 'refresh-token' };
 
             await auth.setPassword(user, userPassword);
 
             const { refreshToken } = await auth.getTokensFromPassword(user, userPassword);
 
-            const spiedJwtSign = jest.spyOn(jwt, 'sign');
+            const spiedJwtSign = jest.spyOn(jwt, 'jwtSign');
             spiedJwtSign.mockResolvedValueOnce('access-token')
                 .mockResolvedValueOnce('refresh-token');
 
@@ -237,7 +238,7 @@ describe('After creating an Auth object', () => {
             await auth.setPassword(user, userPassword);
             const { refreshToken } = await auth.getTokensFromPassword(user, userPassword);
 
-            const spiedJwtSign = jest.spyOn(jwt, 'sign');
+            const spiedJwtSign = jest.spyOn(jwt, 'jwtSign');
             await auth.getTokensFromRefreshToken(refreshToken as string);
 
             const [accessJwtCallPayload, accessJwtCallSecret, accessJwtCallExpires] = spiedJwtSign.mock.calls[0];
@@ -260,14 +261,14 @@ describe('After creating an Auth object', () => {
     describe('running getUserInfoFromAccessToken', () => {
         it('throws error when called with an expired token', async () => {
             const payload = { id: 'notanid' };
-            const accessToken = await jwt.sign(payload, config.jwtAccessSecret, '-1s');
+            const accessToken = await jwt.jwtSign(payload, config.jwtAccessSecret, '-1s');
             await expect(auth.getUserInfoFromAccessToken(accessToken as string))
                 .rejects.toThrow('jwt expired');
         });
 
         it('throws error when called with an incorrectly signed token', async () => {
             const payload = { id: 'notanid' };
-            const accessToken = await jwt.sign(payload, 'not-a-secret', config.jwtAccessExpires);
+            const accessToken = await jwt.jwtSign(payload, 'not-a-secret', config.jwtAccessExpires);
             await expect(auth.getUserInfoFromAccessToken(accessToken as string))
                 .rejects.toThrow('invalid signature');
         });

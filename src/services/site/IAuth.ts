@@ -8,7 +8,9 @@ export type User = {
 export type Token = string | undefined;
 
 export type Tokens = {
+    id: string;
     accessToken: Token;
+    accessTokenExpiry: number;
     refreshToken: Token;
 }
 

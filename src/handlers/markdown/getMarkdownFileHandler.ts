@@ -1,8 +1,8 @@
 import winston from 'winston';
 import fs from 'fs';
 import { Request, Response } from 'express';
-import { RequestHandler } from './RequestHandler';
-import { IMarkdown } from '../services';
+import { RequestHandler } from '../RequestHandler';
+import { IMarkdown } from '../../services';
 
 export const createGetMarkdownFileHandler = (markdown: IMarkdown, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
     const { mdPath } = req.params;

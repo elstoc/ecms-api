@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import winston from 'winston';
-import { IAuth } from '../services';
-import { RequestHandler } from './RequestHandler';
+import { IAuth } from '../../services';
+import { RequestHandler } from '../RequestHandler';
 
 export const createPostAuthLoginHandler = (auth: IAuth, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
     logger.info('logging in');

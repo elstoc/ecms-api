@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import winston from 'winston';
-import { IAuth, User } from '../services';
-import { RequestHandler } from './RequestHandler';
+import { IAuth, User } from '../../services';
+import { RequestHandler } from '../RequestHandler';
 
 export const createGetAuthTestHandler = (auth: IAuth, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
     const authHeaders = req.headers['authorization'];

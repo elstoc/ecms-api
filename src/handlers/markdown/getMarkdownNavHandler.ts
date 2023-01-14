@@ -1,7 +1,7 @@
 import winston from 'winston';
 import { Request, Response } from 'express';
-import { RequestHandler } from './RequestHandler';
-import { Markdown } from '../services';
+import { RequestHandler } from '../RequestHandler';
+import { Markdown } from '../../services';
 
 export const createGetMarkdownNavHandler = (markdown: Markdown, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
     const { rootPath } = req.params;

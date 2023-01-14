@@ -1,7 +1,7 @@
 import winston from 'winston';
 import { Request, Response } from 'express';
-import { RequestHandler } from './RequestHandler';
-import { Gallery } from '../services';
+import { RequestHandler } from '../RequestHandler';
+import { Gallery } from '../../services';
 
 export const createGetImageListHandler = (gallery: Gallery, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
     try {

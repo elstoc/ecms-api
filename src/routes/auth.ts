@@ -1,4 +1,5 @@
 import express, { Router } from 'express';
+import cookieParser from 'cookie-parser';
 
 import { RequestHandler } from '../handlers';
 
@@ -24,6 +25,7 @@ export const getAuthRouter = (
 
     router.post(
         '/refresh',
+        cookieParser(),
         postAuthRefreshHandler
     );
 

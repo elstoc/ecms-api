@@ -35,7 +35,7 @@ const start = async () => {
     const getMarkdownNavHandler = createGetMarkdownNavHandler(markdown, logger);
     const getImageListHandler = createGetImageListHandler(gallery, logger);
     const postAuthLoginHandler = createPostAuthLoginHandler(auth, logger);
-    const postAuthRefreshHandler = createPostAuthRefreshHandler();
+    const postAuthRefreshHandler = createPostAuthRefreshHandler(auth, logger);
     const postAuthLogoutHandler = createPostAuthLogoutHandler();
     const postAuthChangePasswordHandler = createPostAuthChangePasswordHandler(auth, logger);
 

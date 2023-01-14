@@ -36,7 +36,7 @@ const start = async () => {
     const getImageListHandler = createGetImageListHandler(gallery, logger);
     const postAuthLoginHandler = createPostAuthLoginHandler(auth, logger);
     const postAuthRefreshHandler = createPostAuthRefreshHandler(auth, logger);
-    const postAuthLogoutHandler = createPostAuthLogoutHandler();
+    const postAuthLogoutHandler = createPostAuthLogoutHandler(logger);
     const postAuthChangePasswordHandler = createPostAuthChangePasswordHandler(auth, logger);
 
     const galleryRouter = getGalleryRouter(getImageFileHandler, getImageListHandler);

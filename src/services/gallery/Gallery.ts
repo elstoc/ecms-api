@@ -28,16 +28,16 @@ export class Gallery implements IGallery {
     }
 
     private async getImageMetadata(uiPath: string): Promise<ImageData> {
-        const image = this.getImage(uiPath);
+        const image = this.getGalleryImage(uiPath);
         return await image.getMetadata();
     }
 
     public async resizeImageAndGetPath(uiPath: string, size: ImageSize): Promise<string> {
-        const image = this.getImage(uiPath);
+        const image = this.getGalleryImage(uiPath);
         return await image.resizeAndGetPath(size);
     }
 
-    private getImage(uiPath: string): GalleryImage {
+    private getGalleryImage(uiPath: string): GalleryImage {
         let image = this.imageCache[uiPath];
         if (!image) {
             image = new GalleryImage(this.paths, uiPath);

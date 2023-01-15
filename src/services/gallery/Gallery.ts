@@ -13,9 +13,9 @@ export class Gallery implements IGallery {
     ) { }
 
     public async getMetadata(uiPath: string, limit?: number): Promise<GalleryData> {
-        const galleryDir = this.paths.getContentPathIfExists(uiPath);
+        const galleryFullPath = this.paths.getContentPathIfExists(uiPath);
 
-        const imageFileNames = (await this.getJpegFileNames(galleryDir)).sort().reverse();
+        const imageFileNames = (await this.getJpegFileNames(galleryFullPath)).sort().reverse();
         const imageCount = imageFileNames.length;
 
         const imageList = await Promise.all(

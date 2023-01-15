@@ -8,13 +8,13 @@ import { IMarkdownPage } from './IMarkdownPage';
 
 export class MarkdownPage implements IMarkdownPage {
     private paths: SitePaths;
-    private relPath: string;
+    private uiPath: string;
     private sourceFileModifiedTimeForCache = 0;
     private metadata?: { [key: string]: string };
 
-    public constructor(paths: SitePaths, relPath: string) {
+    public constructor(paths: SitePaths, uiPath: string) {
         this.paths = paths;
-        this.relPath = relPath;
+        this.uiPath = uiPath;
         this.clearCacheIfOutdated();
     }
 
@@ -35,7 +35,7 @@ export class MarkdownPage implements IMarkdownPage {
     }
 
     public getContentPath(): string {
-        const fullPath = this.paths.getContentPath(this.relPath.replace(/^\//,''));
+        const fullPath = this.paths.getContentPath(this.uiPath.replace(/^\//,''));
         return this.extantDirectory(fullPath)
             ? path.resolve(fullPath, 'index.md')
             : `${fullPath}.md`;
@@ -56,8 +56,8 @@ export class MarkdownPage implements IMarkdownPage {
 
         const yaml = await this.parseFrontMatter();
         this.metadata = {
-            uiPath: this.relPath,
-            title: yaml?.title || path.basename(this.relPath)
+            uiPath: this.uiPath,
+            title: yaml?.title || path.basename(this.uiPath)
         };
     }
     

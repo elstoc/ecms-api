@@ -41,8 +41,8 @@ describe('That Markdown.getSourcePath', () => {
     });
 
     it('executes getContentPath on MarkdownPage', () => {
-        (MarkdownPage as jest.Mock).mockImplementation((_, relPath) => ({
-            getContentPath: () => `/path/to/content/${relPath}`
+        (MarkdownPage as jest.Mock).mockImplementation((_, uiPath) => ({
+            getContentPath: () => `/path/to/content/${uiPath}`
         }));
 
         const path = markdown.getSourcePath('path/to/file');
@@ -58,8 +58,8 @@ describe('That Markdown.getNavData', () => {
         sitePaths = new SitePaths(config);
         markdown = new Markdown(sitePaths);
 
-        (MarkdownPage as jest.Mock).mockImplementation((_, relPath) => ({
-            getMetadata: () => ({ path: relPath })
+        (MarkdownPage as jest.Mock).mockImplementation((_, uiPath) => ({
+            getMetadata: () => ({ path: uiPath })
         }));
 
     });

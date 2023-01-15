@@ -141,7 +141,7 @@ describe('That MarkdownPage.getMetadata', () => {
         expect(pageMeta).toStrictEqual(expectedPageMeta);
     });
 
-    it('Returns basename of relPath if called on non-existing markdown file', async () => {
+    it('Returns basename of uiPath if called on non-existing markdown file', async () => {
         (fs.existsSync as jest.Mock).mockReturnValue(false);
         const page = new MarkdownPage(sitePaths, 'path/to/file');
         const expectedPageMeta = {

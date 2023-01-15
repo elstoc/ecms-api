@@ -13,14 +13,14 @@ const RESIZE_OPTIONS = {
 
 export class GalleryImage implements IGalleryImage {
     private paths: SitePaths;
-    private relPath: string;
+    private uiPath: string;
     private sourceFileModifiedTimeForCache = 0;
     private thumbDimensions?: Dimensions;
     private exif?: { [key: string]: string | undefined };
 
-    public constructor(paths: SitePaths, relPath: string) {
+    public constructor(paths: SitePaths, uiPath: string) {
         this.paths = paths;
-        this.relPath = relPath;
+        this.uiPath = uiPath;
         this.clearCacheIfOutdated();
     }
     
@@ -45,9 +45,9 @@ export class GalleryImage implements IGalleryImage {
 
     private getFullPath(size: string): string {
         if (size === 'source') {
-            return this.paths.getContentPath(this.relPath);
+            return this.paths.getContentPath(this.uiPath);
         }
-        const [dirName, baseName] = [path.dirname(this.relPath), path.basename(this.relPath)];
+        const [dirName, baseName] = [path.dirname(this.uiPath), path.basename(this.uiPath)];
         return this.paths.getCachePath(dirName, size, baseName);
     }
 
@@ -63,7 +63,7 @@ export class GalleryImage implements IGalleryImage {
         }
 
         return {
-            fileName: path.basename(this.relPath),
+            fileName: path.basename(this.uiPath),
             exif: this.exif,
             sourceModificationTime: this.sourceFileModifiedTimeForCache,
             thumbDimensions: this.thumbDimensions

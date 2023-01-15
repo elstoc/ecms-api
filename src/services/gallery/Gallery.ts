@@ -12,8 +12,8 @@ export class Gallery implements IGallery {
         private paths: SitePaths
     ) { }
 
-    public async getMetadata(relPath: string, limit?: number): Promise<GalleryData> {
-        const galleryDir = this.paths.getContentPathIfExists(relPath);
+    public async getMetadata(uiPath: string, limit?: number): Promise<GalleryData> {
+        const galleryDir = this.paths.getContentPathIfExists(uiPath);
 
         const imageFileNames = (await this.getJpegFileNames(galleryDir)).sort().reverse();
         const imageCount = imageFileNames.length;
@@ -21,27 +21,27 @@ export class Gallery implements IGallery {
         const imageList = await Promise.all(
             imageFileNames
                 .slice(0, limit)
-                .map((fileName) => this.getImageMetadata(`${relPath}/${fileName}`))
+                .map((fileName) => this.getImageMetadata(`${uiPath}/${fileName}`))
         );
 
         return { imageCount, imageList };
     }
 
-    private async getImageMetadata(relPath: string): Promise<ImageData> {
-        const image = this.getImage(relPath);
+    private async getImageMetadata(uiPath: string): Promise<ImageData> {
+        const image = this.getImage(uiPath);
         return await image.getMetadata();
     }
 
-    public async resizeImageAndGetPath(relPath: string, size: ImageSize): Promise<string> {
-        const image = this.getImage(relPath);
+    public async resizeImageAndGetPath(uiPath: string, size: ImageSize): Promise<string> {
+        const image = this.getImage(uiPath);
         return await image.resizeAndGetPath(size);
     }
 
-    private getImage(relPath: string): GalleryImage {
-        let image = this.imageCache[relPath];
+    private getImage(uiPath: string): GalleryImage {
+        let image = this.imageCache[uiPath];
         if (!image) {
-            image = new GalleryImage(this.paths, relPath);
-            this.imageCache[relPath] = image;
+            image = new GalleryImage(this.paths, uiPath);
+            this.imageCache[uiPath] = image;
         }
         return image;
     }

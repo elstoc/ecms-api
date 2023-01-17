@@ -1,9 +1,7 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import fs from 'fs';
 
-import { GalleryImage } from './GalleryImage';
-import { Gallery } from './Gallery';
-import { SitePaths } from '../site/SitePaths';
+import { Gallery, GalleryImage, SitePaths } from '../../../src/services';
 
 jest.mock('fs', () => ({
     existsSync: jest.fn(),
@@ -12,7 +10,7 @@ jest.mock('fs', () => ({
     }
 }));
 
-jest.mock('./GalleryImage');
+jest.mock('../../../src/services/gallery/GalleryImage');
 
 const config = {
     cacheDir: '/path/to/cache',

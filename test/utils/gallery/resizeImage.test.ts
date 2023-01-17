@@ -1,5 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { resizeImage } from './resizeImage';
+import { resizeImage } from '../../../src/utils';
 import * as gm from 'gm';
 
 jest.mock('gm');

@@ -1,5 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { getExif } from './getExif';
+import { getExif } from '../../../src/utils';
 import ExifReader from 'exifreader';
 
 describe('That getExif', () => {

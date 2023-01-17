@@ -1,10 +1,9 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 /* eslint-disable  @typescript-eslint/no-unused-vars */
 import fs from 'fs';
-import { Auth } from './Auth';
-import * as hash from '../../utils/site/hash';
-import * as jwt from '../../utils/site/jwt';
-import { SitePaths } from './SitePaths';
+import { Auth, SitePaths } from '../../../src/services';
+import * as hash from '../../../src/utils/site/hash';
+import * as jwt from '../../../src/utils/site/jwt';
 
 jest.mock('fs');
 

@@ -1,6 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import * as sizeOfSync from 'image-size';
-import { getImageDimensions } from './getImageDimensions';
+import { getImageDimensions } from '../../../src/utils';
 
 jest.mock('image-size');
 

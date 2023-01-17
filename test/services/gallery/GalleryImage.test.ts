@@ -1,13 +1,11 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import fs from 'fs';
 
-import { GalleryImage } from './GalleryImage';
-import { getExif, resizeImage, getImageDimensions } from '../../utils';
-
-import { SitePaths } from '../site/SitePaths';
+import { GalleryImage, SitePaths } from '../../../src/services/';
+import { getExif, resizeImage, getImageDimensions } from '../../../src/utils';
 
 jest.mock('fs');
-jest.mock('../../utils');
+jest.mock('../../../src/utils');
 
 const config = {
     cacheDir: '/path/to/cache',

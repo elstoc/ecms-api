@@ -2,9 +2,7 @@
 
 import fs from 'fs';
 
-import { MarkdownPage } from './MarkdownPage';
-import { SitePaths } from '../site';
-import { Markdown } from './Markdown';
+import { Markdown, MarkdownPage, SitePaths } from '../../../src/services';
 
 jest.mock('fs', () => ({
     existsSync: jest.fn(),
@@ -14,7 +12,7 @@ jest.mock('fs', () => ({
     }
 }));
 
-jest.mock('./MarkdownPage');
+jest.mock('../../../src/services/markdown/MarkdownPage');
 
 const config = {
     cacheDir: '/path/to/cache',

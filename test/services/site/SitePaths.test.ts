@@ -1,5 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { SitePaths } from './SitePaths';
+import { SitePaths } from '../../../src/services';
 import fs from 'fs';
 
 jest.mock('fs');

@@ -1,4 +1,4 @@
-import { splitFrontMatter } from './splitFrontMatter';
+import { splitFrontMatter } from '../../../src/utils';
 
 describe('That splitFrontMatter', () => {
     it('returns entire string as content if there is no frontmatter', () => {

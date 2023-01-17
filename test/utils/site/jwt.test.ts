@@ -1,6 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
-import * as jwt from './jwt';
+import * as jwt from '../../../src/utils';
 
 describe('That jwt', () => {
     it('signs and verifies a token signed with the appropriate secret', async () => {

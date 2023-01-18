@@ -16,8 +16,9 @@
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "include": [
-    "src"
-, "test/services/gallery/GalleryImage.test.ts", "test/services/markdown/Markdown.test.ts", "test/services/markdown/MarkdownPage.test.ts", "test/services/site/Auth.test.ts", "test/services/site/SitePaths.test.ts", "test/utils/gallery/getExif.test.ts", "test/utils/gallery/getImageDimensions.test.ts", "test/utils/gallery/resizeImage.test.ts", "test/utils/markdown/splitFrontMatter.test.ts", "test/utils/site/hash.test.ts", "test/utils/site/jwt.test.ts"  ],
+    "src",
+    "test"
+  ],
   "exclude": [
     "node_modules",
     "dist",

@@ -148,6 +148,7 @@ describe('That GalleryImage.getMetadata', () => {
     it('retrieves and returns expected data from image files on first run with no thumb (thumb file resized)', async () => {
         const expectedMetadata = {
             fileName: 'image.jpg',
+            description: 'my image',
             sourceModificationTime: 5000,
             exif: { title: 'my image', ISO: '1000' },
             thumbDimensions: { width: 100, height: 200 }
@@ -168,6 +169,7 @@ describe('That GalleryImage.getMetadata', () => {
     it('returns identical metadata on second run without resizing and using cached data', async () => {
         const expectedMetadata = {
             fileName: 'image.jpg',
+            description: 'my image',
             sourceModificationTime: 5000,
             exif: { title: 'my image', ISO: '1000' },
             thumbDimensions: { width: 100, height: 200 }
@@ -192,6 +194,7 @@ describe('That GalleryImage.getMetadata', () => {
     it('resizes thumb, re-reads exif/dimensions, when called a second time and source has changed', async () => {
         const expectedMetadata = {
             fileName: 'image.jpg',
+            description: 'my image',
             sourceModificationTime: 5000,
             exif: { title: 'my image', ISO: '1000' },
             thumbDimensions: { width: 100, height: 200 }
@@ -199,6 +202,7 @@ describe('That GalleryImage.getMetadata', () => {
 
         const expectedMetadata2 = {
             fileName: 'image.jpg',
+            description: 'my image title',
             sourceModificationTime: 7000,
             exif: { title: 'my image title', ISO: '2000' },
             thumbDimensions: { width: 200, height: 300 }
@@ -226,4 +230,24 @@ describe('That GalleryImage.getMetadata', () => {
         expect(resizeImage).toBeCalledTimes(2);
         expect(getImageDimensions).toBeCalledTimes(2);
     });
+
+    it('appends the date taken to the image description if present in exif', async () => {
+        (getExif as jest.Mock).mockReturnValue({ title: 'my image', ISO: '1000', dateTaken: '2012-03-15T12:49:34.000Z' });
+        const expectedMetadata = {
+            fileName: 'image.jpg',
+            description: 'my image (Mar 2012)',
+            sourceModificationTime: 5000,
+            exif: { title: 'my image', ISO: '1000', dateTaken: '2012-03-15T12:49:34.000Z' },
+            thumbDimensions: { width: 100, height: 200 }
+        };
+
+        (fs.statSync as jest.Mock).mockImplementation((filePath: string) => (
+            filePath.startsWith('/path/to/cache') ? { mtimeMs: 0 } : { mtimeMs: 5000 }
+        ));
+
+        const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
+        const metadata = await galleryImage.getMetadata();
+        expect(metadata).toStrictEqual(expectedMetadata);
+    });
+
 });

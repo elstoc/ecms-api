@@ -17,6 +17,7 @@ export class GalleryImage implements IGalleryImage {
     private sourceFileModifiedTimeForCache = 0;
     private thumbDimensions?: Dimensions;
     private exif?: { [key: string]: string | undefined };
+    private description?: string;
 
     public constructor(paths: SitePaths, uiPath: string) {
         this.paths = paths;
@@ -30,6 +31,7 @@ export class GalleryImage implements IGalleryImage {
             throw new Error(`File ${this.getFullPath('source')} does not exist`);
         } else if (sourceFileModifiedTime !== this.sourceFileModifiedTimeForCache) {
             this.exif = undefined;
+            this.description = undefined;
             this.thumbDimensions = undefined;
             this.sourceFileModifiedTimeForCache = sourceFileModifiedTime;
         }
@@ -64,6 +66,7 @@ export class GalleryImage implements IGalleryImage {
 
         return {
             fileName: path.basename(this.uiPath),
+            description: this.description,
             exif: this.exif,
             sourceModificationTime: this.sourceFileModifiedTimeForCache,
             thumbDimensions: this.thumbDimensions
@@ -80,6 +83,12 @@ export class GalleryImage implements IGalleryImage {
     private async refreshExif(): Promise<void> {
         if (!this.exif) {
             this.exif = await getExif(this.getFullPath('source'));
+            this.description = this.exif.title || '';
+
+            if (this.exif.dateTaken) {
+                const exifDate = new Date(this.exif.dateTaken);
+                this.description += ` (${exifDate.toLocaleDateString('default', { month: 'short' })} ${exifDate.getFullYear()})`;
+            }
         }
     }
 

@@ -8,9 +8,10 @@ export type Dimensions = {
 export type ImageData = {
     fileName: string;
     description?: string;
-    sourceModificationTime: number;
     exif: { [key: string]: string | undefined };
     thumbDimensions: Dimensions;
+    thumbSrcUrl?: string;
+    fhdSrcUrl?: string;
 }
 
 export interface IGalleryImage {

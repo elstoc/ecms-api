@@ -18,6 +18,8 @@ export class GalleryImage implements IGalleryImage {
     private thumbDimensions?: Dimensions;
     private exif?: { [key: string]: string | undefined };
     private description?: string;
+    private thumbSrcUrl?: string;
+    private fhdSrcUrl?: string;
 
     public constructor(paths: SitePaths, uiPath: string) {
         this.paths = paths;
@@ -34,6 +36,8 @@ export class GalleryImage implements IGalleryImage {
             this.description = undefined;
             this.thumbDimensions = undefined;
             this.sourceFileModifiedTimeForCache = sourceFileModifiedTime;
+            this.thumbSrcUrl = undefined;
+            this.fhdSrcUrl = undefined;
         }
     }
 
@@ -68,8 +72,9 @@ export class GalleryImage implements IGalleryImage {
             fileName: path.basename(this.uiPath),
             description: this.description,
             exif: this.exif,
-            sourceModificationTime: this.sourceFileModifiedTimeForCache,
-            thumbDimensions: this.thumbDimensions
+            thumbDimensions: this.thumbDimensions,
+            thumbSrcUrl: this.thumbSrcUrl,
+            fhdSrcUrl: this.fhdSrcUrl
         };
     }
 
@@ -89,6 +94,8 @@ export class GalleryImage implements IGalleryImage {
                 const exifDate = new Date(this.exif.dateTaken);
                 this.description += ` (${exifDate.toLocaleDateString('default', { month: 'short' })} ${exifDate.getFullYear()})`;
             }
+            this.thumbSrcUrl = `${this.paths.getUrl()}/gallery/image/${this.uiPath}?id=${this.sourceFileModifiedTimeForCache}&size=thumb`;
+            this.fhdSrcUrl = `${this.paths.getUrl()}/gallery/image/${this.uiPath}?id=${this.sourceFileModifiedTimeForCache}&size=fhd`;
         }
     }
 

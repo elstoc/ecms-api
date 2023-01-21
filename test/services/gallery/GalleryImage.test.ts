@@ -9,7 +9,8 @@ jest.mock('../../../src/utils');
 
 const config = {
     cacheDir: '/path/to/cache',
-    contentDir: '/path/to/content'
+    contentDir: '/path/to/content',
+    url: 'site-url'
 } as any;
 
 describe('That GalleryImage constructor', () => {
@@ -149,9 +150,10 @@ describe('That GalleryImage.getMetadata', () => {
         const expectedMetadata = {
             fileName: 'image.jpg',
             description: 'my image',
-            sourceModificationTime: 5000,
             exif: { title: 'my image', ISO: '1000' },
-            thumbDimensions: { width: 100, height: 200 }
+            thumbDimensions: { width: 100, height: 200 },
+            thumbSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=5000&size=thumb',
+            fhdSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=5000&size=fhd'
         };
 
         (fs.statSync as jest.Mock).mockImplementation((filePath: string) => (
@@ -170,9 +172,10 @@ describe('That GalleryImage.getMetadata', () => {
         const expectedMetadata = {
             fileName: 'image.jpg',
             description: 'my image',
-            sourceModificationTime: 5000,
             exif: { title: 'my image', ISO: '1000' },
-            thumbDimensions: { width: 100, height: 200 }
+            thumbDimensions: { width: 100, height: 200 },
+            thumbSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=5000&size=thumb',
+            fhdSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=5000&size=fhd'
         };
 
         (fs.statSync as jest.Mock).mockImplementation((filePath: string) => (
@@ -195,17 +198,19 @@ describe('That GalleryImage.getMetadata', () => {
         const expectedMetadata = {
             fileName: 'image.jpg',
             description: 'my image',
-            sourceModificationTime: 5000,
             exif: { title: 'my image', ISO: '1000' },
-            thumbDimensions: { width: 100, height: 200 }
+            thumbDimensions: { width: 100, height: 200 },
+            thumbSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=5000&size=thumb',
+            fhdSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=5000&size=fhd'
         };
 
         const expectedMetadata2 = {
             fileName: 'image.jpg',
             description: 'my image title',
-            sourceModificationTime: 7000,
             exif: { title: 'my image title', ISO: '2000' },
-            thumbDimensions: { width: 200, height: 300 }
+            thumbDimensions: { width: 200, height: 300 },
+            thumbSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=7000&size=thumb',
+            fhdSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=7000&size=fhd'
         };
 
         (fs.statSync as jest.Mock).mockImplementation((filePath: string) => (
@@ -236,9 +241,10 @@ describe('That GalleryImage.getMetadata', () => {
         const expectedMetadata = {
             fileName: 'image.jpg',
             description: 'my image (Mar 2012)',
-            sourceModificationTime: 5000,
             exif: { title: 'my image', ISO: '1000', dateTaken: '2012-03-15T12:49:34.000Z' },
-            thumbDimensions: { width: 100, height: 200 }
+            thumbDimensions: { width: 100, height: 200 },
+            thumbSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=5000&size=thumb',
+            fhdSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=5000&size=fhd'
         };
 
         (fs.statSync as jest.Mock).mockImplementation((filePath: string) => (

@@ -6,11 +6,17 @@ export class SitePaths {
     private contentDir: string;
     private cacheDir: string;
     private adminDir: string;
+    private url: string;
 
     public constructor(config: Config) {
         this.contentDir = config.contentDir;
         this.cacheDir = config.cacheDir;
         this.adminDir = config.adminDir;
+        this.url = config.url;
+    }
+
+    public getUrl(): string {
+        return this.url;
     }
 
     public getContentPath(...paths: string[]): string {

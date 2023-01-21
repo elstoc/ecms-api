@@ -7,7 +7,8 @@ jest.mock('fs');
 const config = {
     cacheDir: '/path/to/cache',
     contentDir: '/path/to/content',
-    adminDir: '/path/to/admin'
+    adminDir: '/path/to/admin',
+    url: 'site-url'
 } as any;
 
 describe('That SitePaths', () => {
@@ -15,6 +16,12 @@ describe('That SitePaths', () => {
 
     beforeEach(() => {
         sitePaths = new SitePaths(config);
+    });
+
+    describe('getUrl', () => {
+        it('returns the url from config', () => {
+            expect(sitePaths.getUrl()).toEqual('site-url');
+        });
     });
 
     describe('getContentPath', () => {

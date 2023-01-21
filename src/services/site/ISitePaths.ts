@@ -1,4 +1,5 @@
 export interface ISitePaths {
+    getUrl(): string;
     getContentPath(...paths: string[]): string,
     getContentPathIfExists(...paths: string[]): string,
     getCachePath(...paths: string[]): string,

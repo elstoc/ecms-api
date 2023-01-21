@@ -4,7 +4,7 @@ import { Config } from './utils';
 
 export const createExpressApp = (galleryRouter: Router, markdownRouter: Router, authRouter: Router, config: Config): Express => {
     const app = express();
-    const allowedOrigins = [config.uiSiteUrl];
+    const allowedOrigins = [config.uiUrl];
 
     const options: cors.CorsOptions = { origin: allowedOrigins };
     app.use(cors(options));

@@ -1,6 +1,7 @@
 export type Config = {
+    url: string;
     port: number;
-    uiSiteUrl: string;
+    uiUrl: string;
     contentDir: string;
     cacheDir: string;
     adminDir: string;
@@ -14,8 +15,9 @@ export type Config = {
 
 export const getConfig = (): Config => {
     return {
+        url: process.env.URL || 'http://localhost:3123',
         port: parseInt(process.env.PORT || '3123'),
-        uiSiteUrl: process.env.UI_SITE_URL || '',
+        uiUrl: process.env.UI_URL || '',
         contentDir: process.env.CONTENT_DIR || '',
         cacheDir: process.env.CACHE_DIR || '',
         adminDir: process.env.ADMIN_DIR || '',

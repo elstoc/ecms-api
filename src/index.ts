@@ -5,10 +5,11 @@ import { createExpressApp } from './app';
 import {
     createGetImageFileHandler, createGetImageListHandler, createGetMarkdownFileHandler,
     createGetMarkdownNavHandler, createPostAuthChangePasswordHandler, createPostAuthLoginHandler,
-    createPostAuthLogoutHandler, createPostAuthRefreshHandler, createGetAuthTestHandler
+    createPostAuthLogoutHandler, createPostAuthRefreshHandler, createGetAuthTestHandler,
+    createGetSiteNavHandler
 } from './handlers';
-import { getAuthRouter, getGalleryRouter, getMarkdownRouter } from './routes';
-import { Auth, Gallery, Markdown, SitePaths } from './services';
+import { getSiteRouter, getAuthRouter, getGalleryRouter, getMarkdownRouter } from './routes';
+import { Auth, Gallery, Markdown, Site, SitePaths } from './services';
 import { getConfig } from './utils';
 
 if (process.env.NODE_ENV !== 'production') {
@@ -26,10 +27,12 @@ const start = async () => {
 
     const config = getConfig();
     const sitePaths = new SitePaths(config);
+    const site = new Site(sitePaths);
     const gallery = new Gallery(sitePaths);
     const markdown = new Markdown(sitePaths);
     const auth = new Auth(config, sitePaths);
 
+    const getSiteNavHandler = createGetSiteNavHandler(site, logger);
     const getImageFileHandler = createGetImageFileHandler(gallery);
     const getMarkdownFileHandler = createGetMarkdownFileHandler(markdown, logger);
     const getMarkdownNavHandler = createGetMarkdownNavHandler(markdown, logger);
@@ -43,8 +46,9 @@ const start = async () => {
     const galleryRouter = getGalleryRouter(getImageFileHandler, getImageListHandler);
     const markdownRouter = getMarkdownRouter(getMarkdownFileHandler, getMarkdownNavHandler);
     const authRouter = getAuthRouter(postAuthLoginHandler, postAuthRefreshHandler, postAuthLogoutHandler, postAuthChangePasswordHandler, getAuthTestHandler);
+    const siteRouter = getSiteRouter(getSiteNavHandler);
 
-    const app = createExpressApp(galleryRouter, markdownRouter, authRouter, config);
+    const app = createExpressApp(siteRouter, galleryRouter, markdownRouter, authRouter, config);
 
     const { port } = config;
 

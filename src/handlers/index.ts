@@ -7,4 +7,5 @@ export { createPostAuthChangePasswordHandler } from './auth/postAuthChangePasswo
 export { createPostAuthRefreshHandler } from './auth/postAuthRefreshHandler';
 export { createPostAuthLogoutHandler } from './auth/postAuthLogoutHandler';
 export { createGetAuthTestHandler } from './auth/getAuthTestHandler';
+export { createGetSiteNavHandler } from './site/getSiteNavHandler';
 export { RequestHandler } from './RequestHandler';

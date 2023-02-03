@@ -12,7 +12,7 @@ export class Site implements ISite {
         private paths: SitePaths,
     ) { }
 
-    public getNavData(): ComponentMetadata[] {
+    public getComponentList(): ComponentMetadata[] {
         const files = fs.readdirSync(this.paths.getContentPath());
         return files.filter((file) => file.endsWith('.yaml'))
             .map((file) => this.getComponentMetadata(path.basename(file,'.yaml')));

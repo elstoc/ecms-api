@@ -27,9 +27,9 @@ describe('Site.getNavData', () => {
     });
 
     it('only creates new SiteComponent instances for files it has not seen before', () => {
-        site.getNavData();
+        site.getComponentList();
         expect(SiteComponent).toBeCalledTimes(3);
-        site.getNavData();
+        site.getComponentList();
         expect(SiteComponent).toBeCalledTimes(3);
     });
 
@@ -44,7 +44,7 @@ describe('Site.getNavData', () => {
             { uiPath: 'component03' }
         ];
 
-        const actualNavData = site.getNavData();
+        const actualNavData = site.getComponentList();
 
         expect(actualNavData).toStrictEqual(expectedNavData);
     });

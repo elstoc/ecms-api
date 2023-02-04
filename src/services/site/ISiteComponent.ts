@@ -5,7 +5,7 @@ export type ComponentMetadata = {
     type: string;
     weight?: number;
     restrict?: string;
-    [key: string]: number | string | undefined;
+    [key: string]: boolean | number | string | undefined;
 }
 
 export interface ISiteComponent {

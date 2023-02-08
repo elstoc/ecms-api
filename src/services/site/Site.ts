@@ -1,19 +1,19 @@
 import fs from 'fs';
 import path from 'path';
-import { SitePaths } from '..';
 import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
 import { ISite } from './ISite';
 import { SiteComponent } from './SiteComponent';
+import { Config } from '../../utils';
 
 export class Site implements ISite {
     private componentCache: { [key: string]: ISiteComponent } = {};
 
     constructor(
-        private paths: SitePaths,
+        private config: Config
     ) { }
 
     public getComponentList(): ComponentMetadata[] {
-        const files = fs.readdirSync(this.paths.getContentPath());
+        const files = fs.readdirSync(this.config.contentDir);
         return files.filter((file) => file.endsWith('.yaml'))
             .map((file) => this.getComponentMetadata(path.basename(file,'.yaml')));
     }
@@ -24,7 +24,7 @@ export class Site implements ISite {
     }
 
     private getSiteComponent(apiPath: string): ISiteComponent {
-        this.componentCache[apiPath] ??= new SiteComponent(this.paths, apiPath);
+        this.componentCache[apiPath] ??= new SiteComponent(this.config, apiPath);
         return this.componentCache[apiPath];
     }
 }

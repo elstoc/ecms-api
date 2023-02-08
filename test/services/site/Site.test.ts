@@ -1,6 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import fs from 'fs';
-import { SitePaths, Site, SiteComponent } from '../../../src/services';
+import { Site, SiteComponent } from '../../../src/services';
 
 jest.mock('fs');
 jest.mock('../../../src/services/site/SiteComponent');
@@ -11,12 +11,10 @@ const config = {
 } as any;
 
 describe('Site.getNavData', () => {
-    let sitePaths: SitePaths,
-        site: Site;
+    let site: Site;
     
     beforeEach(() => {
-        sitePaths = new SitePaths(config);
-        site = new Site(sitePaths);
+        site = new Site(config);
         (fs.readdirSync as jest.Mock).mockReturnValue([
             'component01.yaml',
             'component02.yaml',

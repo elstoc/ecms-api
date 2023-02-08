@@ -1,20 +1,24 @@
 import fs from 'fs';
+import path from 'path';
 import YAML from 'yaml';
+import { Config, pathIsDirectory, pathIsFile, pathModifiedTime } from '../../utils';
 
-import { SitePaths } from '../site';
 import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
 
 export class SiteComponent implements ISiteComponent {
-    private paths: SitePaths;
+    private config: Config;
     private apiPath: string;
     private sourceFileModifiedTimeForCache = 0;
     private metadata?: ComponentMetadata;
 
-    public constructor(paths: SitePaths, apiPath: string) {
-        this.paths = paths;
+    public constructor(config: Config, apiPath: string) {
+        this.config = config;
         this.apiPath = apiPath;
-        if (!fs.existsSync(this.paths.getContentPath(apiPath))) {
+        if (!pathIsDirectory(path.join(this.config.contentDir, apiPath))) {
             throw new Error(`A content directory does not exist for the path ${this.apiPath}`);
+        }
+        if (!pathIsFile(this.getContentPath())) {
+            throw new Error(`A yaml file does not exist for the path ${this.apiPath}`);
         }
         this.clearCacheIfOutdated();
     }
@@ -28,11 +32,11 @@ export class SiteComponent implements ISiteComponent {
     }
 
     private getFileModifiedTime(): number {
-        return fs.statSync(this.getContentPath()).mtimeMs;
+        return pathModifiedTime(this.getContentPath());
     }
 
     private getContentPath(): string {
-        return this.paths.getContentPathIfExists(`${this.apiPath}.yaml`);
+        return path.join(this.config.contentDir, `${this.apiPath}.yaml`);
     }
 
     public getMetadata(): ComponentMetadata {
@@ -46,7 +50,7 @@ export class SiteComponent implements ISiteComponent {
         if (this.metadata) return;
         const fullPath = this.getContentPath();
 
-        if (!fs.existsSync(fullPath)) {
+        if (!pathIsFile(fullPath)) {
             this.metadata = undefined;
         }
 

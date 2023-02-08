@@ -23,8 +23,7 @@ describe('When creating an Auth Object', () => {
     it('Loads users from the users file if it exists', () => {
         (fs.existsSync as jest.Mock).mockReturnValue(true);
         const mockReadFileSync = (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers, null, 4));
-        const sitePaths = new SitePaths(config);
-        const auth = new Auth(config, sitePaths);
+        const auth = new Auth(config);
         expect(mockReadFileSync).toBeCalledTimes(1);
         const readFromLocation = mockReadFileSync.mock.calls[0][0];
         expect(readFromLocation).toBe('/path/to/admin/users.json');
@@ -33,8 +32,7 @@ describe('When creating an Auth Object', () => {
     it('Does not load from the users file if it does not exist', () => {
         (fs.existsSync as jest.Mock).mockReturnValue(false);
         const mockReadFileSync = (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers, null, 4));
-        const sitePaths = new SitePaths(config);
-        const auth = new Auth(config, sitePaths);
+        const auth = new Auth(config);
         expect(mockReadFileSync).not.toBeCalled();
     });
 });
@@ -45,7 +43,6 @@ describe('After creating an Auth object', () => {
     const userRoles = ['admin'];
     const userPassword = 'This-is-my-password';
     let auth: Auth;
-    let sitePaths: SitePaths;
     let mockWriteFileSync: jest.Mock;
     
     beforeEach(() => {
@@ -53,8 +50,7 @@ describe('After creating an Auth object', () => {
         (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers, null, 4));
         jest.spyOn(jwt, 'jwtDecode').mockReturnValue({ exp: 123 });
         mockWriteFileSync = (fs.writeFileSync as jest.Mock);
-        sitePaths = new SitePaths(config);
-        auth = new Auth(config, sitePaths);
+        auth = new Auth(config);
     });
 
     describe('running createUser', () => {

@@ -1,11 +1,11 @@
 import fs from 'fs';
+import path from 'path';
 import { Config, jwtSign, jwtVerify, jwtDecode, hashPassword, verifyPasswordWithHash } from '../../utils';
-import { SitePaths } from './SitePaths';
 import { User, Token, Tokens, IAuth } from './IAuth';
 import { JwtPayload } from 'jsonwebtoken';
 
 export class Auth implements IAuth {
-    private sitePaths: SitePaths;
+    private config: Config;
     private jwtIssuer: string; //TODO: Add issuer validation
     private jwtAudience: string; //TODO: Add audience validation
     private jwtRefreshExpires: string;
@@ -15,7 +15,7 @@ export class Auth implements IAuth {
     private users: { [key: string]: User } = {};
     private usersFile = 'users.json';
 
-    public constructor(config: Config, sitePaths: SitePaths) {
+    public constructor(config: Config) {
         ({
             jwtIssuer: this.jwtIssuer,
             jwtAudience: this.jwtAudience,
@@ -25,12 +25,12 @@ export class Auth implements IAuth {
             jwtAccessSecret: this.jwtAccessSecret
         } = config);
 
-        this.sitePaths = sitePaths;
+        this.config = config;
         this.readUsersFromFile();
     }
 
     private readUsersFromFile(): void {
-        const fullPath = this.sitePaths.getAdminPath(this.usersFile);
+        const fullPath = path.join(this.config.adminDir, this.usersFile);
         if (fs.existsSync(fullPath)) {
             const usersJson = fs.readFileSync(fullPath, 'utf-8');
             this.users = JSON.parse(usersJson);
@@ -46,7 +46,7 @@ export class Auth implements IAuth {
     }
 
     private writeUsersToFile(): void {
-        const fullPath = this.sitePaths.getAdminPath(this.usersFile);
+        const fullPath = path.join(this.config.adminDir, this.usersFile);
         fs.writeFileSync(fullPath, JSON.stringify(this.users, null, 4));
     }
 

@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { Dimensions, IGalleryImage, ImageData, ImageSize } from './IGalleryImage';
-import { getExif, resizeImage, getImageDimensions } from '../../utils';
+import { getExif, resizeImage, getImageDimensions, pathModifiedTime } from '../../utils';
 
 import { SitePaths } from '../site/SitePaths';
 
@@ -42,11 +42,7 @@ export class GalleryImage implements IGalleryImage {
     }
 
     private getFileModifiedTime(size: string): number {
-        try {
-            return fs.statSync(this.getFullPath(size)).mtimeMs;
-        } catch {
-            return 0;
-        }
+        return pathModifiedTime(this.getFullPath(size));
     }
 
     private getFullPath(size: string): string {

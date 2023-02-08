@@ -1,7 +1,7 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 /* eslint-disable  @typescript-eslint/no-unused-vars */
 import fs from 'fs';
-import { Auth, SitePaths } from '../../../src/services';
+import { Auth } from '../../../src/services';
 import * as hash from '../../../src/utils/site/hash';
 import * as jwt from '../../../src/utils/site/jwt';
 

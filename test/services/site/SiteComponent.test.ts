@@ -16,112 +16,114 @@ const pathIsDirectoryMock = pathIsDirectory as jest.Mock;
 const pathIsFileMock = pathIsFile as jest.Mock;
 const pathModifiedTimeMock = pathModifiedTime as jest.Mock;
 
-describe('That SiteComponent constructor', () => {
-    beforeEach(() => {
-        pathModifiedTimeMock.mockReturnValue(1234);
+describe('SiteComponent', () => {
+    describe('constructor', () => {
+        beforeEach(() => {
+            pathModifiedTimeMock.mockReturnValue(1234);
+        });
+
+        it('throws an error if the content directory does not exist', () => {
+            pathIsDirectoryMock.mockReturnValueOnce(false);
+            expect(() => new SiteComponent(config, 'apipath')).toThrowError('A content directory does not exist for the path apipath');
+        });
+
+        it('throws an error if the component file does not exist', () => {
+            pathIsDirectoryMock.mockReturnValueOnce(true);
+            pathIsFileMock.mockReturnValueOnce(false);
+            expect(() => new SiteComponent(config, 'apipath')).toThrowError('A yaml file does not exist for the path apipath');
+        });
     });
 
-    it('throws an error if the content directory does not exist', () => {
-        pathIsDirectoryMock.mockReturnValueOnce(false);
-        expect(() => new SiteComponent(config, 'apipath')).toThrowError('A content directory does not exist for the path apipath');
-    });
+    describe('getMetadata', () => {
+        let component: SiteComponent;
 
-    it('throws an error if the component file does not exist', () => {
-        pathIsDirectoryMock.mockReturnValueOnce(true);
-        pathIsFileMock.mockReturnValueOnce(false);
-        expect(() => new SiteComponent(config, 'apipath')).toThrowError('A yaml file does not exist for the path apipath');
-    });
-});
+        beforeEach(() => {
+            pathModifiedTimeMock.mockReturnValue(1234);
+            pathIsFileMock.mockReturnValue(true);
+            pathIsDirectoryMock.mockReturnValue(true);
+        });
 
-describe('That SiteComponent.getMetadata', () => {
-    let component: SiteComponent;
+        it('attempts to parse component file yaml the first time it is called', () => {
+            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
+            const expectedMetadata = {
+                uiPath: 'test',
+                apiPath: 'my-component',
+                title: 'The Title',
+                type: 'gallery'
+            };
+            component = new SiteComponent(config, 'my-component');
 
-    beforeEach(() => {
-        pathModifiedTimeMock.mockReturnValue(1234);
-        pathIsFileMock.mockReturnValue(true);
-        pathIsDirectoryMock.mockReturnValue(true);
-    });
+            const actualMetadata = component.getMetadata();
 
-    it('attempts to parse component file yaml the first time it is called', () => {
-        (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
-        const expectedMetadata = {
-            uiPath: 'test',
-            apiPath: 'my-component',
-            title: 'The Title',
-            type: 'gallery'
-        };
-        component = new SiteComponent(config, 'my-component');
+            expect(fs.readFileSync).toBeCalledTimes(1);
+            expect(fs.readFileSync).toBeCalledWith('/path/to/content/my-component.yaml', 'utf-8');
+            expect(expectedMetadata).toStrictEqual(actualMetadata);
+        });
 
-        const actualMetadata = component.getMetadata();
+        it('does not attempt to parse component file the second time it is called', () => {
+            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
+            const expectedMetadata = {
+                uiPath: 'test',
+                apiPath: 'my-component',
+                title: 'The Title',
+                type: 'gallery'
+            };
+            component = new SiteComponent(config, 'my-component');
 
-        expect(fs.readFileSync).toBeCalledTimes(1);
-        expect(fs.readFileSync).toBeCalledWith('/path/to/content/my-component.yaml', 'utf-8');
-        expect(expectedMetadata).toStrictEqual(actualMetadata);
-    });
+            component.getMetadata();
+            const actualMetadataAgain = component.getMetadata();
 
-    it('does not attempt to parse component file the second time it is called', () => {
-        (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
-        const expectedMetadata = {
-            uiPath: 'test',
-            apiPath: 'my-component',
-            title: 'The Title',
-            type: 'gallery'
-        };
-        component = new SiteComponent(config, 'my-component');
+            expect(fs.readFileSync).toBeCalledTimes(1);
+            expect(expectedMetadata).toStrictEqual(actualMetadataAgain);
+        });
 
-        component.getMetadata();
-        const actualMetadataAgain = component.getMetadata();
+        it('attempts to re-parse component file if file becomes out of date', () => {
+            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
+            component = new SiteComponent(config, 'my-component');
 
-        expect(fs.readFileSync).toBeCalledTimes(1);
-        expect(expectedMetadata).toStrictEqual(actualMetadataAgain);
-    });
+            component.getMetadata();
+            pathModifiedTimeMock.mockReturnValue(9999);
+            component.getMetadata();
 
-    it('attempts to re-parse component file if file becomes out of date', () => {
-        (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
-        component = new SiteComponent(config, 'my-component');
+            expect(fs.readFileSync).toBeCalledTimes(2);
+        });
 
-        component.getMetadata();
-        pathModifiedTimeMock.mockReturnValue(9999);
-        component.getMetadata();
+        it('throws an error if the file does not contain any component type', () => {
+            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title');
+            component = new SiteComponent(config, 'my-component');
 
-        expect(fs.readFileSync).toBeCalledTimes(2);
-    });
+            expect(() => component.getMetadata()).toThrowError('Valid component type not found');
+        });
 
-    it('throws an error if the file does not contain any component type', () => {
-        (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title');
-        component = new SiteComponent(config, 'my-component');
+        it('throws an error if the file contains an invalid component type', () => {
+            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: notgallery');
+            component = new SiteComponent(config, 'my-component');
 
-        expect(() => component.getMetadata()).toThrowError('Valid component type not found');
-    });
+            expect(() => component.getMetadata()).toThrowError('Valid component type not found');
+        });
 
-    it('throws an error if the file contains an invalid component type', () => {
-        (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: notgallery');
-        component = new SiteComponent(config, 'my-component');
+        it('sets uiPath and title to apiPath if they do not exist', () => {
+            (fs.readFileSync as jest.Mock).mockReturnValue('type: gallery');
+            const expectedMetadata = {
+                uiPath: 'my-component',
+                apiPath: 'my-component',
+                title: 'my-component',
+                type: 'gallery'
+            };
+            component = new SiteComponent(config, 'my-component');
 
-        expect(() => component.getMetadata()).toThrowError('Valid component type not found');
-    });
+            const actualMetadata = component.getMetadata();
 
-    it('sets uiPath and title to apiPath if they do not exist', () => {
-        (fs.readFileSync as jest.Mock).mockReturnValue('type: gallery');
-        const expectedMetadata = {
-            uiPath: 'my-component',
-            apiPath: 'my-component',
-            title: 'my-component',
-            type: 'gallery'
-        };
-        component = new SiteComponent(config, 'my-component');
+            expect(fs.readFileSync).toBeCalledTimes(1);
+            expect(fs.readFileSync).toBeCalledWith('/path/to/content/my-component.yaml', 'utf-8');
+            expect(expectedMetadata).toStrictEqual(actualMetadata);
+        });
 
-        const actualMetadata = component.getMetadata();
+        it('throws an error if the file cannot be parsed', () => {
+            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath test\ntitle: The Title\ntype: notgallery');
+            component = new SiteComponent(config, 'my-component');
 
-        expect(fs.readFileSync).toBeCalledTimes(1);
-        expect(fs.readFileSync).toBeCalledWith('/path/to/content/my-component.yaml', 'utf-8');
-        expect(expectedMetadata).toStrictEqual(actualMetadata);
-    });
-
-    it('throws an error if the file cannot be parsed', () => {
-        (fs.readFileSync as jest.Mock).mockReturnValue('uiPath test\ntitle: The Title\ntype: notgallery');
-        component = new SiteComponent(config, 'my-component');
-
-        expect(() => component.getMetadata()).toThrowError();
+            expect(() => component.getMetadata()).toThrowError();
+        });
     });
 });

@@ -2,9 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { Dimensions, IGalleryImage, ImageData, ImageSize } from './IGalleryImage';
-import { getExif, resizeImage, getImageDimensions, pathModifiedTime } from '../../utils';
-
-import { SitePaths } from '../site/SitePaths';
+import { getExif, resizeImage, getImageDimensions, pathModifiedTime, Config } from '../../utils';
 
 const RESIZE_OPTIONS = {
     thumb: { width: 100000, height: 350, quality: 60 },
@@ -12,7 +10,7 @@ const RESIZE_OPTIONS = {
 };
 
 export class GalleryImage implements IGalleryImage {
-    private paths: SitePaths;
+    private config: Config;
     private uiPath: string;
     private sourceFileModifiedTimeForCache = 0;
     private thumbDimensions?: Dimensions;
@@ -21,8 +19,8 @@ export class GalleryImage implements IGalleryImage {
     private thumbSrcUrl?: string;
     private fhdSrcUrl?: string;
 
-    public constructor(paths: SitePaths, uiPath: string) {
-        this.paths = paths;
+    public constructor(config: Config, uiPath: string) {
+        this.config = config;
         this.uiPath = uiPath;
         this.clearCacheIfOutdated();
     }
@@ -47,10 +45,10 @@ export class GalleryImage implements IGalleryImage {
 
     private getFullPath(size: string): string {
         if (size === 'source') {
-            return this.paths.getContentPath(this.uiPath);
+            return path.join(this.config.contentDir, this.uiPath);
         }
         const [dirName, baseName] = [path.dirname(this.uiPath), path.basename(this.uiPath)];
-        return this.paths.getCachePath(dirName, size, baseName);
+        return path.join(this.config.cacheDir, dirName, size, baseName);
     }
 
     public async getMetadata(): Promise<ImageData> {
@@ -90,8 +88,8 @@ export class GalleryImage implements IGalleryImage {
                 const exifDate = new Date(this.exif.dateTaken);
                 this.description += ` (${exifDate.toLocaleDateString('default', { month: 'short' })} ${exifDate.getFullYear()})`;
             }
-            this.thumbSrcUrl = `${this.paths.getUrl()}/gallery/image/${this.uiPath}?id=${this.sourceFileModifiedTimeForCache}&size=thumb`;
-            this.fhdSrcUrl = `${this.paths.getUrl()}/gallery/image/${this.uiPath}?id=${this.sourceFileModifiedTimeForCache}&size=fhd`;
+            this.thumbSrcUrl = `${this.config.url}/gallery/image/${this.uiPath}?id=${this.sourceFileModifiedTimeForCache}&size=thumb`;
+            this.fhdSrcUrl = `${this.config.url}/gallery/image/${this.uiPath}?id=${this.sourceFileModifiedTimeForCache}&size=fhd`;
         }
     }
 

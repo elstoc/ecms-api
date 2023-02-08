@@ -1,7 +1,7 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import fs from 'fs';
 
-import { GalleryImage, SitePaths } from '../../../src/services/';
+import { GalleryImage } from '../../../src/services/';
 import { getExif, resizeImage, getImageDimensions, pathModifiedTime } from '../../../src/utils';
 
 jest.mock('fs');
@@ -18,19 +18,15 @@ const pathModifiedTimeMock = pathModifiedTime as jest.Mock;
 describe('GalleryImage', () => {
     describe('constructor', () => {
         it('Throws an error if the source image does not exist', () => {
-            const sitePaths = new SitePaths(config);
             pathModifiedTimeMock.mockReturnValue(0);
-            expect(() => new GalleryImage(sitePaths, 'gallery/image.jpg'))
+            expect(() => new GalleryImage(config, 'gallery/image.jpg'))
                 .toThrow('File /path/to/content/gallery/image.jpg does not exist');
 
         });
     });
 
     describe('resizeAndGetPath', () => {
-        let sitePaths: SitePaths;
-
         beforeEach(() => {
-            sitePaths = new SitePaths(config);
             pathModifiedTimeMock.mockReturnValue(1234);
         });
 
@@ -39,13 +35,13 @@ describe('GalleryImage', () => {
             'test',
             'something'
         ])('throws an error if the size description is not valid', async (size) => {
-            const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
             await expect(galleryImage.resizeAndGetPath(size as any))
                 .rejects.toThrow('Incorrect size description');
         });
 
         it('throws an error if the source image does not exist', async () => {
-            const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
             pathModifiedTimeMock.mockReturnValue(0);
             await expect(galleryImage.resizeAndGetPath('thumb'))
                 .rejects.toThrow('File /path/to/content/gallery/image.jpg does not exist');
@@ -55,7 +51,7 @@ describe('GalleryImage', () => {
             'thumb',
             'fhd'
         ])('returns the correct path when the size description is valid and source file exists', async (size) => {
-            const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
             await expect(galleryImage.resizeAndGetPath(size as any))
                 .resolves.toBe(`/path/to/cache/gallery/${size}/image.jpg`);
         });
@@ -65,7 +61,7 @@ describe('GalleryImage', () => {
                 filePath.startsWith('/path/to/cache') ? 5000 : 1000
             ));
 
-            const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
 
             await expect(galleryImage.resizeAndGetPath('thumb' as any))
                 .resolves.toBe('/path/to/cache/gallery/thumb/image.jpg');
@@ -81,7 +77,7 @@ describe('GalleryImage', () => {
                 filePath.startsWith('/path/to/cache') ? 1000 : 5000
             ));
 
-            const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
 
             await expect(galleryImage.resizeAndGetPath(size as any))
                 .resolves.toBe(`/path/to/cache/gallery/${size}/image.jpg`);
@@ -104,7 +100,7 @@ describe('GalleryImage', () => {
             ));
             (fs.existsSync as jest.Mock).mockReturnValue(false);
 
-            const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
             await galleryImage.resizeAndGetPath(size as any);
             expect(fs.mkdirSync).toBeCalledTimes(1);
             expect(fs.mkdirSync).toBeCalledWith(`/path/to/cache/gallery/${size}`, { recursive: true });
@@ -119,7 +115,7 @@ describe('GalleryImage', () => {
             ));
             (fs.existsSync as jest.Mock).mockReturnValue(true);
 
-            const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
             await galleryImage.resizeAndGetPath(size as any);
             expect(fs.mkdirSync).toBeCalledTimes(0);
         });
@@ -127,17 +123,15 @@ describe('GalleryImage', () => {
     });
 
     describe('getMetadata', () => {
-        let sitePaths: SitePaths;
 
         beforeEach(() => {
-            sitePaths = new SitePaths(config);
             pathModifiedTimeMock.mockReturnValue(1234);
             (getExif as jest.Mock).mockReturnValue({ title: 'my image', ISO: '1000' });
             (getImageDimensions as jest.Mock).mockReturnValue({ width: 100, height: 200 });
         });
 
         it('throws an error if the source image does not exist', async () => {
-            const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
             pathModifiedTimeMock.mockReturnValue(0);
             await expect(galleryImage.getMetadata())
                 .rejects.toThrow('File /path/to/content/gallery/image.jpg does not exist');
@@ -157,7 +151,7 @@ describe('GalleryImage', () => {
                 filePath.startsWith('/path/to/cache') ? 0 : 5000
             ));
 
-            const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
             const metadata = await galleryImage.getMetadata();
             expect(metadata).toStrictEqual(expectedMetadata);
             expect(getExif).toBeCalledTimes(1);
@@ -179,7 +173,7 @@ describe('GalleryImage', () => {
                 filePath.startsWith('/path/to/cache') ? 100 : 5000
             ));
 
-            const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
             const metadata1 = await galleryImage.getMetadata();
 
             const metadata2 = await galleryImage.getMetadata();
@@ -214,7 +208,7 @@ describe('GalleryImage', () => {
                 filePath.startsWith('/path/to/cache') ? 100 : 5000
             ));
 
-            const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
             const metadata1 = await galleryImage.getMetadata();
 
             pathModifiedTimeMock.mockImplementation((filePath: string) => (
@@ -248,7 +242,7 @@ describe('GalleryImage', () => {
                 filePath.startsWith('/path/to/cache') ? 0 : 5000
             ));
 
-            const galleryImage = new GalleryImage(sitePaths, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
             const metadata = await galleryImage.getMetadata();
             expect(metadata).toStrictEqual(expectedMetadata);
         });

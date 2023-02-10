@@ -1,53 +1,56 @@
+import path from 'path';
 import fs from 'fs';
 
 import { IGallery, GalleryData } from './IGallery';
 import { GalleryImage } from './GalleryImage';
 import { ImageData, ImageSize } from './IGalleryImage';
-import { SitePaths } from '../site';
+import { Config } from '../../utils';
 
 export class Gallery implements IGallery {
+    private apiPath: string;
+    private config: Config;
     private imageCache: { [key: string]: GalleryImage } = {};
 
-    public constructor(
-        private paths: SitePaths
-    ) { }
+    public constructor(apiPath: string, config: Config) {
+        this.apiPath = apiPath.replace(/^\//, '');
+        this.config = config;
+    }
 
-    public async getMetadata(uiPath: string, limit?: number): Promise<GalleryData> {
-        const galleryFullPath = this.paths.getContentPathIfExists(uiPath);
-
-        const imageFileNames = (await this.getJpegFileNames(galleryFullPath)).sort().reverse();
+    public async getMetadata(limit?: number): Promise<GalleryData> {
+        const imageFileNames = (await this.getJpegFileNames()).sort().reverse();
         const imageCount = imageFileNames.length;
 
         const imageList = await Promise.all(
             imageFileNames
                 .slice(0, limit)
-                .map((fileName) => this.getImageMetadata(`${uiPath}/${fileName}`))
+                .map((fileName) => this.getImageMetadata(`${this.apiPath}/${fileName}`))
         );
 
         return { imageCount, imageList };
     }
 
-    private async getImageMetadata(uiPath: string): Promise<ImageData> {
-        const image = this.getGalleryImage(uiPath);
+    private async getImageMetadata(apiPath: string): Promise<ImageData> {
+        const image = this.getGalleryImage(apiPath);
         return await image.getMetadata();
     }
 
-    public async resizeImageAndGetPath(uiPath: string, size: ImageSize): Promise<string> {
-        const image = this.getGalleryImage(uiPath);
+    public async resizeImageAndGetPath(apiPath: string, size: ImageSize): Promise<string> {
+        const image = this.getGalleryImage(apiPath);
         return await image.resizeAndGetPath(size);
     }
 
-    private getGalleryImage(uiPath: string): GalleryImage {
-        let image = this.imageCache[uiPath];
+    private getGalleryImage(apiPath: string): GalleryImage {
+        let image = this.imageCache[apiPath];
         if (!image) {
-            image = new GalleryImage(this.paths, uiPath);
-            this.imageCache[uiPath] = image;
+            image = new GalleryImage(this.config, apiPath);
+            this.imageCache[apiPath] = image;
         }
         return image;
     }
 
-    private async getJpegFileNames(inDir: string): Promise<string[]> {
-        const dir = await fs.promises.readdir(inDir);
+    private async getJpegFileNames(): Promise<string[]> {
+        const fullPath = path.join(this.config.contentDir, this.apiPath);
+        const dir = await fs.promises.readdir(fullPath);
         return dir.filter((file) => file.endsWith('.jpg'));
     }
 }

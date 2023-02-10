@@ -2,11 +2,16 @@ import fs from 'fs';
 import path from 'path';
 import YAML from 'yaml';
 import { Config, pathIsDirectory, pathIsFile, pathModifiedTime } from '../../utils';
+import { Gallery, IGallery } from '../gallery';
+import { IMarkdownRecurse } from '../markdown/IMarkdownRecurse';
+import { MarkdownRecurse } from '../markdown/MarkdownRecurse';
 
 import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
 
 export class SiteComponent implements ISiteComponent {
     private config: Config;
+    private gallery?: IGallery;
+    private markdown?: IMarkdownRecurse;
     private apiPath: string;
     private sourceFileModifiedTimeForCache = 0;
     private metadata?: ComponentMetadata;
@@ -20,7 +25,12 @@ export class SiteComponent implements ISiteComponent {
         if (!pathIsFile(this.getContentPath())) {
             throw new Error(`A yaml file does not exist for the path ${this.apiPath}`);
         }
-        this.clearCacheIfOutdated();
+        this.refreshMetadata();
+        if (this.metadata?.type === 'gallery') {
+            this.gallery = new Gallery(this.apiPath, this.config);
+        } else if (this.metadata?.type === 'markdown') {
+            this.markdown = new MarkdownRecurse(this.apiPath, this.config, true);
+        }
     }
 
     private clearCacheIfOutdated(): void {
@@ -63,5 +73,15 @@ export class SiteComponent implements ISiteComponent {
         parsedYaml.uiPath ??= this.apiPath;
         parsedYaml.title ??= this.apiPath;
         this.metadata = parsedYaml;
+    }
+
+    public getGallery(): IGallery {
+        if (!this.gallery) throw new Error('No gallery component at this path');
+        return this.gallery;
+    }
+
+    public getMarkdown(): IMarkdownRecurse {
+        if (!this.markdown) throw new Error('No markdown component at this path');
+        return this.markdown;
     }
 }

@@ -6,6 +6,6 @@ export type GalleryData = {
 }
 
 export interface IGallery {
-    getMetadata(uiPath: string, limit?: number): Promise<GalleryData>,
-    resizeImageAndGetPath(uiPath: string, size: ImageSize): Promise<string>
+    getMetadata(limit?: number): Promise<GalleryData>,
+    resizeImageAndGetPath(apiPath: string, size: ImageSize): Promise<string>
 }

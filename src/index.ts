@@ -9,7 +9,7 @@ import {
     createGetSiteNavHandler
 } from './handlers';
 import { getSiteRouter, getAuthRouter, getGalleryRouter, getMarkdownRouter } from './routes';
-import { Auth, Gallery, Markdown, Site, SitePaths } from './services';
+import { Auth, Site } from './services';
 import { getConfig } from './utils';
 
 if (process.env.NODE_ENV !== 'production') {
@@ -26,17 +26,14 @@ const start = async () => {
     });
 
     const config = getConfig();
-    const sitePaths = new SitePaths(config);
-    const site = new Site(sitePaths);
-    const gallery = new Gallery(sitePaths);
-    const markdown = new Markdown(sitePaths);
-    const auth = new Auth(config, sitePaths);
+    const site = new Site(config);
+    const auth = new Auth(config);
 
     const getSiteNavHandler = createGetSiteNavHandler(site, logger);
-    const getImageFileHandler = createGetImageFileHandler(gallery);
-    const getMarkdownFileHandler = createGetMarkdownFileHandler(markdown, logger);
-    const getMarkdownNavHandler = createGetMarkdownNavHandler(markdown, logger);
-    const getImageListHandler = createGetImageListHandler(gallery, logger);
+    const getImageFileHandler = createGetImageFileHandler(site);
+    const getMarkdownFileHandler = createGetMarkdownFileHandler(site, logger);
+    const getMarkdownNavHandler = createGetMarkdownNavHandler(site, logger);
+    const getImageListHandler = createGetImageListHandler(site, logger);
     const postAuthLoginHandler = createPostAuthLoginHandler(auth, logger);
     const postAuthRefreshHandler = createPostAuthRefreshHandler(auth, logger);
     const postAuthLogoutHandler = createPostAuthLogoutHandler(logger);

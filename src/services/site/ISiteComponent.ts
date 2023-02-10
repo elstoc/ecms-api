@@ -1,3 +1,6 @@
+import { IGallery } from '../gallery';
+import { IMarkdownRecurse } from '../markdown/IMarkdownRecurse';
+
 export type ComponentMetadata = {
     apiPath: string;
     uiPath: string;
@@ -9,5 +12,7 @@ export type ComponentMetadata = {
 }
 
 export interface ISiteComponent {
-    getMetadata(): ComponentMetadata
+    getMetadata(): ComponentMetadata;
+    getGallery(): IGallery;
+    getMarkdown(): IMarkdownRecurse;
 }

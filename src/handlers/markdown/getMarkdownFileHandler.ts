@@ -1,20 +1,10 @@
 import winston from 'winston';
-import fs from 'fs';
 import { Request, Response } from 'express';
 import { RequestHandler } from '../RequestHandler';
-import { IMarkdown } from '../../services';
+import { ISite } from '../../services';
 
-export const createGetMarkdownFileHandler = (markdown: IMarkdown, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
+export const createGetMarkdownFileHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
     const { mdPath } = req.params;
     logger.log('info', `getting md file ${mdPath}`);
-    try {
-        const filePath = markdown.getSourcePath(mdPath);
-        if (fs.existsSync(filePath)) {
-            res.sendFile(filePath);
-        } else {
-            res.send('# This page does not exist yet');
-        }
-    } catch {
-        res.sendStatus(404);
-    }
+    site.sendMarkdownFile(mdPath, res);
 };

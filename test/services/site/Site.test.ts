@@ -10,40 +10,129 @@ const config = {
     contentDir: '/path/to/content'
 } as any;
 
-describe('Site.getNavData', () => {
-    let site: Site;
+describe('Site', () => {
+
+    describe('constructor', () => {
+        it('generates objects and component cache', () => {
+            (fs.readdirSync as jest.Mock).mockReturnValue([
+                'component01.yaml',
+                'component02.yaml',
+                'component03.yaml',
+                'notcomponent.txt',
+                'notcomponent.jpg'
+            ]);
+            new Site(config);
+            expect(SiteComponent).toBeCalledTimes(3);
+        });
+    });
+
+    describe('getComponentList', () => {
+        let site: Site;
+        
+        beforeEach(() => {
+            (SiteComponent as jest.Mock).mockImplementation((_, inputFilePath) => ({
+                getMetadata: () => ({ uiPath: inputFilePath })
+            }));
+            (fs.readdirSync as jest.Mock).mockReturnValue([
+                'component01.yaml',
+                'component02.yaml',
+                'component03.yaml',
+                'notcomponent.txt',
+                'notcomponent.jpg'
+            ]);
+            site = new Site(config);
+        });
     
-    beforeEach(() => {
-        site = new Site(config);
-        (fs.readdirSync as jest.Mock).mockReturnValue([
-            'component01.yaml',
-            'component02.yaml',
-            'component03.yaml',
-            'notcomponent.txt',
-            'notcomponent.jpg'
-        ]);
+        it('only creates new SiteComponent instances for files it has not seen before', () => {
+            expect(SiteComponent).toBeCalledTimes(3);
+            (fs.readdirSync as jest.Mock).mockReturnValue([
+                'component01.yaml',
+                'component02.yaml',
+                'component03.yaml',
+                'component04.yaml',
+            ]);
+            site.getComponentList();
+            expect(SiteComponent).toBeCalledTimes(4);
+        });
+    
+        it('returns correct data for only the yaml files in the source directory', () => {
+            const expectedNavData = [
+                { uiPath: 'component01' },
+                { uiPath: 'component02' },
+                { uiPath: 'component03' }
+            ];
+    
+            const actualNavData = site.getComponentList();
+    
+            expect(actualNavData).toStrictEqual(expectedNavData);
+        });
     });
 
-    it('only creates new SiteComponent instances for files it has not seen before', () => {
-        site.getComponentList();
-        expect(SiteComponent).toBeCalledTimes(3);
-        site.getComponentList();
-        expect(SiteComponent).toBeCalledTimes(3);
+    describe('getGalleryData', () => {
+        it('runs getMetadata on the appropriate gallery object', async () => {
+            (SiteComponent as jest.Mock).mockImplementation((_, inputFilePath) => ({
+                getGallery: () => ({ getMetadata: (limit: number) => `${inputFilePath}-${limit}-metadata` })
+            }));
+            (fs.readdirSync as jest.Mock).mockReturnValue([
+                'component01.yaml',
+                'component02.yaml',
+                'component03.yaml',
+            ]);
+            const site = new Site(config);
+            const expectedGallerydata = 'component01-30-metadata';
+            const actualGallerydata = await site.getGalleryData('component01', 30);
+            expect(actualGallerydata).toBe(expectedGallerydata);
+        });
     });
 
-    it('returns correct data for only the yaml files in the source directory', () => {
-        (SiteComponent as jest.Mock).mockImplementation((_, inputFilePath) => ({
-            getMetadata: () => ({ uiPath: inputFilePath })
-        }));
+    describe('getGalleryImagePath', () => {
+        it('runs resizeImageAndGetPath on the appropriate gallery object', async () => {
+            (SiteComponent as jest.Mock).mockImplementation((_, inputFilePath) => ({
+                getGallery: () => ({ resizeImageAndGetPath: (apiPath: string, size: string) => `${inputFilePath}-${apiPath}-${size}-path` })
+            }));
+            (fs.readdirSync as jest.Mock).mockReturnValue([
+                'component01.yaml',
+                'component02.yaml',
+                'component03.yaml',
+            ]);
+            const site = new Site(config);
+            const expectedImagePath = 'component01-component01/image1.jpg-thumb-path';
+            const actualImagePath = await site.getGalleryImagePath('component01/image1.jpg', 'thumb');
+            expect(actualImagePath).toBe(expectedImagePath);
+        });
+    });
 
-        const expectedNavData = [
-            { uiPath: 'component01' },
-            { uiPath: 'component02' },
-            { uiPath: 'component03' }
-        ];
+    describe('getMarkdownStructure', () => {
+        it('runs getMarkdownStructure on the appropriate markdown object', async () => {
+            (SiteComponent as jest.Mock).mockImplementation((_, inputFilePath) => ({
+                getMarkdown: () => ({ getStructure: () => `${inputFilePath}-struct` })
+            }));
+            (fs.readdirSync as jest.Mock).mockReturnValue([
+                'component01.yaml',
+                'component02.yaml',
+                'component03.yaml',
+            ]);
+            const site = new Site(config);
+            const expectedMarkdownStructure = 'component02-struct';
+            const actualMarkdownStructure = await site.getMarkdownStructure('component02');
+            expect(actualMarkdownStructure).toBe(expectedMarkdownStructure);
+        });
+    });
 
-        const actualNavData = site.getComponentList();
-
-        expect(actualNavData).toStrictEqual(expectedNavData);
+    describe('sendMarkdownFile', () => {
+        it('runs sendFile on the appropriate markdown object', () => {
+            (SiteComponent as jest.Mock).mockImplementation((_, inputFilePath) => ({
+                getMarkdown: () => ({ sendFile: (apiPath: string) => `${inputFilePath}-${apiPath}-markdown` })
+            }));
+            (fs.readdirSync as jest.Mock).mockReturnValue([
+                'component01.yaml',
+                'component02.yaml',
+                'component03.yaml',
+            ]);
+            const site = new Site(config);
+            const expectedPath = 'component02-component02/path/to/file-markdown';
+            const actualPath = site.sendMarkdownFile('component02/path/to/file', 'nothing' as any);
+            expect(actualPath).toBe(expectedPath);
+        });
     });
 });

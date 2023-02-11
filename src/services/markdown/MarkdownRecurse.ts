@@ -107,7 +107,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         const frontMatter = await this.parseFrontMatter();
         this.metadata = {
             uiPath: this.apiPath,
-            title: frontMatter?.title || path.basename(this.apiPath)
+            title: frontMatter?.title || path.basename(this.apiPath, '.md')
         };
     }
     

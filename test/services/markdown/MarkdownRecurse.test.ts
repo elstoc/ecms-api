@@ -140,7 +140,7 @@ describe('MarkdownRecurse', () => {
             expect(pageMeta).toStrictEqual(expectedPageMeta);
         });
 
-        it('Sets the title to the file/path name if it is not present', async () => {
+        it('Sets the title to the file/path name (without extension) if it is not present', async () => {
             pathIsFileMock.mockReturnValue(true);
 
             const page = new MarkdownRecurse('path/to/file.md', config);
@@ -148,7 +148,7 @@ describe('MarkdownRecurse', () => {
             const pageMeta = await page.getMetadata();
             const expectedPageMeta = {
                 uiPath: 'path/to/file.md',
-                title: 'file.md'
+                title: 'file'
             };
             expect(pageMeta).toStrictEqual(expectedPageMeta);
         });
@@ -261,8 +261,8 @@ describe('MarkdownRecurse', () => {
             const expectedStructure = {
                 children: [
                     { metadata: { title: 'rootDir', uiPath: 'rootDir' } },
-                    { metadata: { title: 'firstfile.md', uiPath: 'rootDir/firstfile.md' } },
-                    { metadata: { title: 'secondfile.md', uiPath: 'rootDir/secondfile.md' } },
+                    { metadata: { title: 'firstfile', uiPath: 'rootDir/firstfile.md' } },
+                    { metadata: { title: 'secondfile', uiPath: 'rootDir/secondfile.md' } },
                 ]
             };
             const structure = await page.getStructure();
@@ -295,28 +295,28 @@ describe('MarkdownRecurse', () => {
             const expectedStructure = {
                 children: [
                     { metadata: { title: 'rootDir', uiPath: 'rootDir' } },
-                    { metadata: { title: 'file1.md', uiPath: 'rootDir/file1.md' } },
-                    { metadata: { title: 'file2.md', uiPath: 'rootDir/file2.md' } },
+                    { metadata: { title: 'file1', uiPath: 'rootDir/file1.md' } },
+                    { metadata: { title: 'file2', uiPath: 'rootDir/file2.md' } },
                     {
-                        metadata: { title: 'firstDir.md', uiPath: 'rootDir/firstDir.md' },
+                        metadata: { title: 'firstDir', uiPath: 'rootDir/firstDir.md' },
                         children: [
                             {
-                                metadata: { title: 'firstSubDir.md', uiPath: 'rootDir/firstDir/firstSubDir.md' },
+                                metadata: { title: 'firstSubDir', uiPath: 'rootDir/firstDir/firstSubDir.md' },
                                 children: [
-                                    { metadata: { title: 'file5.md', uiPath: 'rootDir/firstDir/firstSubDir/file5.md' } },
-                                    { metadata: { title: 'file6.md', uiPath: 'rootDir/firstDir/firstSubDir/file6.md' } },
+                                    { metadata: { title: 'file5', uiPath: 'rootDir/firstDir/firstSubDir/file5.md' } },
+                                    { metadata: { title: 'file6', uiPath: 'rootDir/firstDir/firstSubDir/file6.md' } },
                                     {
-                                        metadata: { title: 'secondSubDir.md', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir.md' },
+                                        metadata: { title: 'secondSubDir', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir.md' },
                                         children: [
-                                            { metadata: { title: 'file7.md', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file7.md' } },
-                                            { metadata: { title: 'file8.md', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file8.md' } },
-                                            { metadata: { title: 'file9.md', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file9.md' } },
+                                            { metadata: { title: 'file7', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file7.md' } },
+                                            { metadata: { title: 'file8', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file8.md' } },
+                                            { metadata: { title: 'file9', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file9.md' } },
                                         ]
                                     },
                                 ]
                             },
-                            { metadata: { title: 'file3.md', uiPath: 'rootDir/firstDir/file3.md' } },
-                            { metadata: { title: 'file4.md', uiPath: 'rootDir/firstDir/file4.md' } },
+                            { metadata: { title: 'file3', uiPath: 'rootDir/firstDir/file3.md' } },
+                            { metadata: { title: 'file4', uiPath: 'rootDir/firstDir/file4.md' } },
                         ]
                     },
                 ]

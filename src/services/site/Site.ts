@@ -34,6 +34,18 @@ export class Site implements ISite {
     }
 
     public getComponentList(): ComponentMetadata[] {
+        const componentList = this.getComponentListUnsorted();
+        return componentList.sort((a, b) => {
+            if (a.weight && !b.weight) return -1;
+            if (b.weight && !a.weight) return 1;
+            if (a.weight && b.weight) return a.weight - b.weight;
+            if (a.title > b.title) return 1;
+            if (a.title === b.title) return 0;
+            return -1;
+        });
+    }
+
+    private getComponentListUnsorted(): ComponentMetadata[] {
         return this.getYamlFiles().map((file) => (
             this.getComponentMetadata(path.basename(file, '.yaml')))
         );

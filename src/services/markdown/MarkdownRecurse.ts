@@ -107,6 +107,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         const frontMatter = await this.parseFrontMatter();
         this.metadata = {
             uiPath: this.apiPath,
+            ...frontMatter,
             title: frontMatter?.title || path.basename(this.apiPath, '.md')
         };
     }
@@ -122,6 +123,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         const childObjects = this.getChildren();
         const childStructPromises = childObjects.map((child) => child.getStructure());
         const children = await Promise.all(childStructPromises);
+        children.sort(this.sortByWeightAndTitle);
 
         if (this.isRoot) {
             children.unshift({ metadata });
@@ -129,6 +131,20 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         }
         if (children.length === 0) return { metadata };
         return {metadata, children};
+    }
+
+    private sortByWeightAndTitle(a: MarkdownStructure, b: MarkdownStructure): number {
+            const aWeight = a.metadata?.weight || 0;
+            const bWeight = b.metadata?.weight || 0;
+            const aTitle = a.metadata?.title || '';
+            const bTitle = b.metadata?.title || '';
+
+            if (aWeight && !bWeight) return -1;
+            if (bWeight && !aWeight) return 1;
+            if (aWeight && bWeight) return aWeight - bWeight;
+            if (aTitle > bTitle) return 1;
+            if (aTitle === bTitle) return 0;
+            return -1;
     }
 
     private getChildren(): IMarkdownRecurse[] {

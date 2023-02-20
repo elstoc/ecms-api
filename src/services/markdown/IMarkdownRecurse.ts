@@ -1,6 +1,8 @@
 import { Response } from 'express';
 
 export type MarkdownMetadata = {
+    title?: string;
+    weight?: number;
     [key: string]: string | number | boolean | undefined;
 }
 

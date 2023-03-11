@@ -17,6 +17,7 @@ ENV NODE_ENV production
 RUN apk update
 RUN apk add --no-cache graphicsmagick
 RUN mkdir -p /app
+RUN mkdir -p /app/data
 
 COPY --from=builder --chown=node:node /app/dist /app/dist
 COPY --from=builder --chown=node:node /app/node_modules /app/node_modules

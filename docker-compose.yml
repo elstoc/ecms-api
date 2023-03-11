@@ -1,12 +1,18 @@
 version: "0.1"
 services:
   home-api:
-    image: "home-api"
     build: .
+    restart: unless-stopped
+    image: "home-api"
     env_file:
       - .env
     ports:
       - "${PORT}:${PORT}"
     volumes:
-      - ${CACHE_DIR}:${CACHE_DIR}
-      - ${CONTENT_DIR}:${CONTENT_DIR}
+      - ${CACHE_DIR}:/app/data/cache
+      - ${CONTENT_DIR}:/app/data/content
+      - ${ADMIN_DIR}:/app/data/admin
+    environment:
+      - CACHE_DIR=/app/data/cache
+      - CONTENT_DIR=/app/data/content
+      - ADMIN_DIR=/app/data/admin

@@ -86,7 +86,7 @@ describe('MarkdownRecurse', () => {
             pathIsFileMock.mockReturnValue(true);
             const page = new MarkdownRecurse('path/to/file.md', config);
             const expectedPageMeta = {
-                uiPath: 'path/to/file.md',
+                apiPath: 'path/to/file.md',
                 title: 'The Title'
             };
             const pageMeta = await page.getMetadata();
@@ -99,7 +99,7 @@ describe('MarkdownRecurse', () => {
             pathIsFileMock.mockReturnValue(true);
             const page = new MarkdownRecurse('path/to/file.md', config);
             const expectedPageMeta = {
-                uiPath: 'path/to/file.md',
+                apiPath: 'path/to/file.md',
                 title: 'The Title'
             };
             await page.getMetadata();
@@ -119,7 +119,7 @@ describe('MarkdownRecurse', () => {
             readFileMock.mockResolvedValue('---\ntitle: The New Title\n---');
 
             const expectedPageMeta = {
-                uiPath: 'path/to/file.md',
+                apiPath: 'path/to/file.md',
                 title: 'The New Title'
             };
             const pageMeta = await page.getMetadata();
@@ -134,7 +134,7 @@ describe('MarkdownRecurse', () => {
             readFileMock.mockResolvedValue('');
             const pageMeta = await page.getMetadata();
             const expectedPageMeta = {
-                uiPath: 'path/to/file.md',
+                apiPath: 'path/to/file.md',
                 title: 'file'
             };
             expect(pageMeta).toStrictEqual(expectedPageMeta);
@@ -227,7 +227,7 @@ describe('MarkdownRecurse', () => {
             readFileMock.mockResolvedValue('');
             const page = new MarkdownRecurse('rootDir', config, true);
             const expectedStructure = {
-                children: [{ metadata: { title: 'rootDir', uiPath: 'rootDir' } } ]
+                children: [{ metadata: { title: 'rootDir', apiPath: 'rootDir' } } ]
             };
             const structure = await page.getStructure();
             expect(structure).toStrictEqual(expectedStructure);
@@ -241,9 +241,9 @@ describe('MarkdownRecurse', () => {
             const page = new MarkdownRecurse('rootDir', config, true);
             const expectedStructure = {
                 children: [
-                    { metadata: { title: 'rootDir', uiPath: 'rootDir' } },
-                    { metadata: { title: 'firstfile', uiPath: 'rootDir/firstfile.md' } },
-                    { metadata: { title: 'secondfile', uiPath: 'rootDir/secondfile.md' } },
+                    { metadata: { title: 'rootDir', apiPath: 'rootDir' } },
+                    { metadata: { title: 'firstfile', apiPath: 'rootDir/firstfile.md' } },
+                    { metadata: { title: 'secondfile', apiPath: 'rootDir/secondfile.md' } },
                 ]
             };
             const structure = await page.getStructure();
@@ -276,25 +276,25 @@ describe('MarkdownRecurse', () => {
             const page = new MarkdownRecurse('rootDir', config, true);
             const expectedStructure = {
                 children: [
-                    { metadata: { title: 'rootDir', uiPath: 'rootDir' } },
-                    { metadata: { title: 'file1', uiPath: 'rootDir/file1.md' } },
-                    { metadata: { title: 'file2', uiPath: 'rootDir/file2.md' } },
+                    { metadata: { title: 'rootDir', apiPath: 'rootDir' } },
+                    { metadata: { title: 'file1', apiPath: 'rootDir/file1.md' } },
+                    { metadata: { title: 'file2', apiPath: 'rootDir/file2.md' } },
                     {
-                        metadata: { title: 'firstDir', uiPath: 'rootDir/firstDir.md' },
+                        metadata: { title: 'firstDir', apiPath: 'rootDir/firstDir.md' },
                         children: [
-                            { metadata: { title: 'file3', uiPath: 'rootDir/firstDir/file3.md' } },
-                            { metadata: { title: 'file4', uiPath: 'rootDir/firstDir/file4.md' } },
+                            { metadata: { title: 'file3', apiPath: 'rootDir/firstDir/file3.md' } },
+                            { metadata: { title: 'file4', apiPath: 'rootDir/firstDir/file4.md' } },
                             {
-                                metadata: { title: 'firstSubDir', uiPath: 'rootDir/firstDir/firstSubDir.md' },
+                                metadata: { title: 'firstSubDir', apiPath: 'rootDir/firstDir/firstSubDir.md' },
                                 children: [
-                                    { metadata: { title: 'file5', uiPath: 'rootDir/firstDir/firstSubDir/file5.md' } },
-                                    { metadata: { title: 'file6', uiPath: 'rootDir/firstDir/firstSubDir/file6.md' } },
+                                    { metadata: { title: 'file5', apiPath: 'rootDir/firstDir/firstSubDir/file5.md' } },
+                                    { metadata: { title: 'file6', apiPath: 'rootDir/firstDir/firstSubDir/file6.md' } },
                                     {
-                                        metadata: { title: 'secondSubDir', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir.md' },
+                                        metadata: { title: 'secondSubDir', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir.md' },
                                         children: [
-                                            { metadata: { title: 'file7', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file7.md' } },
-                                            { metadata: { title: 'file8', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file8.md' } },
-                                            { metadata: { title: 'file9', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file9.md' } },
+                                            { metadata: { title: 'file7', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file7.md' } },
+                                            { metadata: { title: 'file8', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file8.md' } },
+                                            { metadata: { title: 'file9', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file9.md' } },
                                         ]
                                     },
                                 ]
@@ -319,15 +319,15 @@ describe('MarkdownRecurse', () => {
             });
             const page = new MarkdownRecurse('rootDir.md', config, false);
             const expectedStructure = {
-                metadata: { title: 'rootDir', uiPath: 'rootDir.md' },
+                metadata: { title: 'rootDir', apiPath: 'rootDir.md' },
                 children: [
-                    { metadata: { title: 'fileC', uiPath: 'rootDir/fileC.md', weight: 10 } },
-                    { metadata: { title: 'fileB', uiPath: 'rootDir/fileB.md', weight: 20 } },
-                    { metadata: { title: 'fileA', uiPath: 'rootDir/fileA.md', weight: 30 } },
-                    { metadata: { title: 'fileD', uiPath: 'rootDir/fileD.md' } },
-                    { metadata: { title: 'fileE', uiPath: 'rootDir/fileE.md' } },
-                    { metadata: { title: 'fileF', uiPath: 'rootDir/fileF.md' } },
-                    { metadata: { title: 'index', uiPath: 'rootDir/index.md' } },
+                    { metadata: { title: 'fileC', apiPath: 'rootDir/fileC.md', weight: 10 } },
+                    { metadata: { title: 'fileB', apiPath: 'rootDir/fileB.md', weight: 20 } },
+                    { metadata: { title: 'fileA', apiPath: 'rootDir/fileA.md', weight: 30 } },
+                    { metadata: { title: 'fileD', apiPath: 'rootDir/fileD.md' } },
+                    { metadata: { title: 'fileE', apiPath: 'rootDir/fileE.md' } },
+                    { metadata: { title: 'fileF', apiPath: 'rootDir/fileF.md' } },
+                    { metadata: { title: 'index', apiPath: 'rootDir/index.md' } },
                 ]
             };
             const structure = await page.getStructure();
@@ -347,13 +347,13 @@ describe('MarkdownRecurse', () => {
             const page = new MarkdownRecurse('rootDir', config, true);
             const expectedStructure = {
                 children: [
-                    { metadata: { title: 'rootDir', uiPath: 'rootDir' } },
-                    { metadata: { title: 'fileC', uiPath: 'rootDir/fileC.md', weight: 10 } },
-                    { metadata: { title: 'fileB', uiPath: 'rootDir/fileB.md', weight: 20 } },
-                    { metadata: { title: 'fileA', uiPath: 'rootDir/fileA.md', weight: 30 } },
-                    { metadata: { title: 'fileD', uiPath: 'rootDir/fileD.md' } },
-                    { metadata: { title: 'fileE', uiPath: 'rootDir/fileE.md' } },
-                    { metadata: { title: 'fileF', uiPath: 'rootDir/fileF.md' } },
+                    { metadata: { title: 'rootDir', apiPath: 'rootDir' } },
+                    { metadata: { title: 'fileC', apiPath: 'rootDir/fileC.md', weight: 10 } },
+                    { metadata: { title: 'fileB', apiPath: 'rootDir/fileB.md', weight: 20 } },
+                    { metadata: { title: 'fileA', apiPath: 'rootDir/fileA.md', weight: 30 } },
+                    { metadata: { title: 'fileD', apiPath: 'rootDir/fileD.md' } },
+                    { metadata: { title: 'fileE', apiPath: 'rootDir/fileE.md' } },
+                    { metadata: { title: 'fileF', apiPath: 'rootDir/fileF.md' } },
                 ]
             };
             const structure = await page.getStructure();

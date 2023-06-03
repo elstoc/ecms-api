@@ -6,7 +6,7 @@ import { getExif, resizeImage, getImageDimensions, pathModifiedTime, Config } fr
 
 const RESIZE_OPTIONS = {
     thumb: { width: 100000, height: 350, quality: 60 },
-    fhd:  { width: 1920, height: 1080, quality: 95 }
+    fhd:  { width: 2130, height: 1200, quality: 95 }
 };
 
 export class GalleryImage implements IGalleryImage {

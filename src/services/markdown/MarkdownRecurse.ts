@@ -98,7 +98,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     public async getMetadata(): Promise<MarkdownMetadata> {
         this.throwIfInvalid();
         await this.refreshMetadata();
-        return this.metadata || {};
+        return this.metadata ?? {};
     }
 
     private async refreshMetadata(): Promise<void> {
@@ -108,7 +108,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         this.metadata = {
             apiPath: this.apiPath,
             ...frontMatter,
-            title: frontMatter?.title || path.basename(this.apiPath, '.md')
+            title: frontMatter?.title ?? path.basename(this.apiPath, '.md')
         };
     }
     
@@ -134,10 +134,10 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     }
 
     private sortByWeightAndTitle(a: MarkdownStructure, b: MarkdownStructure): number {
-            const aWeight = a.metadata?.weight || 0;
-            const bWeight = b.metadata?.weight || 0;
-            const aTitle = a.metadata?.title || '';
-            const bTitle = b.metadata?.title || '';
+            const aWeight = a.metadata?.weight ?? 0;
+            const bWeight = b.metadata?.weight ?? 0;
+            const aTitle = a.metadata?.title ?? '';
+            const bTitle = b.metadata?.title ?? '';
 
             if (aWeight && !bWeight) return -1;
             if (bWeight && !aWeight) return 1;

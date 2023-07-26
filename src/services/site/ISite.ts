@@ -4,7 +4,7 @@ import { MarkdownStructure } from '../markdown/IMarkdownRecurse';
 import { ComponentMetadata } from './ISiteComponent';
 
 export interface ISite {
-    getComponentList(): ComponentMetadata[];
+    listComponents(): ComponentMetadata[];
 
     getGalleryImagePath(apiPath: string, size: string): Promise<string>;
     getGalleryData(apiPath: string, limit?: number): Promise<GalleryData>;

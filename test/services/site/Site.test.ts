@@ -26,7 +26,7 @@ describe('Site', () => {
         });
     });
 
-    describe('getComponentList', () => {
+    describe('listComponents', () => {
         let site: Site;
         
         it('only creates new SiteComponent instances for files it has not seen before', () => {
@@ -49,7 +49,7 @@ describe('Site', () => {
                 'component03.yaml',
                 'component04.yaml',
             ]);
-            site.getComponentList();
+            site.listComponents();
             expect(SiteComponent).toBeCalledTimes(4);
         });
     
@@ -72,7 +72,7 @@ describe('Site', () => {
                 { uiPath: 'component03' }
             ];
     
-            const actualNavData = site.getComponentList();
+            const actualNavData = site.listComponents();
     
             expect(actualNavData).toStrictEqual(expectedNavData);
         });
@@ -108,7 +108,7 @@ describe('Site', () => {
                 { uiPath: 'componentF', title: 'componentF' },
             ];
 
-            const actualNavData = site.getComponentList();
+            const actualNavData = site.listComponents();
     
             expect(actualNavData).toStrictEqual(expectedNavData);
         });

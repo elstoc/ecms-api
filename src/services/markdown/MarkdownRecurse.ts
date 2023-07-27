@@ -12,7 +12,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     private config: Config;
     private metadata?: MarkdownMetadata;
     private children: { [key: string]: IMarkdownRecurse } = {};
-    private metadataBackingFileModifiedTime = 0;
+    private metadataModifiedTime = 0;
 
     constructor(apiPath: string, config: Config, root = false) {
         this.apiPath = apiPath.replace(/^\//, '');
@@ -55,9 +55,9 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     }
 
     private clearMetadataIfOutdated(): void {
-        if (this.backingFileModifiedTime() !== this.metadataBackingFileModifiedTime) {
+        if (this.backingFileModifiedTime() !== this.metadataModifiedTime) {
             this.metadata = undefined;
-            this.metadataBackingFileModifiedTime = this.backingFileModifiedTime();
+            this.metadataModifiedTime = this.backingFileModifiedTime();
         }
     }
 

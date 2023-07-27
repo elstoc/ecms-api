@@ -54,7 +54,7 @@ export class Site implements ISite {
         return component.getMetadata();
     }
 
-    public async getGalleryData(apiPath: string, limit?: number): Promise<GalleryImages> {
+    public async getGalleryImages(apiPath: string, limit?: number): Promise<GalleryImages> {
         const gallery = this.getRootComponent(apiPath).getGallery();
         return gallery.getImages(limit);
     }

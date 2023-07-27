@@ -113,7 +113,7 @@ describe('Site', () => {
         });
     });
 
-    describe('getGalleryData', () => {
+    describe('getGalleryImages', () => {
         it('runs getImages on the appropriate gallery object', async () => {
             (SiteComponent as jest.Mock).mockImplementation((_, inputFilePath) => ({
                 getGallery: () => ({ getImages: (limit: number) => `${inputFilePath}-${limit}-metadata` })
@@ -125,7 +125,7 @@ describe('Site', () => {
             ]);
             const site = new Site(config);
             const expectedGallerydata = 'component01-30-metadata';
-            const actualGallerydata = await site.getGalleryData('component01', 30);
+            const actualGallerydata = await site.getGalleryImages('component01', 30);
             expect(actualGallerydata).toBe(expectedGallerydata);
         });
     });

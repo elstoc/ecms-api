@@ -59,9 +59,9 @@ export class Site implements ISite {
         return gallery.getMetadata(limit);
     }
 
-    public async getGalleryImagePath(apiPath: string, size: string): Promise<string> {
+    public async sendGalleryImage(apiPath: string, size: string, response: Response): Promise<void> {
         const gallery = this.getRootComponent(apiPath).getGallery();
-        return gallery.resizeImageAndGetPath(apiPath, size as ImageSize);
+        await gallery.sendFile(apiPath, size as ImageSize, response);
     }
 
     public async getMarkdownStructure(apiPath: string): Promise<MarkdownStructure> {

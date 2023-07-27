@@ -5,6 +5,7 @@ import { IGallery, GalleryData } from './IGallery';
 import { GalleryImage } from './GalleryImage';
 import { ImageData, ImageSize } from './IGalleryImage';
 import { Config } from '../../utils';
+import { Response } from 'express';
 
 export class Gallery implements IGallery {
     private apiPath: string;
@@ -34,9 +35,9 @@ export class Gallery implements IGallery {
         return await image.getMetadata();
     }
 
-    public async resizeImageAndGetPath(apiPath: string, size: ImageSize): Promise<string> {
+    public async sendFile(apiPath: string, size: ImageSize, response: Response): Promise<void> {
         const image = this.getGalleryImage(apiPath);
-        return await image.resizeAndGetPath(size);
+        await image.sendFile(size, response);
     }
 
     private getGalleryImage(apiPath: string): GalleryImage {

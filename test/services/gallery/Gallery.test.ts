@@ -96,35 +96,42 @@ describe('Gallery', () => {
     
     });
     
-    describe('resizeImageAndGetPath', () => {
+    describe('sendFile', () => {
         let gallery: Gallery;
     
         beforeEach(() => {
             gallery = new Gallery('gallery', config);
         });
     
-        it('creates a new image object and calls image.resizeAndGetPath the first time it is called', async () => {
-            (GalleryImage as jest.Mock).mockImplementation((_, filePath) => ({
-                resizeAndGetPath: (size: string) => `${filePath}/${size}`
+        it('creates a new image object and calls image.sendFile the first time it is called', async () => {
+            const response = {} as any;
+            const sendFile = jest.fn();
+            (GalleryImage as jest.Mock).mockImplementation(() => ({
+                sendFile
             }));
     
-            const path = await gallery.resizeImageAndGetPath('gallery/image1.jpg', 'thumb');
+            await gallery.sendFile('gallery/image1.jpg', 'thumb', response);
     
             expect(GalleryImage).toBeCalledTimes(1);
-            expect(path).toBe('gallery/image1.jpg/thumb');
+            expect(sendFile).toBeCalledWith('thumb', response);
         });
     
-        it('calls image.resizeAndGetPath on the existing object the second time it is called', async () => {
-            (GalleryImage as jest.Mock).mockImplementation((_, filePath) => ({
-                resizeAndGetPath: (size: string) => `${filePath}/${size}`
+        it('calls image.sendFile on the existing object the second time it is called', async () => {
+            const response = {} as any;
+            const sendFile = jest.fn();
+            (GalleryImage as jest.Mock).mockImplementation(() => ({
+                sendFile
             }));
     
-            const path = await gallery.resizeImageAndGetPath('gallery/image1.jpg', 'thumb');
-            const path2 = await gallery.resizeImageAndGetPath('gallery/image1.jpg', 'fhd');
+            await gallery.sendFile('gallery/image1.jpg', 'thumb', response);
+            await gallery.sendFile('gallery/image1.jpg', 'fhd', response);
     
             expect(GalleryImage).toBeCalledTimes(1);
-            expect(path).toBe('gallery/image1.jpg/thumb');
-            expect(path2).toBe('gallery/image1.jpg/fhd');
+            expect(sendFile).toBeCalledTimes(2);
+            const path1Parms = sendFile.mock.calls[0];
+            const path2Parms = sendFile.mock.calls[1];
+            expect(path1Parms).toEqual(['thumb', response]);
+            expect(path2Parms).toEqual(['fhd', response]);
         });
     });
 });

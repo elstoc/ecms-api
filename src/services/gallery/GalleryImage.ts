@@ -3,6 +3,7 @@ import path from 'path';
 
 import { Dimensions, IGalleryImage, ImageData, ImageSize } from './IGalleryImage';
 import { getExif, resizeImage, getImageDimensions, pathModifiedTime, Config } from '../../utils';
+import { Response } from 'express';
 
 const RESIZE_OPTIONS = {
     thumb: { width: 100000, height: 350, quality: 60 },
@@ -93,13 +94,14 @@ export class GalleryImage implements IGalleryImage {
         }
     }
 
-    public async resizeAndGetPath(size: ImageSize): Promise<string> {
+    public async sendFile(size: ImageSize, response: Response): Promise<void> {
         if (!['fhd', 'thumb'].includes(size)) {
             throw new Error('Incorrect size description');
         }
         this.clearCacheIfOutdated();
         await this.resizeStaleImage(size);
-        return this.getFullPath(size);
+        const path =  this.getFullPath(size);
+        response.sendFile(path);
     }
 
     private async resizeStaleImage(size: ImageSize): Promise<void> {

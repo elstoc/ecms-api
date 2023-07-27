@@ -131,10 +131,16 @@ describe('Site', () => {
         });
     });
 
-    describe('getGalleryImagePath', () => {
-        it('runs resizeImageAndGetPath on the appropriate gallery object', async () => {
-            (SiteComponent as jest.Mock).mockImplementation((_, inputFilePath) => ({
-                getGallery: () => ({ resizeImageAndGetPath: (apiPath: string, size: string) => `${inputFilePath}-${apiPath}-${size}-path` })
+    describe('sendGalleryImage', () => {
+        it('calls sendFile on the appropriate gallery object', async () => {
+            const response = {
+                sendFile: jest.fn(),
+            } as any;
+
+            const sendFile = jest.fn();
+
+            (SiteComponent as jest.Mock).mockImplementation(() => ({
+                getGallery: () => ({ sendFile })
             }));
             (fs.readdirSync as jest.Mock).mockReturnValue([
                 'component01.yaml',
@@ -142,9 +148,9 @@ describe('Site', () => {
                 'component03.yaml',
             ]);
             const site = new Site(config);
-            const expectedImagePath = 'component01-component01/image1.jpg-thumb-path';
-            const actualImagePath = await site.getGalleryImagePath('component01/image1.jpg', 'thumb');
-            expect(actualImagePath).toBe(expectedImagePath);
+            await site.sendGalleryImage('component01/image1.jpg', 'thumb', response);
+            expect(sendFile).toBeCalled();
+            expect(sendFile).toBeCalledWith('component01/image1.jpg', 'thumb', response);
         });
     });
 

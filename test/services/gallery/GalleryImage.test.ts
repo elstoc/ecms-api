@@ -25,8 +25,14 @@ describe('GalleryImage', () => {
         });
     });
 
-    describe('resizeAndGetPath', () => {
+    describe('sendFile', () => {
+        let response: any;
+
         beforeEach(() => {
+            response = {
+                sendFile: jest.fn(),
+                sendStatus: jest.fn()
+            } as any;
             pathModifiedTimeMock.mockReturnValue(1234);
         });
 
@@ -36,42 +42,47 @@ describe('GalleryImage', () => {
             'something'
         ])('throws an error if the size description is not valid', async (size) => {
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
-            await expect(galleryImage.resizeAndGetPath(size as any))
+            await expect(galleryImage.sendFile(size as any, response))
                 .rejects.toThrow('Incorrect size description');
         });
 
         it('throws an error if the source image does not exist', async () => {
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
             pathModifiedTimeMock.mockReturnValue(0);
-            await expect(galleryImage.resizeAndGetPath('thumb'))
+            await expect(galleryImage.sendFile('thumb', response))
                 .rejects.toThrow('File /path/to/content/gallery/image.jpg does not exist');
         });
 
         it.each([
             'thumb',
             'fhd'
-        ])('returns the correct path when the size description is valid and source file exists', async (size) => {
+        ])('calls response.sendFile with the correct path when the size description is valid and source file exists', async (size) => {
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
-            await expect(galleryImage.resizeAndGetPath(size as any))
-                .resolves.toBe(`/path/to/cache/gallery/${size}/image.jpg`);
+
+            await galleryImage.sendFile(size as any, response);
+
+            expect(response.sendFile).toBeCalled();
+            expect(response.sendFile.mock.calls[0][0]).toBe(`/path/to/cache/gallery/${size}/image.jpg`);
         });
 
-        it('does not resize the cached file if it is newer than the source and returns correct path', async () => {
+        it('does not resize the cached file if it is newer than the source and calls response.sendFile', async () => {
             pathModifiedTimeMock.mockImplementation((filePath: string) => (
                 filePath.startsWith('/path/to/cache') ? 5000 : 1000
             ));
 
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
 
-            await expect(galleryImage.resizeAndGetPath('thumb' as any))
-                .resolves.toBe('/path/to/cache/gallery/thumb/image.jpg');
+            await galleryImage.sendFile('thumb' as any, response);
+
+            expect(response.sendFile).toBeCalled();
+            expect(response.sendFile.mock.calls[0][0]).toBe('/path/to/cache/gallery/thumb/image.jpg');
             expect(resizeImage).toBeCalledTimes(0);
         });
 
         it.each([
             ['thumb', { width: 100000, height: 350, quality: 60 }],
             ['fhd', { width: 2130, height: 1200, quality: 95 }],
-        ])('resizes the cached file with correct params if it is older than the source and returns correct path', async (size, imgParams) => {
+        ])('resizes the cached file with correct params if it is older than the source and calls response.sendFile', async (size, imgParams) => {
 
             pathModifiedTimeMock.mockImplementation((filePath: string) => (
                 filePath.startsWith('/path/to/cache') ? 1000 : 5000
@@ -79,8 +90,10 @@ describe('GalleryImage', () => {
 
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
 
-            await expect(galleryImage.resizeAndGetPath(size as any))
-                .resolves.toBe(`/path/to/cache/gallery/${size}/image.jpg`);
+            await galleryImage.sendFile(size as any, response);
+
+            expect(response.sendFile).toBeCalled();
+            expect(response.sendFile.mock.calls[0][0]).toBe(`/path/to/cache/gallery/${size}/image.jpg`);
             expect(resizeImage).toBeCalledTimes(1);
             expect(resizeImage).toBeCalledWith(
                 '/path/to/content/gallery/image.jpg',
@@ -101,7 +114,7 @@ describe('GalleryImage', () => {
             (fs.existsSync as jest.Mock).mockReturnValue(false);
 
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
-            await galleryImage.resizeAndGetPath(size as any);
+            await galleryImage.sendFile(size as any, response);
             expect(fs.mkdirSync).toBeCalledTimes(1);
             expect(fs.mkdirSync).toBeCalledWith(`/path/to/cache/gallery/${size}`, { recursive: true });
         });
@@ -116,7 +129,7 @@ describe('GalleryImage', () => {
             (fs.existsSync as jest.Mock).mockReturnValue(true);
 
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
-            await galleryImage.resizeAndGetPath(size as any);
+            await galleryImage.sendFile(size as any, response);
             expect(fs.mkdirSync).toBeCalledTimes(0);
         });
 

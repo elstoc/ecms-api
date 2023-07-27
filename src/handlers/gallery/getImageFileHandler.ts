@@ -5,9 +5,8 @@ import { ImageSize, ISite } from '../../services';
 export const createGetImageFileHandler = (site: ISite): RequestHandler => async (req: Request, res: Response) => {
     const { path } = req.params;
     try {
-        const size = req.query.size || 'thumb';
-        const fullPath = await site.getGalleryImagePath(path, (size as ImageSize));
-        res.sendFile(fullPath);
+        const size = req.query.size ?? 'thumb';
+        await site.sendGalleryImage(path, size as ImageSize, res);
     } catch {
         res.sendStatus(404);
     }

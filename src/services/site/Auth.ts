@@ -30,7 +30,7 @@ export class Auth implements IAuth {
     }
 
     private readUsersFromFile(): void {
-        const fullPath = path.join(this.config.adminDir, this.usersFile);
+        const fullPath = path.join(this.config.dataDir, 'admin', this.usersFile);
         if (fs.existsSync(fullPath)) {
             const usersJson = fs.readFileSync(fullPath, 'utf-8');
             this.users = JSON.parse(usersJson);
@@ -46,7 +46,7 @@ export class Auth implements IAuth {
     }
 
     private writeUsersToFile(): void {
-        const fullPath = path.join(this.config.adminDir, this.usersFile);
+        const fullPath = path.join(this.config.dataDir, 'admin', this.usersFile);
         fs.writeFileSync(fullPath, JSON.stringify(this.users, null, 4));
     }
 

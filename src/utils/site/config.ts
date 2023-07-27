@@ -2,9 +2,7 @@ export type Config = {
     url: string;
     port: number;
     uiUrl: string;
-    contentDir: string;
-    cacheDir: string;
-    adminDir: string;
+    dataDir: string;
     jwtIssuer: string;
     jwtAudience: string;
     jwtRefreshExpires: string;
@@ -18,9 +16,7 @@ export const getConfig = (): Config => {
         url: process.env.URL || 'http://localhost:3123',
         port: parseInt(process.env.PORT || '3123'),
         uiUrl: process.env.UI_URL || '',
-        contentDir: process.env.CONTENT_DIR || '',
-        cacheDir: process.env.CACHE_DIR || '',
-        adminDir: process.env.ADMIN_DIR || '',
+        dataDir: process.env.DATA_DIR || '',
         jwtIssuer: process.env.JWT_ISSUER || '',
         jwtAudience: process.env.JWT_AUDIENCE || '',
         jwtRefreshExpires: process.env.JWT_REFRESH_EXPIRES || '',

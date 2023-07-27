@@ -25,7 +25,7 @@ export class Site implements ISite {
     }
 
     private listComponentYamlFiles(): string[] {
-        const files = fs.readdirSync(this.config.contentDir);
+        const files = fs.readdirSync(path.join(this.config.dataDir, 'content'));
         return files.filter((file) => file.endsWith('.yaml'));
     }
 

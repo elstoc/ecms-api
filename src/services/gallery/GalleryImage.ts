@@ -46,10 +46,10 @@ export class GalleryImage implements IGalleryImage {
 
     private getFullPath(size: string): string {
         if (size === 'source') {
-            return path.join(this.config.contentDir, this.uiPath);
+            return path.join(this.config.dataDir, 'content', this.uiPath);
         }
         const [dirName, baseName] = [path.dirname(this.uiPath), path.basename(this.uiPath)];
-        return path.join(this.config.cacheDir, dirName, size, baseName);
+        return path.join(this.config.dataDir, 'cache', dirName, size, baseName);
     }
 
     public async getMetadata(): Promise<ImageData> {

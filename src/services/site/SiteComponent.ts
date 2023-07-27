@@ -19,7 +19,7 @@ export class SiteComponent implements ISiteComponent {
     public constructor(config: Config, apiPath: string) {
         this.config = config;
         this.apiPath = apiPath;
-        if (!pathIsDirectory(path.join(this.config.contentDir, apiPath))) {
+        if (!pathIsDirectory(path.join(this.config.dataDir, 'content', apiPath))) {
             throw new Error(`A content directory does not exist for the path ${this.apiPath}`);
         }
         if (!pathIsFile(this.getContentPath())) {
@@ -46,7 +46,7 @@ export class SiteComponent implements ISiteComponent {
     }
 
     private getContentPath(): string {
-        return path.join(this.config.contentDir, `${this.apiPath}.yaml`);
+        return path.join(this.config.dataDir, 'content', `${this.apiPath}.yaml`);
     }
 
     public getMetadata(): ComponentMetadata {

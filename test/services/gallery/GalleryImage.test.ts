@@ -8,8 +8,7 @@ jest.mock('fs');
 jest.mock('../../../src/utils');
 
 const config = {
-    cacheDir: '/path/to/cache',
-    contentDir: '/path/to/content',
+    dataDir: '/path/to/data',
     url: 'site-url'
 } as any;
 
@@ -20,7 +19,7 @@ describe('GalleryImage', () => {
         it('Throws an error if the source image does not exist', () => {
             pathModifiedTimeMock.mockReturnValue(0);
             expect(() => new GalleryImage(config, 'gallery/image.jpg'))
-                .toThrow('File /path/to/content/gallery/image.jpg does not exist');
+                .toThrow('File /path/to/data/content/gallery/image.jpg does not exist');
 
         });
     });
@@ -50,7 +49,7 @@ describe('GalleryImage', () => {
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
             pathModifiedTimeMock.mockReturnValue(0);
             await expect(galleryImage.sendFile('thumb', response))
-                .rejects.toThrow('File /path/to/content/gallery/image.jpg does not exist');
+                .rejects.toThrow('File /path/to/data/content/gallery/image.jpg does not exist');
         });
 
         it.each([
@@ -62,12 +61,12 @@ describe('GalleryImage', () => {
             await galleryImage.sendFile(size as any, response);
 
             expect(response.sendFile).toBeCalled();
-            expect(response.sendFile.mock.calls[0][0]).toBe(`/path/to/cache/gallery/${size}/image.jpg`);
+            expect(response.sendFile.mock.calls[0][0]).toBe(`/path/to/data/cache/gallery/${size}/image.jpg`);
         });
 
         it('does not resize the cached file if it is newer than the source and calls response.sendFile', async () => {
             pathModifiedTimeMock.mockImplementation((filePath: string) => (
-                filePath.startsWith('/path/to/cache') ? 5000 : 1000
+                filePath.startsWith('/path/to/data/cache') ? 5000 : 1000
             ));
 
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
@@ -75,7 +74,7 @@ describe('GalleryImage', () => {
             await galleryImage.sendFile('thumb' as any, response);
 
             expect(response.sendFile).toBeCalled();
-            expect(response.sendFile.mock.calls[0][0]).toBe('/path/to/cache/gallery/thumb/image.jpg');
+            expect(response.sendFile.mock.calls[0][0]).toBe('/path/to/data/cache/gallery/thumb/image.jpg');
             expect(resizeImage).toBeCalledTimes(0);
         });
 
@@ -85,7 +84,7 @@ describe('GalleryImage', () => {
         ])('resizes the cached file with correct params if it is older than the source and calls response.sendFile', async (size, imgParams) => {
 
             pathModifiedTimeMock.mockImplementation((filePath: string) => (
-                filePath.startsWith('/path/to/cache') ? 1000 : 5000
+                filePath.startsWith('/path/to/data/cache') ? 1000 : 5000
             ));
 
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
@@ -93,11 +92,11 @@ describe('GalleryImage', () => {
             await galleryImage.sendFile(size as any, response);
 
             expect(response.sendFile).toBeCalled();
-            expect(response.sendFile.mock.calls[0][0]).toBe(`/path/to/cache/gallery/${size}/image.jpg`);
+            expect(response.sendFile.mock.calls[0][0]).toBe(`/path/to/data/cache/gallery/${size}/image.jpg`);
             expect(resizeImage).toBeCalledTimes(1);
             expect(resizeImage).toBeCalledWith(
-                '/path/to/content/gallery/image.jpg',
-                `/path/to/cache/gallery/${size}/image.jpg`,
+                '/path/to/data/content/gallery/image.jpg',
+                `/path/to/data/cache/gallery/${size}/image.jpg`,
                 imgParams.width,
                 imgParams.height,
                 imgParams.quality
@@ -109,14 +108,14 @@ describe('GalleryImage', () => {
             'fhd'
         ])('attempts to create the cached image directory when resizing if it does not exist', async (size) => {
             pathModifiedTimeMock.mockImplementation((filePath: string) => (
-                filePath.startsWith('/path/to/cache') ? 0 : 5000
+                filePath.startsWith('/path/to/data/cache') ? 0 : 5000
             ));
             (fs.existsSync as jest.Mock).mockReturnValue(false);
 
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
             await galleryImage.sendFile(size as any, response);
             expect(fs.mkdirSync).toBeCalledTimes(1);
-            expect(fs.mkdirSync).toBeCalledWith(`/path/to/cache/gallery/${size}`, { recursive: true });
+            expect(fs.mkdirSync).toBeCalledWith(`/path/to/data/cache/gallery/${size}`, { recursive: true });
         });
 
         it.each([
@@ -124,7 +123,7 @@ describe('GalleryImage', () => {
             'fhd'
         ])('does not attempt to create the cached image directory when resizing if it does exist', async (size) => {
             pathModifiedTimeMock.mockImplementation((filePath: string) => (
-                filePath.startsWith('/path/to/cache') ? 1000 : 5000
+                filePath.startsWith('/path/to/data/cache') ? 1000 : 5000
             ));
             (fs.existsSync as jest.Mock).mockReturnValue(true);
 
@@ -147,7 +146,7 @@ describe('GalleryImage', () => {
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
             pathModifiedTimeMock.mockReturnValue(0);
             await expect(galleryImage.getMetadata())
-                .rejects.toThrow('File /path/to/content/gallery/image.jpg does not exist');
+                .rejects.toThrow('File /path/to/data/content/gallery/image.jpg does not exist');
         });
 
         it('retrieves and returns expected data from image files on first run with no thumb (thumb file resized)', async () => {
@@ -161,7 +160,7 @@ describe('GalleryImage', () => {
             };
 
             pathModifiedTimeMock.mockImplementation((filePath: string) => (
-                filePath.startsWith('/path/to/cache') ? 0 : 5000
+                filePath.startsWith('/path/to/data/cache') ? 0 : 5000
             ));
 
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
@@ -183,7 +182,7 @@ describe('GalleryImage', () => {
             };
 
             pathModifiedTimeMock.mockImplementation((filePath: string) => (
-                filePath.startsWith('/path/to/cache') ? 100 : 5000
+                filePath.startsWith('/path/to/data/cache') ? 100 : 5000
             ));
 
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
@@ -218,14 +217,14 @@ describe('GalleryImage', () => {
             };
 
             pathModifiedTimeMock.mockImplementation((filePath: string) => (
-                filePath.startsWith('/path/to/cache') ? 100 : 5000
+                filePath.startsWith('/path/to/data/cache') ? 100 : 5000
             ));
 
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
             const metadata1 = await galleryImage.getMetadata();
 
             pathModifiedTimeMock.mockImplementation((filePath: string) => (
-                filePath.startsWith('/path/to/cache') ? 6000 : 7000
+                filePath.startsWith('/path/to/data/cache') ? 6000 : 7000
             ));
 
             (getExif as jest.Mock).mockReturnValue({ title: 'my image title', ISO: '2000' });
@@ -252,7 +251,7 @@ describe('GalleryImage', () => {
             };
 
             pathModifiedTimeMock.mockImplementation((filePath: string) => (
-                filePath.startsWith('/path/to/cache') ? 0 : 5000
+                filePath.startsWith('/path/to/data/cache') ? 0 : 5000
             ));
 
             const galleryImage = new GalleryImage(config, 'gallery/image.jpg');

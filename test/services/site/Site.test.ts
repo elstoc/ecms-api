@@ -6,8 +6,7 @@ jest.mock('fs');
 jest.mock('../../../src/services/site/SiteComponent');
 
 const config = {
-    cacheDir: '/path/to/cache',
-    contentDir: '/path/to/content'
+    dataDir: '/path/to/data',
 } as any;
 
 describe('Site', () => {

@@ -5,8 +5,7 @@ import * as fsUtils from '../../../src/utils/site/fsUtils';
 import { MarkdownRecurse } from '../../../src/services/markdown/MarkdownRecurse';
 
 const config = {
-    cacheDir: '/path/to/cache',
-    contentDir: '/path/to/content'
+    dataDir: '/path/to/data',
 } as any;
 
 jest.mock('fs', () => ({
@@ -91,7 +90,7 @@ describe('MarkdownRecurse', () => {
             };
             const pageMeta = await page.getMetadata();
             const readFileCallParams = readFileMock.mock.calls[0];
-            expect(readFileCallParams).toEqual(['/path/to/content/path/to/file.md','utf-8']);
+            expect(readFileCallParams).toEqual(['/path/to/data/content/path/to/file.md','utf-8']);
             expect(pageMeta).toStrictEqual(expectedPageMeta);
         });
 
@@ -165,7 +164,7 @@ describe('MarkdownRecurse', () => {
             page.sendFile('rootDir', response);
             expect(response.sendFile).toBeCalledTimes(1);
             expect(response.sendStatus).toBeCalledTimes(0);
-            expect(response.sendFile).toBeCalledWith('/path/to/content/rootDir/index.md');
+            expect(response.sendFile).toBeCalledWith('/path/to/data/content/rootDir/index.md');
         });
 
         it('sends 404 if the requested file is not the root dir and does not end in .md', () => {
@@ -183,7 +182,7 @@ describe('MarkdownRecurse', () => {
             page.sendFile('rootDir/somefile.md', response);
             expect(response.sendStatus).toBeCalledTimes(0);
             expect(response.sendFile).toBeCalledTimes(1);
-            expect(response.sendFile).toBeCalledWith('/path/to/content/rootDir/somefile.md');
+            expect(response.sendFile).toBeCalledWith('/path/to/data/content/rootDir/somefile.md');
         });
 
         it('sends the requested file if it is a child-of-a-child of the root object (where all directories are backed by files)', () => {
@@ -192,7 +191,7 @@ describe('MarkdownRecurse', () => {
             page.sendFile('rootDir/someDir/someotherDir/someFile.md', response);
             expect(response.sendStatus).toBeCalledTimes(0);
             expect(response.sendFile).toBeCalledTimes(1);
-            expect(response.sendFile).toBeCalledWith('/path/to/content/rootDir/someDir/someotherDir/someFile.md');
+            expect(response.sendFile).toBeCalledWith('/path/to/data/content/rootDir/someDir/someotherDir/someFile.md');
         });
 
         it('sends 404 if one of the intermediate directories in the path has no backing file', () => {

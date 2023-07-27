@@ -51,7 +51,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     }
 
     private fullApiPath(): string {
-        return path.join(this.config.contentDir, this.apiPath);
+        return path.join(this.config.dataDir, 'content', this.apiPath);
     }
 
     private clearCacheIfOutdated(): void {
@@ -81,10 +81,10 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     private getNextChildInPath(apiPath: string): IMarkdownRecurse {
         const nextChildPathPart = apiPath.replace(`${this.childrenApiDir()}/`, '').split('/')[0];
         let nextChildApiPath = `${path.join(this.childrenApiDir(), nextChildPathPart)}`;
-        if (pathIsDirectory(path.join(this.config.contentDir, nextChildApiPath))) {
+        if (pathIsDirectory(path.join(this.config.dataDir, 'content', nextChildApiPath))) {
             nextChildApiPath += '.md';
         }
-        if (!pathIsFile(path.join(this.config.contentDir, nextChildApiPath))) {
+        if (!pathIsFile(path.join(this.config.dataDir, 'content', nextChildApiPath))) {
             throw new Error('No backing file found for some portions of the path');
         }
         return this.getChild(nextChildApiPath);
@@ -148,7 +148,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     }
 
     private getChildren(): IMarkdownRecurse[] {
-        const childrenDirFullPath = path.join(this.config.contentDir, this.childrenApiDir());
+        const childrenDirFullPath = path.join(this.config.dataDir, 'content', this.childrenApiDir());
 
         if (!pathIsDirectory(childrenDirFullPath)) return [];
 

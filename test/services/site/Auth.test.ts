@@ -8,7 +8,7 @@ import * as jwt from '../../../src/utils/site/jwt';
 jest.mock('fs');
 
 const config = {
-    adminDir: '/path/to/admin',
+    dataDir: '/path/to/data',
     jwtIssuer: 'issue',
     jwtAudience: 'ui',
     jwtRefreshExpires: '3d',
@@ -26,7 +26,7 @@ describe('When creating an Auth Object', () => {
         const auth = new Auth(config);
         expect(mockReadFileSync).toBeCalledTimes(1);
         const readFromLocation = mockReadFileSync.mock.calls[0][0];
-        expect(readFromLocation).toBe('/path/to/admin/users.json');
+        expect(readFromLocation).toBe('/path/to/data/admin/users.json');
     });
 
     it('Does not load from the users file if it does not exist', () => {
@@ -63,7 +63,7 @@ describe('After creating an Auth object', () => {
             auth.createUser('anotheruser', userFullName, userRoles);
             const writeFileLocation = mockWriteFileSync.mock.calls[0][0];
             const writeFileContent = mockWriteFileSync.mock.calls[0][1];
-            expect(writeFileLocation).toBe('/path/to/admin/users.json');
+            expect(writeFileLocation).toBe('/path/to/data/admin/users.json');
             expect(writeFileContent).toBe(JSON.stringify(expectedUsers, null, 4));
         });
 
@@ -92,7 +92,7 @@ describe('After creating an Auth object', () => {
             await auth.setPassword(user, userPassword);
             expect(mockWriteFileSync).toBeCalledTimes(1);
             const writeFilePath = mockWriteFileSync.mock.calls[0][0];
-            expect(writeFilePath).toBe('/path/to/admin/users.json');
+            expect(writeFilePath).toBe('/path/to/data/admin/users.json');
         });
 
         it('throws error for an existing user with a previous password stored and no old password given', async () => {

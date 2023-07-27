@@ -13,8 +13,7 @@ jest.mock('fs', () => ({
 jest.mock('../../../src/services/gallery/GalleryImage');
 
 const config = {
-    cacheDir: '/path/to/cache',
-    contentDir: '/path/to/content'
+    dataDir: '/path/to/data',
 } as any;
 
 describe('Gallery', () => {

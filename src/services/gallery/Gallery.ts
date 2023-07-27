@@ -50,7 +50,7 @@ export class Gallery implements IGallery {
     }
 
     private async getJpegFileNames(): Promise<string[]> {
-        const fullPath = path.join(this.config.contentDir, this.apiPath);
+        const fullPath = path.join(this.config.dataDir, 'content', this.apiPath);
         const dir = await fs.promises.readdir(fullPath);
         return dir.filter((file) => file.endsWith('.jpg'));
     }

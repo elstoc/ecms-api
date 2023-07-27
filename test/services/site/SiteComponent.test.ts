@@ -11,8 +11,7 @@ jest.mock('../../../src/services/gallery/Gallery');
 jest.mock('../../../src/services/markdown/MarkdownRecurse');
 
 const config = {
-    cacheDir: '/path/to/cache',
-    contentDir: '/path/to/content'
+    dataDir: '/path/to/data',
 } as any;
 
 const pathIsDirectoryMock = pathIsDirectory as jest.Mock;
@@ -66,7 +65,7 @@ describe('SiteComponent', () => {
             new SiteComponent(config, 'my-component');
 
             expect(fs.readFileSync).toBeCalledTimes(1);
-            expect(fs.readFileSync).toBeCalledWith('/path/to/content/my-component.yaml', 'utf-8');
+            expect(fs.readFileSync).toBeCalledWith('/path/to/data/content/my-component.yaml', 'utf-8');
         });
 
         it('creates a Markdown root object if the component type is "markdown"', () => {
@@ -136,7 +135,7 @@ describe('SiteComponent', () => {
             const actualMetadata = component.getMetadata();
 
             expect(fs.readFileSync).toBeCalledTimes(1);
-            expect(fs.readFileSync).toBeCalledWith('/path/to/content/my-component.yaml', 'utf-8');
+            expect(fs.readFileSync).toBeCalledWith('/path/to/data/content/my-component.yaml', 'utf-8');
             expect(expectedMetadata).toStrictEqual(actualMetadata);
         });
     });

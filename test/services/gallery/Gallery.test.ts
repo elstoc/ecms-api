@@ -18,7 +18,7 @@ const config = {
 } as any;
 
 describe('Gallery', () => {
-    describe('getMetadata', () => {
+    describe('getImages', () => {
         let gallery: Gallery;
     
         beforeEach(() => {
@@ -42,12 +42,12 @@ describe('Gallery', () => {
         });
     
         it('only creates GalleryImage instances for files it has not seen before', async () => {
-            await gallery.getMetadata(3);
-            await gallery.getMetadata(3);
+            await gallery.getImages(3);
+            await gallery.getImages(3);
             expect(GalleryImage).toBeCalledTimes(3);
-            await gallery.getMetadata(6);
+            await gallery.getImages(6);
             expect(GalleryImage).toBeCalledTimes(6);
-            await gallery.getMetadata(9);
+            await gallery.getImages(9);
             expect(GalleryImage).toBeCalledTimes(9);
         });
     
@@ -58,13 +58,13 @@ describe('Gallery', () => {
     
             const expectedReturnData = {
                 imageCount: 12,
-                imageList: [
+                images: [
                     { filePath: 'gallery/image12.jpg' },
                     { filePath: 'gallery/image11.jpg' },
                     { filePath: 'gallery/image10.jpg' },
                 ]
             };
-            const returnData = await gallery.getMetadata(3);
+            const returnData = await gallery.getImages(3);
             expect(returnData).toStrictEqual(expectedReturnData);
         });
     
@@ -75,7 +75,7 @@ describe('Gallery', () => {
     
             const expectedReturnData = {
                 imageCount: 12,
-                imageList: [
+                images: [
                     { filePath: 'gallery/image12.jpg' },
                     { filePath: 'gallery/image11.jpg' },
                     { filePath: 'gallery/image10.jpg' },
@@ -90,13 +90,13 @@ describe('Gallery', () => {
                     { filePath: 'gallery/image01.jpg' },
                 ]
             };
-            const returnData = await gallery.getMetadata();
+            const returnData = await gallery.getImages();
             expect(returnData).toStrictEqual(expectedReturnData);
         });
     
     });
     
-    describe('sendFile', () => {
+    describe('sendImageFile', () => {
         let gallery: Gallery;
     
         beforeEach(() => {
@@ -110,7 +110,7 @@ describe('Gallery', () => {
                 sendFile
             }));
     
-            await gallery.sendFile('gallery/image1.jpg', 'thumb', response);
+            await gallery.sendImageFile('gallery/image1.jpg', 'thumb', response);
     
             expect(GalleryImage).toBeCalledTimes(1);
             expect(sendFile).toBeCalledWith('thumb', response);
@@ -123,8 +123,8 @@ describe('Gallery', () => {
                 sendFile
             }));
     
-            await gallery.sendFile('gallery/image1.jpg', 'thumb', response);
-            await gallery.sendFile('gallery/image1.jpg', 'fhd', response);
+            await gallery.sendImageFile('gallery/image1.jpg', 'thumb', response);
+            await gallery.sendImageFile('gallery/image1.jpg', 'fhd', response);
     
             expect(GalleryImage).toBeCalledTimes(1);
             expect(sendFile).toBeCalledTimes(2);

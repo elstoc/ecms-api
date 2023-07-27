@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 
-import { IGallery, GalleryData } from './IGallery';
+import { IGallery, GalleryImages } from './IGallery';
 import { GalleryImage } from './GalleryImage';
 import { ImageData, ImageSize } from './IGalleryImage';
 import { Config } from '../../utils';
@@ -17,17 +17,17 @@ export class Gallery implements IGallery {
         this.config = config;
     }
 
-    public async getMetadata(limit?: number): Promise<GalleryData> {
+    public async getImages(limit?: number): Promise<GalleryImages> {
         const imageFileNames = (await this.getJpegFileNames()).sort().reverse();
         const imageCount = imageFileNames.length;
 
-        const imageList = await Promise.all(
+        const images = await Promise.all(
             imageFileNames
                 .slice(0, limit)
                 .map((fileName) => this.getImageMetadata(`${this.apiPath}/${fileName}`))
         );
 
-        return { imageCount, imageList };
+        return { imageCount, images };
     }
 
     private async getImageMetadata(apiPath: string): Promise<ImageData> {
@@ -35,7 +35,7 @@ export class Gallery implements IGallery {
         return await image.getMetadata();
     }
 
-    public async sendFile(apiPath: string, size: ImageSize, response: Response): Promise<void> {
+    public async sendImageFile(apiPath: string, size: ImageSize, response: Response): Promise<void> {
         const image = this.getGalleryImage(apiPath);
         await image.sendFile(size, response);
     }

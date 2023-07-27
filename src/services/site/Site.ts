@@ -4,7 +4,7 @@ import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
 import { ISite } from './ISite';
 import { SiteComponent } from './SiteComponent';
 import { Config } from '../../utils';
-import { GalleryData, ImageSize } from '../gallery';
+import { GalleryImages, ImageSize } from '../gallery';
 import { Response } from 'express';
 import { MarkdownStructure } from '../markdown/IMarkdownRecurse';
 
@@ -54,14 +54,14 @@ export class Site implements ISite {
         return component.getMetadata();
     }
 
-    public async getGalleryData(apiPath: string, limit?: number): Promise<GalleryData> {
+    public async getGalleryData(apiPath: string, limit?: number): Promise<GalleryImages> {
         const gallery = this.getRootComponent(apiPath).getGallery();
-        return gallery.getMetadata(limit);
+        return gallery.getImages(limit);
     }
 
     public async sendGalleryImage(apiPath: string, size: string, response: Response): Promise<void> {
         const gallery = this.getRootComponent(apiPath).getGallery();
-        await gallery.sendFile(apiPath, size as ImageSize, response);
+        await gallery.sendImageFile(apiPath, size as ImageSize, response);
     }
 
     public async getMarkdownStructure(apiPath: string): Promise<MarkdownStructure> {

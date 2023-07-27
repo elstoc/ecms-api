@@ -1,12 +1,12 @@
 import { Response } from 'express';
 import { ImageData, ImageSize } from './IGalleryImage';
 
-export type GalleryData = {
+export type GalleryImages = {
     imageCount: number;
-    imageList: ImageData[];
+    images: ImageData[];
 }
 
 export interface IGallery {
-    getMetadata(limit?: number): Promise<GalleryData>;
-    sendFile(apiPath: string, size: ImageSize, response: Response): Promise<void>;
+    getImages(limit?: number): Promise<GalleryImages>;
+    sendImageFile(apiPath: string, size: ImageSize, response: Response): Promise<void>;
 }

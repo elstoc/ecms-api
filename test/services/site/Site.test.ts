@@ -115,9 +115,9 @@ describe('Site', () => {
     });
 
     describe('getGalleryData', () => {
-        it('runs getMetadata on the appropriate gallery object', async () => {
+        it('runs getImages on the appropriate gallery object', async () => {
             (SiteComponent as jest.Mock).mockImplementation((_, inputFilePath) => ({
-                getGallery: () => ({ getMetadata: (limit: number) => `${inputFilePath}-${limit}-metadata` })
+                getGallery: () => ({ getImages: (limit: number) => `${inputFilePath}-${limit}-metadata` })
             }));
             (fs.readdirSync as jest.Mock).mockReturnValue([
                 'component01.yaml',
@@ -132,15 +132,15 @@ describe('Site', () => {
     });
 
     describe('sendGalleryImage', () => {
-        it('calls sendFile on the appropriate gallery object', async () => {
+        it('calls sendImageFile on the appropriate gallery object', async () => {
             const response = {
                 sendFile: jest.fn(),
             } as any;
 
-            const sendFile = jest.fn();
+            const sendImageFile = jest.fn();
 
             (SiteComponent as jest.Mock).mockImplementation(() => ({
-                getGallery: () => ({ sendFile })
+                getGallery: () => ({ sendImageFile })
             }));
             (fs.readdirSync as jest.Mock).mockReturnValue([
                 'component01.yaml',
@@ -149,8 +149,8 @@ describe('Site', () => {
             ]);
             const site = new Site(config);
             await site.sendGalleryImage('component01/image1.jpg', 'thumb', response);
-            expect(sendFile).toBeCalled();
-            expect(sendFile).toBeCalledWith('component01/image1.jpg', 'thumb', response);
+            expect(sendImageFile).toBeCalled();
+            expect(sendImageFile).toBeCalledWith('component01/image1.jpg', 'thumb', response);
         });
     });
 

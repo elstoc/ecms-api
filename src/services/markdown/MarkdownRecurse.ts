@@ -11,18 +11,18 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     private isRoot: boolean;
     private config: Config;
     private metadata?: MarkdownMetadata;
-    private childCache: { [key: string]: IMarkdownRecurse } = {};
+    private children: { [key: string]: IMarkdownRecurse } = {};
     private metadataBackingFileModifiedTime = 0;
 
     constructor(apiPath: string, config: Config, root = false) {
         this.apiPath = apiPath.replace(/^\//, '');
         this.config = config;
         this.isRoot = root;
-        this.throwIfInvalid();
-        this.clearCacheIfOutdated();
+        this.throwIfInvalidPath();
+        this.clearMetadataIfOutdated();
     }
 
-    private throwIfInvalid(): void {
+    private throwIfInvalidPath(): void {
         if (this.isRoot && this.apiPath.endsWith('.md')) {
             throw new Error('Root path must not point to a markdown file');
         }
@@ -54,7 +54,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         return path.join(this.config.dataDir, 'content', this.apiPath);
     }
 
-    private clearCacheIfOutdated(): void {
+    private clearMetadataIfOutdated(): void {
         if (this.backingFileModifiedTime() !== this.metadataBackingFileModifiedTime) {
             this.metadata = undefined;
             this.metadataBackingFileModifiedTime = this.backingFileModifiedTime();
@@ -66,7 +66,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     }
 
     public sendFile(apiPath: string, response: Response): void {
-        this.throwIfInvalid();
+        this.throwIfInvalidPath();
         try {
             if (this.apiPath === apiPath) {
                 response.sendFile(this.backingFileFullPath());
@@ -91,18 +91,18 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     }
 
     private getChild(childApiPath: string): IMarkdownRecurse {
-        this.childCache[childApiPath] ??= new MarkdownRecurse(childApiPath, this.config);
-        return this.childCache[childApiPath];
+        this.children[childApiPath] ??= new MarkdownRecurse(childApiPath, this.config);
+        return this.children[childApiPath];
     }
 
     public async getMetadata(): Promise<MarkdownMetadata> {
-        this.throwIfInvalid();
+        this.throwIfInvalidPath();
         await this.refreshMetadata();
         return this.metadata ?? {};
     }
 
     private async refreshMetadata(): Promise<void> {
-        this.clearCacheIfOutdated();
+        this.clearMetadataIfOutdated();
         if (this.metadata) return;
         const frontMatter = await this.parseFrontMatter();
         this.metadata = {

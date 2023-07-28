@@ -7,14 +7,15 @@ import { Config } from '../../utils';
 import { GalleryImages, ImageSize } from '../gallery';
 import { Response } from 'express';
 import { MarkdownStructure } from '../markdown/IMarkdownRecurse';
+import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
 export class Site implements ISite {
-    private config: Config;
-
     private components: { [key: string]: ISiteComponent } = {};
 
-    constructor(config: Config) {
-        this.config = config;
+    constructor(
+        private config: Config,
+        private storage: IStorageAdapter
+    ) {
         this.refreshComponents();
     }
 
@@ -30,7 +31,7 @@ export class Site implements ISite {
     }
 
     private getComponent(apiPath: string): ISiteComponent {
-        this.components[apiPath] ??= new SiteComponent(this.config, apiPath);
+        this.components[apiPath] ??= new SiteComponent(this.config, apiPath, this.storage);
         return this.components[apiPath];
     }
 

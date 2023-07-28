@@ -3,6 +3,7 @@ import fs from 'fs';
 
 import { GalleryImage } from '../../../src/services/';
 import { getExif, resizeImage, getImageDimensions, pathModifiedTime } from '../../../src/utils';
+import { IStorageAdapter } from '../../../src/adapters/IStorageAdapter';
 
 jest.mock('fs');
 jest.mock('../../../src/utils');
@@ -13,12 +14,13 @@ const config = {
 } as any;
 
 const pathModifiedTimeMock = pathModifiedTime as jest.Mock;
+let mockStorageAdapter: jest.MockedObject<IStorageAdapter>;
 
 describe('GalleryImage', () => {
     describe('constructor', () => {
         it('Throws an error if the source image does not exist', () => {
             pathModifiedTimeMock.mockReturnValue(0);
-            expect(() => new GalleryImage(config, 'gallery/image.jpg'))
+            expect(() => new GalleryImage(config, 'gallery/image.jpg', mockStorageAdapter))
                 .toThrow('File /path/to/data/content/gallery/image.jpg does not exist');
 
         });
@@ -40,13 +42,13 @@ describe('GalleryImage', () => {
             'test',
             'something'
         ])('throws an error if the size description is not valid', async (size) => {
-            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg', mockStorageAdapter);
             await expect(galleryImage.sendFile(size as any, response))
                 .rejects.toThrow('Incorrect size description');
         });
 
         it('throws an error if the source image does not exist', async () => {
-            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg', mockStorageAdapter);
             pathModifiedTimeMock.mockReturnValue(0);
             await expect(galleryImage.sendFile('thumb', response))
                 .rejects.toThrow('File /path/to/data/content/gallery/image.jpg does not exist');
@@ -56,7 +58,7 @@ describe('GalleryImage', () => {
             'thumb',
             'fhd'
         ])('calls response.sendFile with the correct path when the size description is valid and source file exists', async (size) => {
-            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg', mockStorageAdapter);
 
             await galleryImage.sendFile(size as any, response);
 
@@ -69,7 +71,7 @@ describe('GalleryImage', () => {
                 filePath.startsWith('/path/to/data/cache') ? 5000 : 1000
             ));
 
-            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg', mockStorageAdapter);
 
             await galleryImage.sendFile('thumb' as any, response);
 
@@ -87,7 +89,7 @@ describe('GalleryImage', () => {
                 filePath.startsWith('/path/to/data/cache') ? 1000 : 5000
             ));
 
-            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg', mockStorageAdapter);
 
             await galleryImage.sendFile(size as any, response);
 
@@ -112,7 +114,7 @@ describe('GalleryImage', () => {
             ));
             (fs.existsSync as jest.Mock).mockReturnValue(false);
 
-            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg', mockStorageAdapter);
             await galleryImage.sendFile(size as any, response);
             expect(fs.mkdirSync).toBeCalledTimes(1);
             expect(fs.mkdirSync).toBeCalledWith(`/path/to/data/cache/gallery/${size}`, { recursive: true });
@@ -127,7 +129,7 @@ describe('GalleryImage', () => {
             ));
             (fs.existsSync as jest.Mock).mockReturnValue(true);
 
-            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg', mockStorageAdapter);
             await galleryImage.sendFile(size as any, response);
             expect(fs.mkdirSync).toBeCalledTimes(0);
         });
@@ -143,7 +145,7 @@ describe('GalleryImage', () => {
         });
 
         it('throws an error if the source image does not exist', async () => {
-            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg', mockStorageAdapter);
             pathModifiedTimeMock.mockReturnValue(0);
             await expect(galleryImage.getMetadata())
                 .rejects.toThrow('File /path/to/data/content/gallery/image.jpg does not exist');
@@ -163,7 +165,7 @@ describe('GalleryImage', () => {
                 filePath.startsWith('/path/to/data/cache') ? 0 : 5000
             ));
 
-            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg', mockStorageAdapter);
             const metadata = await galleryImage.getMetadata();
             expect(metadata).toStrictEqual(expectedMetadata);
             expect(getExif).toBeCalledTimes(1);
@@ -185,7 +187,7 @@ describe('GalleryImage', () => {
                 filePath.startsWith('/path/to/data/cache') ? 100 : 5000
             ));
 
-            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg', mockStorageAdapter);
             const metadata1 = await galleryImage.getMetadata();
 
             const metadata2 = await galleryImage.getMetadata();
@@ -220,7 +222,7 @@ describe('GalleryImage', () => {
                 filePath.startsWith('/path/to/data/cache') ? 100 : 5000
             ));
 
-            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg', mockStorageAdapter);
             const metadata1 = await galleryImage.getMetadata();
 
             pathModifiedTimeMock.mockImplementation((filePath: string) => (
@@ -254,7 +256,7 @@ describe('GalleryImage', () => {
                 filePath.startsWith('/path/to/data/cache') ? 0 : 5000
             ));
 
-            const galleryImage = new GalleryImage(config, 'gallery/image.jpg');
+            const galleryImage = new GalleryImage(config, 'gallery/image.jpg', mockStorageAdapter);
             const metadata = await galleryImage.getMetadata();
             expect(metadata).toStrictEqual(expectedMetadata);
         });

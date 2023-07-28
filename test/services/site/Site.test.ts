@@ -1,6 +1,7 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import fs from 'fs';
 import { Site, SiteComponent } from '../../../src/services';
+import { IStorageAdapter } from '../../../src/adapters/IStorageAdapter';
 
 jest.mock('fs');
 jest.mock('../../../src/services/site/SiteComponent');
@@ -8,6 +9,8 @@ jest.mock('../../../src/services/site/SiteComponent');
 const config = {
     dataDir: '/path/to/data',
 } as any;
+
+let mockStorageAdapter: jest.MockedObject<IStorageAdapter>;
 
 describe('Site', () => {
 
@@ -20,7 +23,7 @@ describe('Site', () => {
                 'notcomponent.txt',
                 'notcomponent.jpg'
             ]);
-            new Site(config);
+            new Site(config, mockStorageAdapter);
             expect(SiteComponent).toBeCalledTimes(3);
         });
     });
@@ -39,7 +42,7 @@ describe('Site', () => {
                 'notcomponent.txt',
                 'notcomponent.jpg'
             ]);
-            site = new Site(config);
+            site = new Site(config, mockStorageAdapter);
 
             expect(SiteComponent).toBeCalledTimes(3);
             (fs.readdirSync as jest.Mock).mockReturnValue([
@@ -63,7 +66,7 @@ describe('Site', () => {
                 'notcomponent.txt',
                 'notcomponent.jpg'
             ]);
-            site = new Site(config);
+            site = new Site(config, mockStorageAdapter);
 
             const expectedNavData = [
                 { uiPath: 'component01' },
@@ -95,7 +98,7 @@ describe('Site', () => {
                 'componentF.yaml',
                 'componentG.yaml',
             ]);
-            site = new Site(config);
+            site = new Site(config, mockStorageAdapter);
 
             const expectedNavData = [
                 { uiPath: 'componentE', title: 'componentE', weight: 10 },
@@ -123,7 +126,7 @@ describe('Site', () => {
                 'component02.yaml',
                 'component03.yaml',
             ]);
-            const site = new Site(config);
+            const site = new Site(config, mockStorageAdapter);
             const expectedGallerydata = 'component01-30-metadata';
             const actualGallerydata = await site.getGalleryImages('component01', 30);
             expect(actualGallerydata).toBe(expectedGallerydata);
@@ -146,7 +149,7 @@ describe('Site', () => {
                 'component02.yaml',
                 'component03.yaml',
             ]);
-            const site = new Site(config);
+            const site = new Site(config, mockStorageAdapter);
             await site.sendGalleryImage('component01/image1.jpg', 'thumb', response);
             expect(sendImageFile).toBeCalled();
             expect(sendImageFile).toBeCalledWith('component01/image1.jpg', 'thumb', response);
@@ -163,7 +166,7 @@ describe('Site', () => {
                 'component02.yaml',
                 'component03.yaml',
             ]);
-            const site = new Site(config);
+            const site = new Site(config, mockStorageAdapter);
             const expectedMarkdownStructure = 'component02-struct';
             const actualMarkdownStructure = await site.getMarkdownStructure('component02');
             expect(actualMarkdownStructure).toBe(expectedMarkdownStructure);
@@ -180,7 +183,7 @@ describe('Site', () => {
                 'component02.yaml',
                 'component03.yaml',
             ]);
-            const site = new Site(config);
+            const site = new Site(config, mockStorageAdapter);
             const expectedPath = 'component02-component02/path/to/file-markdown';
             const actualPath = site.sendMarkdownFile('component02/path/to/file', 'nothing' as any);
             expect(actualPath).toBe(expectedPath);

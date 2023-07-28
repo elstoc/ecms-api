@@ -4,6 +4,7 @@ import fs from 'fs';
 import { Auth } from '../../../src/services';
 import * as hash from '../../../src/utils/site/hash';
 import * as jwt from '../../../src/utils/site/jwt';
+import { IStorageAdapter } from '../../../src/adapters/IStorageAdapter';
 
 jest.mock('fs');
 
@@ -17,13 +18,15 @@ const config = {
     jwtAccessSecret: 'accessSecret',
 } as any;
 
+let mockStorageAdapter: jest.MockedObject<IStorageAdapter>;
+
 const initialUsers = { 'thefirstuser': { id: 'thefirstuser', fullName: 'The first user', roles: ['admin'] } };
 
 describe('When creating an Auth Object', () => {
     it('Loads users from the users file if it exists', () => {
         (fs.existsSync as jest.Mock).mockReturnValue(true);
         const mockReadFileSync = (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers, null, 4));
-        const auth = new Auth(config);
+        const auth = new Auth(config, mockStorageAdapter);
         expect(mockReadFileSync).toBeCalledTimes(1);
         const readFromLocation = mockReadFileSync.mock.calls[0][0];
         expect(readFromLocation).toBe('/path/to/data/admin/users.json');
@@ -32,7 +35,7 @@ describe('When creating an Auth Object', () => {
     it('Does not load from the users file if it does not exist', () => {
         (fs.existsSync as jest.Mock).mockReturnValue(false);
         const mockReadFileSync = (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers, null, 4));
-        const auth = new Auth(config);
+        const auth = new Auth(config, mockStorageAdapter);
         expect(mockReadFileSync).not.toBeCalled();
     });
 });
@@ -50,7 +53,7 @@ describe('After creating an Auth object', () => {
         (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers, null, 4));
         jest.spyOn(jwt, 'jwtDecode').mockReturnValue({ exp: 123 });
         mockWriteFileSync = (fs.writeFileSync as jest.Mock);
-        auth = new Auth(config);
+        auth = new Auth(config, mockStorageAdapter);
     });
 
     describe('running createUser', () => {

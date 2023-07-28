@@ -6,6 +6,7 @@ import cors from 'cors';
 import { createRootRouter } from './routes';
 import { Auth, Site } from './services';
 import { getConfig } from './utils';
+import { LocalFileStorageAdapter } from './adapters/FileStorageAdapter';
 
 if (process.env.NODE_ENV !== 'production') {
     dotenv.config();
@@ -21,8 +22,9 @@ const start = async () => {
     });
 
     const config = getConfig();
-    const site = new Site(config);
-    const auth = new Auth(config);
+    const storageAdapter = new LocalFileStorageAdapter(config.dataDir);
+    const site = new Site(config, storageAdapter);
+    const auth = new Auth(config, storageAdapter);
 
     const rootRouter = createRootRouter(logger, site, auth);
 

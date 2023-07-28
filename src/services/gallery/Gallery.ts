@@ -6,15 +6,18 @@ import { GalleryImage } from './GalleryImage';
 import { ImageData, ImageSize } from './IGalleryImage';
 import { Config } from '../../utils';
 import { Response } from 'express';
+import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
 export class Gallery implements IGallery {
     private apiPath: string;
-    private config: Config;
     private imageCache: { [key: string]: GalleryImage } = {};
 
-    public constructor(apiPath: string, config: Config) {
+    public constructor(
+        apiPath: string,
+        private config: Config,
+        private storage: IStorageAdapter
+    ) {
         this.apiPath = apiPath.replace(/^\//, '');
-        this.config = config;
     }
 
     public async getImages(limit?: number): Promise<GalleryImages> {
@@ -43,7 +46,7 @@ export class Gallery implements IGallery {
     private getGalleryImage(apiPath: string): GalleryImage {
         let image = this.imageCache[apiPath];
         if (!image) {
-            image = new GalleryImage(this.config, apiPath);
+            image = new GalleryImage(this.config, apiPath, this.storage);
             this.imageCache[apiPath] = image;
         }
         return image;

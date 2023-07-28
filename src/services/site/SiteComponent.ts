@@ -7,18 +7,19 @@ import { IMarkdownRecurse } from '../markdown/IMarkdownRecurse';
 import { MarkdownRecurse } from '../markdown/MarkdownRecurse';
 
 import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
+import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
 export class SiteComponent implements ISiteComponent {
-    private config: Config;
     private gallery?: IGallery;
     private markdown?: IMarkdownRecurse;
-    private apiPath: string;
     private sourceFileModifiedTimeForCache = 0;
     private metadata?: ComponentMetadata;
 
-    public constructor(config: Config, apiPath: string) {
-        this.config = config;
-        this.apiPath = apiPath;
+    public constructor(
+        private config: Config,
+        private apiPath: string,
+        private storage: IStorageAdapter
+    ) {
         if (!pathIsDirectory(path.join(this.config.dataDir, 'content', apiPath))) {
             throw new Error(`A content directory does not exist for the path ${this.apiPath}`);
         }
@@ -27,9 +28,9 @@ export class SiteComponent implements ISiteComponent {
         }
         this.refreshMetadata();
         if (this.metadata?.type === 'gallery') {
-            this.gallery = new Gallery(this.apiPath, this.config);
+            this.gallery = new Gallery(this.apiPath, this.config, this.storage);
         } else if (this.metadata?.type === 'markdown') {
-            this.markdown = new MarkdownRecurse(this.apiPath, this.config, true);
+            this.markdown = new MarkdownRecurse(this.apiPath, this.config, this.storage, true);
         }
     }
 

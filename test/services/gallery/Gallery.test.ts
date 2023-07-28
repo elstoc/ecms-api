@@ -2,6 +2,7 @@
 import fs from 'fs';
 
 import { Gallery, GalleryImage } from '../../../src/services';
+import { IStorageAdapter } from '../../../src/adapters/IStorageAdapter';
 
 jest.mock('fs', () => ({
     existsSync: jest.fn(),
@@ -17,11 +18,12 @@ const config = {
 } as any;
 
 describe('Gallery', () => {
-    describe('getImages', () => {
-        let gallery: Gallery;
+    let gallery: Gallery;
+    let mockStorageAdapter: jest.Mocked<IStorageAdapter>;
     
+    describe('getImages', () => {
         beforeEach(() => {
-            gallery = new Gallery('gallery', config);
+            gallery = new Gallery('gallery', config, mockStorageAdapter);
             (fs.existsSync as jest.Mock).mockReturnValue(true);
             (fs.promises.readdir as jest.Mock).mockResolvedValue([
                 'image12.jpg',
@@ -96,10 +98,8 @@ describe('Gallery', () => {
     });
     
     describe('sendImageFile', () => {
-        let gallery: Gallery;
-    
         beforeEach(() => {
-            gallery = new Gallery('gallery', config);
+            gallery = new Gallery('gallery', config, mockStorageAdapter);
         });
     
         it('creates a new image object and calls image.sendFile the first time it is called', async () => {

@@ -4,6 +4,7 @@ import { Gallery } from '../../../src/services/gallery/Gallery';
 import { MarkdownRecurse } from '../../../src/services/markdown/MarkdownRecurse';
 import { SiteComponent } from '../../../src/services';
 import { pathIsDirectory, pathIsFile, pathModifiedTime } from '../../../src/utils/site/fsUtils';
+import { IStorageAdapter } from '../../../src/adapters/IStorageAdapter';
 
 jest.mock('fs');
 jest.mock('../../../src/utils/site/fsUtils');
@@ -20,6 +21,8 @@ const pathModifiedTimeMock = pathModifiedTime as jest.Mock;
 const GalleryMock = Gallery as jest.Mock;
 const MarkdownRecurseMock = MarkdownRecurse as jest.Mock;
 
+let mockStorageAdapter: jest.MockedObject<IStorageAdapter>;
+
 describe('SiteComponent', () => {
     describe('constructor', () => {
         beforeEach(() => {
@@ -28,41 +31,41 @@ describe('SiteComponent', () => {
 
         it('throws an error if the content directory does not exist', () => {
             pathIsDirectoryMock.mockReturnValueOnce(false);
-            expect(() => new SiteComponent(config, 'apipath')).toThrowError('A content directory does not exist for the path apipath');
+            expect(() => new SiteComponent(config, 'apipath', mockStorageAdapter)).toThrowError('A content directory does not exist for the path apipath');
         });
 
         it('throws an error if the component file does not exist', () => {
             pathIsDirectoryMock.mockReturnValueOnce(true);
             pathIsFileMock.mockReturnValueOnce(false);
-            expect(() => new SiteComponent(config, 'apipath')).toThrowError('A yaml file does not exist for the path apipath');
+            expect(() => new SiteComponent(config, 'apipath', mockStorageAdapter)).toThrowError('A yaml file does not exist for the path apipath');
         });
 
         it('throws an error if the file does not contain any component type', () => {
             pathIsDirectoryMock.mockReturnValueOnce(true);
             pathIsFileMock.mockReturnValueOnce(true);
             (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title');
-            expect(() => new SiteComponent(config, 'apipath')).toThrowError('Valid component type not found');
+            expect(() => new SiteComponent(config, 'apipath', mockStorageAdapter)).toThrowError('Valid component type not found');
         });
 
         it('throws an error if the file contains an invalid component type', () => {
             pathIsDirectoryMock.mockReturnValueOnce(true);
             pathIsFileMock.mockReturnValueOnce(true);
             (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: notgallery');
-            expect(() => new SiteComponent(config, 'apipath')).toThrowError('Valid component type not found');
+            expect(() => new SiteComponent(config, 'apipath', mockStorageAdapter)).toThrowError('Valid component type not found');
         });
 
         it('throws an error if the file cannot be parsed', () => {
             pathIsDirectoryMock.mockReturnValueOnce(true);
             pathIsFileMock.mockReturnValueOnce(true);
             (fs.readFileSync as jest.Mock).mockReturnValue('uiPath test\ntitle: The Title\ntype: notgallery');
-            expect(() => new SiteComponent(config, 'apipath')).toThrowError();
+            expect(() => new SiteComponent(config, 'apipath', mockStorageAdapter)).toThrowError();
         });
 
         it('attempts to parse component file yaml', () => {
             pathIsDirectoryMock.mockReturnValueOnce(true);
             pathIsFileMock.mockReturnValueOnce(true);
             (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
-            new SiteComponent(config, 'my-component');
+            new SiteComponent(config, 'my-component', mockStorageAdapter);
 
             expect(fs.readFileSync).toBeCalledTimes(1);
             expect(fs.readFileSync).toBeCalledWith('/path/to/data/content/my-component.yaml', 'utf-8');
@@ -72,7 +75,7 @@ describe('SiteComponent', () => {
             pathIsDirectoryMock.mockReturnValueOnce(true);
             pathIsFileMock.mockReturnValueOnce(true);
             (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: markdown');
-            new SiteComponent(config, 'my-component');
+            new SiteComponent(config, 'my-component', mockStorageAdapter);
             expect(GalleryMock).toBeCalledTimes(0);
             expect(MarkdownRecurseMock).toBeCalledTimes(1);
         });
@@ -81,7 +84,7 @@ describe('SiteComponent', () => {
             pathIsDirectoryMock.mockReturnValueOnce(true);
             pathIsFileMock.mockReturnValueOnce(true);
             (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
-            new SiteComponent(config, 'my-component');
+            new SiteComponent(config, 'my-component', mockStorageAdapter);
             expect(GalleryMock).toBeCalledTimes(1);
             expect(MarkdownRecurseMock).toBeCalledTimes(0);
         });
@@ -104,7 +107,7 @@ describe('SiteComponent', () => {
                 title: 'The Title',
                 type: 'gallery'
             };
-            component = new SiteComponent(config, 'my-component');
+            component = new SiteComponent(config, 'my-component', mockStorageAdapter);
 
             const actualMetadata = component.getMetadata();
 
@@ -114,7 +117,7 @@ describe('SiteComponent', () => {
 
         it('attempts to re-parse component file if file becomes out of date', () => {
             (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
-            component = new SiteComponent(config, 'my-component');
+            component = new SiteComponent(config, 'my-component', mockStorageAdapter);
 
             pathModifiedTimeMock.mockReturnValue(9999);
             component.getMetadata();
@@ -130,7 +133,7 @@ describe('SiteComponent', () => {
                 title: 'my-component',
                 type: 'gallery'
             };
-            component = new SiteComponent(config, 'my-component');
+            component = new SiteComponent(config, 'my-component', mockStorageAdapter);
 
             const actualMetadata = component.getMetadata();
 
@@ -150,7 +153,7 @@ describe('SiteComponent', () => {
                 name: 'mocked gallery'
             }));
             (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
-            component = new SiteComponent(config, 'my-component');
+            component = new SiteComponent(config, 'my-component', mockStorageAdapter);
             const galleryComponent = component.getGallery();
             expect(galleryComponent).toEqual({ name: 'mocked gallery' });
         });
@@ -159,7 +162,7 @@ describe('SiteComponent', () => {
             pathIsDirectoryMock.mockReturnValueOnce(true);
             pathIsFileMock.mockReturnValueOnce(true);
             (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: markdown');
-            component = new SiteComponent(config, 'my-component');
+            component = new SiteComponent(config, 'my-component', mockStorageAdapter);
             expect(() => component.getGallery()).toThrowError('No gallery component at this path');
         });
     });
@@ -174,7 +177,7 @@ describe('SiteComponent', () => {
                 name: 'mocked markdown'
             }));
             (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: markdown');
-            component = new SiteComponent(config, 'my-component');
+            component = new SiteComponent(config, 'my-component', mockStorageAdapter);
             const galleryComponent = component.getMarkdown();
             expect(galleryComponent).toEqual({ name: 'mocked markdown'});
         });
@@ -183,7 +186,7 @@ describe('SiteComponent', () => {
             pathIsDirectoryMock.mockReturnValueOnce(true);
             pathIsFileMock.mockReturnValueOnce(true);
             (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
-            component = new SiteComponent(config, 'my-component');
+            component = new SiteComponent(config, 'my-component', mockStorageAdapter);
             expect(() => component.getMarkdown()).toThrowError('No markdown component at this path');
         });
     });

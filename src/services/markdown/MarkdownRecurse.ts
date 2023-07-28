@@ -5,19 +5,21 @@ import { pathIsDirectory, pathIsFile, pathModifiedTime } from '../../utils/site/
 import { IMarkdownRecurse, MarkdownMetadata, MarkdownStructure } from './IMarkdownRecurse';
 import { Config, splitFrontMatter } from '../../utils';
 import { Response } from 'express';
+import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
 export class MarkdownRecurse implements IMarkdownRecurse {
     private apiPath: string;
-    private isRoot: boolean;
-    private config: Config;
     private metadata?: MarkdownMetadata;
     private children: { [key: string]: IMarkdownRecurse } = {};
     private metadataModifiedTime = 0;
 
-    constructor(apiPath: string, config: Config, root = false) {
+    constructor(
+        apiPath: string,
+        private config: Config,
+        private storage: IStorageAdapter,
+        private isRoot = false
+    ) {
         this.apiPath = apiPath.replace(/^\//, '');
-        this.config = config;
-        this.isRoot = root;
         this.throwIfInvalidPath();
         this.clearMetadataIfOutdated();
     }
@@ -91,7 +93,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     }
 
     private getChild(childApiPath: string): IMarkdownRecurse {
-        this.children[childApiPath] ??= new MarkdownRecurse(childApiPath, this.config);
+        this.children[childApiPath] ??= new MarkdownRecurse(childApiPath, this.config, this.storage);
         return this.children[childApiPath];
     }
 

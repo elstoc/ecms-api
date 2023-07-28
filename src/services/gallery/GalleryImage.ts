@@ -4,6 +4,7 @@ import path from 'path';
 import { Dimensions, IGalleryImage, ImageData, ImageSize } from './IGalleryImage';
 import { getExif, resizeImage, getImageDimensions, pathModifiedTime, Config } from '../../utils';
 import { Response } from 'express';
+import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
 const RESIZE_OPTIONS = {
     thumb: { width: 100000, height: 350, quality: 60 },
@@ -11,8 +12,6 @@ const RESIZE_OPTIONS = {
 };
 
 export class GalleryImage implements IGalleryImage {
-    private config: Config;
-    private uiPath: string;
     private sourceFileModifiedTimeForCache = 0;
     private thumbDimensions?: Dimensions;
     private exif?: { [key: string]: string | undefined };
@@ -20,9 +19,11 @@ export class GalleryImage implements IGalleryImage {
     private thumbSrcUrl?: string;
     private fhdSrcUrl?: string;
 
-    public constructor(config: Config, uiPath: string) {
-        this.config = config;
-        this.uiPath = uiPath;
+    public constructor(
+        private config: Config,
+        private uiPath: string,
+        private storage: IStorageAdapter
+    ) {
         this.clearCacheIfOutdated();
     }
     

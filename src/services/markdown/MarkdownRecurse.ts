@@ -122,7 +122,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     
     public async getStructure(): Promise<MarkdownStructure> {
         const metadata = await this.getMetadata();
-        const childObjects = this.getChildren();
+        const childObjects = await this.getChildren();
         const childStructPromises = childObjects.map((child) => child.getStructure());
         const children = await Promise.all(childStructPromises);
         children.sort(this.sortByWeightAndTitle);
@@ -149,14 +149,18 @@ export class MarkdownRecurse implements IMarkdownRecurse {
             return -1;
     }
 
-    private getChildren(): IMarkdownRecurse[] {
+    private async getChildren(): Promise<IMarkdownRecurse[]> {
         const childrenDirFullPath = path.join(this.config.dataDir, 'content', this.childrenApiDir());
 
         if (!pathIsDirectory(childrenDirFullPath)) return [];
 
-        const childMdFiles = fs.readdirSync(childrenDirFullPath).filter((childFile) => (
-            childFile.endsWith('.md') && !(this.isRoot && childFile.endsWith('index.md'))
-        ));
+        const childMdFiles = await this.storage.listChildren(
+            'content',
+            this.childrenApiDir(),
+            (childFile) => (
+                childFile.endsWith('.md') && !(this.isRoot && childFile.endsWith('index.md'))
+            )
+        );
 
         return childMdFiles.map((childFile) => (
             this.getChild(`${this.childrenApiDir()}/${childFile}`)

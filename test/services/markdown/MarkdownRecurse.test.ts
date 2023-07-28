@@ -1,6 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import fs from 'fs';
-import * as fsUtils from '../../../src/utils/site/fsUtils';
+import * as fsUtils from '../../../src/utils/site/fs';
 
 import { MarkdownRecurse } from '../../../src/services/markdown/MarkdownRecurse';
 import { IStorageAdapter } from '../../../src/adapters/IStorageAdapter';
@@ -16,7 +16,7 @@ jest.mock('fs', () => ({
     }
 }));
 
-jest.mock('../../../src/utils/site/fsUtils');
+jest.mock('../../../src/utils/site/fs');
 
 const
     pathIsDirectoryMock = fsUtils.pathIsDirectory as jest.Mock,

@@ -3,11 +3,11 @@ import fs from 'fs';
 import { Gallery } from '../../../src/services/gallery/Gallery';
 import { MarkdownRecurse } from '../../../src/services/markdown/MarkdownRecurse';
 import { SiteComponent } from '../../../src/services';
-import { pathIsDirectory, pathIsFile, pathModifiedTime } from '../../../src/utils/site/fsUtils';
+import { pathIsDirectory, pathIsFile, pathModifiedTime } from '../../../src/utils/site/fs';
 import { IStorageAdapter } from '../../../src/adapters/IStorageAdapter';
 
 jest.mock('fs');
-jest.mock('../../../src/utils/site/fsUtils');
+jest.mock('../../../src/utils/site/fs');
 jest.mock('../../../src/services/gallery/Gallery');
 jest.mock('../../../src/services/markdown/MarkdownRecurse');
 

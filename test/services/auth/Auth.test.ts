@@ -2,8 +2,8 @@
 /* eslint-disable  @typescript-eslint/no-unused-vars */
 import fs from 'fs';
 import { Auth } from '../../../src/services';
-import * as hash from '../../../src/utils/site/hash';
-import * as jwt from '../../../src/utils/site/jwt';
+import * as hash from '../../../src/utils/auth/hash';
+import * as jwt from '../../../src/utils/auth/jwt';
 import { IStorageAdapter } from '../../../src/adapters/IStorageAdapter';
 
 jest.mock('fs');

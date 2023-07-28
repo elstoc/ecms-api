@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import YAML from 'yaml';
-import { pathIsDirectory, pathIsFile, pathModifiedTime } from '../../utils/site/fsUtils';
+import { pathIsDirectory, pathIsFile, pathModifiedTime } from '../../utils/site/fs';
 import { IMarkdownRecurse, MarkdownMetadata, MarkdownStructure } from './IMarkdownRecurse';
 import { Config, splitFrontMatter } from '../../utils';
 import { Response } from 'express';

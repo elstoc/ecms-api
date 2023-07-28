@@ -1,5 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { pathIsDirectory, pathIsFile, pathModifiedTime} from '../../../src/utils/site/fsUtils';
+import { pathIsDirectory, pathIsFile, pathModifiedTime} from '../../../src/utils/site/fs';
 import fs from 'fs';
 jest.mock('fs');
 

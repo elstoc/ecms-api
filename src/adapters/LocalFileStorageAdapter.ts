@@ -8,8 +8,8 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
         private dataDir: string
     ) { }
 
-    public async listChildren(apiPath: string, fileMatcher: (fileName: string) => boolean): Promise<string[]> {
-        const fullPath = path.join(this.dataDir, 'content', apiPath);
+    public async listChildren(apiDir: string, fileMatcher: (fileName: string) => boolean): Promise<string[]> {
+        const fullPath = path.join(this.dataDir, 'content', apiDir);
         const dir = await fs.promises.readdir(fullPath);
         return dir.filter(fileMatcher);
     }

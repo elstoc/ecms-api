@@ -1,15 +1,15 @@
 import path from 'path';
 import fs from 'fs';
 
-import { IStorageAdapter } from './IStorageAdapter';
+import { IStorageAdapter, Category } from './IStorageAdapter';
 
 export class LocalFileStorageAdapter implements IStorageAdapter {
     public constructor(
         private dataDir: string
     ) { }
 
-    public async listChildren(apiDir: string, fileMatcher: (fileName: string) => boolean): Promise<string[]> {
-        const fullPath = path.join(this.dataDir, 'content', apiDir);
+    public async listChildren(category: Category, dirPath: string, fileMatcher: (fileName: string) => boolean): Promise<string[]> {
+        const fullPath = path.join(this.dataDir, category, dirPath);
         const dir = await fs.promises.readdir(fullPath);
         return dir.filter(fileMatcher);
     }

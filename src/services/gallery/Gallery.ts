@@ -1,6 +1,3 @@
-import path from 'path';
-import fs from 'fs';
-
 import { IGallery, GalleryImages } from './IGallery';
 import { GalleryImage } from './GalleryImage';
 import { ImageData, ImageSize } from './IGalleryImage';
@@ -53,8 +50,6 @@ export class Gallery implements IGallery {
     }
 
     private async getJpegFileNames(): Promise<string[]> {
-        const fullPath = path.join(this.config.dataDir, 'content', this.apiPath);
-        const dir = await fs.promises.readdir(fullPath);
-        return dir.filter((file) => file.endsWith('.jpg'));
+        return this.storage.listChildren('content', this.apiPath, (file) => file.endsWith('jpg'));
     }
 }

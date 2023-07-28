@@ -1,5 +1,7 @@
+export type Category = 'content' | 'cache' | 'admin';
+
 export interface IStorageAdapter {
-    listChildren(apiDir: string, fileMatcher: (fileName: string) => boolean): Promise<string[]>;
+    listChildren(category: Category, dirPath: string, fileMatcher: (fileName: string) => boolean): Promise<string[]>;
     /*get(apiPath: string, tags?: string[]): Promise<Buffer>;
     send(response: Response, apiPath: string, tags?: string[]): void;
     getModifiedTime(apiPath: string, tags?: string[]): Promise<number>;

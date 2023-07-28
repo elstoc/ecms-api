@@ -6,7 +6,7 @@ import cors from 'cors';
 import { createRootRouter } from './routes';
 import { Auth, Site } from './services';
 import { getConfig } from './utils';
-import { LocalFileStorageAdapter } from './adapters/FileStorageAdapter';
+import { LocalFileStorageAdapter } from './adapters/LocalFileStorageAdapter';
 
 if (process.env.NODE_ENV !== 'production') {
     dotenv.config();

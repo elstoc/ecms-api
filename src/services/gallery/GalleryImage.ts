@@ -7,8 +7,8 @@ import { Response } from 'express';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
 const RESIZE_OPTIONS = {
-    thumb: { width: 100000, height: 350, quality: 60 },
-    fhd:  { width: 2130, height: 1200, quality: 95 }
+    thumb: { width: 100000, height: 350, quality: 60, stripExif: true, addBorder: true },
+    fhd:  { width: 2130, height: 1200, quality: 95, stripExif: true, addBorder: false }
 };
 
 export class GalleryImage implements IGalleryImage {
@@ -122,9 +122,8 @@ export class GalleryImage implements IGalleryImage {
         if (!fs.existsSync(targetDir)) {
             fs.mkdirSync(targetDir, { recursive: true });
         }
-        const { quality, width, height } = RESIZE_OPTIONS[size];
         const sourceFile = await fs.promises.readFile(this.getFullPath('source'));
-        const targetFile = await resizeImage(sourceFile, width, height, quality);
+        const targetFile = await resizeImage(sourceFile, RESIZE_OPTIONS[size]);
         await fs.promises.writeFile(this.getFullPath(size), targetFile);
         if (size === 'thumb') {
             this.thumbDimensions = undefined;

@@ -88,8 +88,8 @@ describe('GalleryImage', () => {
         });
 
         it.each([
-            ['thumb', { width: 100000, height: 350, quality: 60 }],
-            ['fhd', { width: 2130, height: 1200, quality: 95 }],
+            ['thumb', { width: 100000, height: 350, quality: 60, stripExif: true, addBorder: true }],
+            ['fhd', { width: 2130, height: 1200, quality: 95, stripExif: true, addBorder: false}],
         ])('resizes the cached file with correct params if it is older than the source and calls response.sendFile', async (size, imgParams) => {
             const inFileBuffer = Buffer.from('inFile');
             const outFileBuffer = Buffer.from('outFile');
@@ -112,9 +112,7 @@ describe('GalleryImage', () => {
             expect(fs.promises.writeFile).toBeCalledWith(`/path/to/data/cache/gallery/${size}/image.jpg`, outFileBuffer);
             expect(resizeImage).toBeCalledWith(
                 inFileBuffer,
-                imgParams.width,
-                imgParams.height,
-                imgParams.quality
+                imgParams
             );
         });
 

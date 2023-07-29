@@ -1,16 +1,29 @@
 import gm from 'gm';
 
-export const resizeImage = (sourceImage: Buffer, width: number, height: number, quality: number): Promise<Buffer> => {
+export type ResizeOptions = {
+    width: number,
+    height: number,
+    quality: number,
+    stripExif: boolean,
+    addBorder: boolean
+};
+
+export const resizeImage = (sourceImage: Buffer, options: ResizeOptions): Promise<Buffer> => {
+    const { width, height, quality, stripExif, addBorder } = options;
     return new Promise((resolve, reject) => {
-        gm(sourceImage)
+        let resizedImage = gm(sourceImage)
             .resize(width, height)
-            .strip()
-            .quality(quality)
-            .borderColor('rgb(32,32,32)')
-            .border(2, 2)
-            .toBuffer('JPG', (err, buffer) => {
+            .quality(quality);
+        
+        if (addBorder) resizedImage = resizedImage.borderColor('rgb(32,32,32)').border(2, 2);
+        if (stripExif) resizedImage = resizedImage.strip();
+
+        return resizedImage.toBuffer(
+            'JPG',
+            (err, buffer) => {
                 if (err) reject('Image resize failed: ' + err.message);
                 else resolve(buffer);
-            });
+            }
+        );
     });
 };

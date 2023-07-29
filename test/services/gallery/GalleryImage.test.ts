@@ -10,6 +10,7 @@ jest.mock('fs', () => ({
     mkdirSync: jest.fn(),
     promises: {
         readFile: jest.fn(),
+        writeFile: jest.fn()
     }
 }));
 jest.mock('../../../src/utils');
@@ -90,6 +91,11 @@ describe('GalleryImage', () => {
             ['thumb', { width: 100000, height: 350, quality: 60 }],
             ['fhd', { width: 2130, height: 1200, quality: 95 }],
         ])('resizes the cached file with correct params if it is older than the source and calls response.sendFile', async (size, imgParams) => {
+            const inFileBuffer = Buffer.from('inFile');
+            const outFileBuffer = Buffer.from('outFile');
+
+            (fs.promises.readFile as jest.Mock).mockResolvedValue(inFileBuffer);
+            (resizeImage as jest.Mock).mockResolvedValue(outFileBuffer);
 
             pathModifiedTimeMock.mockImplementation((filePath: string) => (
                 filePath.startsWith('/path/to/data/cache') ? 1000 : 5000
@@ -102,9 +108,10 @@ describe('GalleryImage', () => {
             expect(response.sendFile).toBeCalled();
             expect(response.sendFile.mock.calls[0][0]).toBe(`/path/to/data/cache/gallery/${size}/image.jpg`);
             expect(resizeImage).toBeCalledTimes(1);
+            expect(fs.promises.readFile).toBeCalledWith('/path/to/data/content/gallery/image.jpg');
+            expect(fs.promises.writeFile).toBeCalledWith(`/path/to/data/cache/gallery/${size}/image.jpg`, outFileBuffer);
             expect(resizeImage).toBeCalledWith(
-                '/path/to/data/content/gallery/image.jpg',
-                `/path/to/data/cache/gallery/${size}/image.jpg`,
+                inFileBuffer,
                 imgParams.width,
                 imgParams.height,
                 imgParams.quality

@@ -122,7 +122,9 @@ export class GalleryImage implements IGalleryImage {
             fs.mkdirSync(targetDir, { recursive: true });
         }
         const { quality, width, height } = RESIZE_OPTIONS[size];
-        await resizeImage(this.getFullPath('source'), this.getFullPath(size), width, height, quality);
+        const sourceFile = await fs.promises.readFile(this.getFullPath('source'));
+        const targetFile = await resizeImage(sourceFile, width, height, quality);
+        await fs.promises.writeFile(this.getFullPath(size), targetFile);
         if (size === 'thumb') {
             this.thumbDimensions = undefined;
         }

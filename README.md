@@ -1,12 +1,12 @@
-# Chris Elston's home site (API)
+# elstoc's cms (api)
 
-## Building the docker Image
+## building the docker Image
 
 ```
 docker build -t home-api .
 ```
 
-## Starting and Stopping
+## starting and stopping
 
 Start in the background with
 

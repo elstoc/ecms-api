@@ -1,7 +1,7 @@
 {
-  "name": "home-api",
+  "name": "ecms-api",
   "version": "1.0.0",
-  "description": "API for home website",
+  "description": "API for ecms",
   "main": "dist/index.ts",
   "scripts": {
     "start": "node dist/index.js",

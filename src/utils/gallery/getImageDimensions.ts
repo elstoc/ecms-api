@@ -1,10 +1,7 @@
-import { promisify } from 'util';
-import sizeOfSync from 'image-size';
+import sizeOf from 'image-size';
 import { Dimensions } from '../../services';
 
-const sizeOf = promisify(sizeOfSync);
-
-export const getImageDimensions = async (fullPath: string): Promise<Dimensions> => {
-    const size = await sizeOf(fullPath);
+export const getImageDimensions = (file: Buffer): Dimensions => {
+    const size = sizeOf(file);
     return { width: size?.width, height: size?.height };
 };

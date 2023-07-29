@@ -1,26 +1,27 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import * as sizeOfSync from 'image-size';
+import * as sizeOf from 'image-size';
 import { getImageDimensions } from '../../../src/utils';
 
 jest.mock('image-size');
+const inFileBuffer = Buffer.from('imageFile');
 
 describe('That getImageDimensions', () => {
     let mockSizeOfSync: jest.SpyInstance;
 
     beforeEach(() => {
-        mockSizeOfSync = jest.spyOn(sizeOfSync, 'default');
-        mockSizeOfSync.mockImplementation((input: any, callback: any) => callback(null, { width: 10, height: 20 }));
+        mockSizeOfSync = jest.spyOn(sizeOf, 'default');
+        mockSizeOfSync.mockReturnValue({ width: 10, height: 20 });
     });
 
-    it('calls imageSize with input path', async () => {
-        await getImageDimensions('/path/to/image');
+    it('calls imageSize with input path', () => {
+        getImageDimensions(inFileBuffer);
 
         const inputParam = mockSizeOfSync.mock.calls[0][0];
-        expect(inputParam).toBe('/path/to/image');
+        expect(inputParam).toBe(inFileBuffer);
     });
 
-    it('returns the height and width returned from resize', async () => {
-        const returnData = await getImageDimensions('/path/to/image');
+    it('returns the height and width returned from resize', () => {
+        const returnData = getImageDimensions(inFileBuffer);
 
         const expectedResult = { width: 10, height: 20 };
         expect(returnData).toStrictEqual(expectedResult);

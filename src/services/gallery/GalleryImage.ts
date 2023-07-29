@@ -77,7 +77,8 @@ export class GalleryImage implements IGalleryImage {
     private async refreshThumbDimensions(): Promise<void> {
         if (!this.thumbDimensions) {
             await this.resizeStaleImage('thumb');
-            this.thumbDimensions = await getImageDimensions(this.getFullPath('thumb'));
+            const thumbFile = await fs.promises.readFile(this.getFullPath('thumb'));
+            this.thumbDimensions = getImageDimensions(thumbFile);
         }
     }
 

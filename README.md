@@ -1,4 +1,4 @@
-# elstoc's cms (api)
+# ecms (api)
 
 ## building the docker Image
 

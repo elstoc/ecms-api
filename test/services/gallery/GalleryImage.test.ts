@@ -5,7 +5,13 @@ import { GalleryImage } from '../../../src/services/';
 import { getExif, resizeImage, getImageDimensions, pathModifiedTime } from '../../../src/utils';
 import { IStorageAdapter } from '../../../src/adapters/IStorageAdapter';
 
-jest.mock('fs');
+jest.mock('fs', () => ({
+    existsSync: jest.fn(),
+    mkdirSync: jest.fn(),
+    promises: {
+        readFile: jest.fn(),
+    }
+}));
 jest.mock('../../../src/utils');
 
 const config = {

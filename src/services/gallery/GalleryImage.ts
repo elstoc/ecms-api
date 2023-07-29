@@ -83,8 +83,9 @@ export class GalleryImage implements IGalleryImage {
 
     private async refreshExif(): Promise<void> {
         if (!this.exif) {
-            this.exif = await getExif(this.getFullPath('source'));
-            this.description = this.exif.title || '';
+            const file = await fs.promises.readFile(this.getFullPath('source'));
+            this.exif = getExif(file);
+            this.description = this.exif.title ?? '';
 
             if (this.exif.dateTaken) {
                 const exifDate = new Date(this.exif.dateTaken);

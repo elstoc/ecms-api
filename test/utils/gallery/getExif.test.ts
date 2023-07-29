@@ -1,19 +1,21 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { getExif } from '../../../src/utils';
 import ExifReader from 'exifreader';
+const fileContents = 'some-file-content';
+const fileBuffer = Buffer.from(fileContents);
 
-describe('That getExif', () => {
+describe('getExif', () => {
 
-    it('Loads exif using expanded parameter', async () => {
+    it('Loads exif using expanded parameter', () => {
         const mockExifLoad = jest.spyOn(ExifReader, 'load');
-        mockExifLoad.mockResolvedValue({} as any);
+        mockExifLoad.mockReturnValue({} as any);
 
-        await getExif('/path/to/file');
+        getExif(fileBuffer);
 
-        expect(ExifReader.load).toBeCalledWith('/path/to/file', { expanded: true, length: 128 * 1024 });
+        expect(ExifReader.load).toBeCalledWith(fileBuffer, { expanded: true, length: 128 * 1024 });
     });
 
-    it('correctly reformats dateTaken to ISO format', async () => {
+    it('correctly reformats dateTaken to ISO format', () => {
         const exifReaderOut = {
             exif: {
                 DateTimeOriginal: {
@@ -24,14 +26,14 @@ describe('That getExif', () => {
         const expectedOutput = '2022-12-30T13:23:24.000Z';
 
         const mockExifLoad = jest.spyOn(ExifReader, 'load');
-        mockExifLoad.mockResolvedValue(exifReaderOut as any);
+        mockExifLoad.mockReturnValue(exifReaderOut as any);
 
-        const tags = await getExif('/path/to/file');
+        const tags = getExif(fileBuffer);
 
         expect(tags.dateTaken).toMatch(expectedOutput);
     });
 
-    it('correctly extracts other exif data items', async () => {
+    it('correctly extracts other exif data items', () => {
         const exifReaderOut = {
             xmp: {
                 title: { description: 'the title' }
@@ -58,17 +60,19 @@ describe('That getExif', () => {
         };
 
         const mockExifLoad = jest.spyOn(ExifReader, 'load');
-        mockExifLoad.mockResolvedValue(exifReaderOut as any);
+        mockExifLoad.mockReturnValue(exifReaderOut as any);
 
-        const tags = await getExif('/path/to/file');
+        const tags = getExif(fileBuffer);
 
         expect(tags).toStrictEqual(expectedOutput);
     });
 
-    it('rejects promise if error', () => {
+    it('throws any error ', () => {
         const mockExifLoad = jest.spyOn(ExifReader, 'load');
-        mockExifLoad.mockRejectedValue('Error');
+        mockExifLoad.mockImplementation(() => {
+            throw new Error('Error');
+        });
 
-        expect(getExif('')).rejects.toMatch('Error');
+        expect(() => getExif(fileBuffer)).toThrowError('Error');
     });
 });

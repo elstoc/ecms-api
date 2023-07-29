@@ -17,7 +17,7 @@ export const createRootRouter = (logger: Logger, site: ISite, auth: IAuth): Rout
     router.use('/site', siteRouter);
     router.use('/gallery', galleryRouter);
     router.use('/markdown', markdownRouter);
-    router.use('/auth', authRouter);
+    //router.use('/auth', authRouter);
 
     return router;
 };

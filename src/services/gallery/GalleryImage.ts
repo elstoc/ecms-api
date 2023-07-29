@@ -8,7 +8,8 @@ import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
 const RESIZE_OPTIONS = {
     thumb: { width: 100000, height: 350, quality: 60, stripExif: true, addBorder: true },
-    fhd:  { width: 2130, height: 1200, quality: 95, stripExif: true, addBorder: false }
+    fhd: { width: 2130, height: 1200, quality: 95, stripExif: true, addBorder: false },
+    forExif: { width: 1, height: 1, quality: 0, stripExif: false, addBorder: false }
 };
 
 export class GalleryImage implements IGalleryImage {
@@ -84,7 +85,8 @@ export class GalleryImage implements IGalleryImage {
 
     private async refreshExif(): Promise<void> {
         if (!this.exif) {
-            const file = await fs.promises.readFile(this.getFullPath('source'));
+            await this.resizeStaleImage('forExif');
+            const file = await fs.promises.readFile(this.getFullPath('forExif'));
             this.exif = getExif(file);
             this.description = this.exif.title ?? '';
 

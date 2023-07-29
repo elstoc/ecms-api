@@ -180,7 +180,7 @@ describe('GalleryImage', () => {
             const metadata = await galleryImage.getMetadata();
             expect(metadata).toStrictEqual(expectedMetadata);
             expect(getExif).toBeCalledTimes(1);
-            expect(resizeImage).toBeCalledTimes(1);
+            expect(resizeImage).toBeCalledTimes(2); //twice per image (for exif and thumb)
             expect(getImageDimensions).toBeCalledTimes(1);
         });
 
@@ -206,7 +206,7 @@ describe('GalleryImage', () => {
             expect(metadata1).toStrictEqual(expectedMetadata);
             expect(metadata2).toStrictEqual(metadata1);
             expect(getExif).toBeCalledTimes(1);
-            expect(resizeImage).toBeCalledTimes(1);
+            expect(resizeImage).toBeCalledTimes(2); //twice per image (for exif and thumb)
             expect(getImageDimensions).toBeCalledTimes(1);
         });
 
@@ -248,7 +248,7 @@ describe('GalleryImage', () => {
             expect(metadata1).toStrictEqual(expectedMetadata);
             expect(metadata2).toStrictEqual(expectedMetadata2);
             expect(getExif).toBeCalledTimes(2);
-            expect(resizeImage).toBeCalledTimes(2);
+            expect(resizeImage).toBeCalledTimes(4); //twice per image (for exif and thumb)
             expect(getImageDimensions).toBeCalledTimes(2);
         });
 

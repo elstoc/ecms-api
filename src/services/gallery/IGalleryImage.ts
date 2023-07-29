@@ -1,6 +1,6 @@
 import { Response } from 'express';
 
-export type ImageSize = 'thumb' | 'fhd';
+export type ImageSize = 'thumb' | 'fhd' | 'forExif';
 
 export type Dimensions = {
     width: number | undefined;

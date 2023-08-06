@@ -17,6 +17,6 @@ export type ImageData = {
 }
 
 export interface IGalleryImage {
-    getMetadata(): Promise<ImageData>;
+    getImageData(): Promise<ImageData>;
     sendFile(size: ImageSize, response: Response): Promise<void>;
 }

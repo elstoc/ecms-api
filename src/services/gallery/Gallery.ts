@@ -32,7 +32,7 @@ export class Gallery implements IGallery {
 
     private async getImageMetadata(apiPath: string): Promise<ImageData> {
         const image = this.getGalleryImage(apiPath);
-        return await image.getMetadata();
+        return await image.getImageData();
     }
 
     public async sendImageFile(apiPath: string, size: ImageSize, response: Response): Promise<void> {
@@ -50,6 +50,6 @@ export class Gallery implements IGallery {
     }
 
     private async getJpegFileNames(): Promise<string[]> {
-        return this.storage.listChildren('content', this.apiPath, (file) => file.endsWith('jpg'));
+        return this.storage.listContentChildren(this.apiPath, (file) => file.endsWith('jpg'));
     }
 }

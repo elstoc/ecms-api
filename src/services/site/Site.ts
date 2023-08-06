@@ -67,10 +67,10 @@ export class Site implements ISite {
 
     public async getMarkdownStructure(apiPath: string): Promise<MarkdownStructure> {
         const markdown = this.getRootComponent(apiPath).getMarkdown();
-        return markdown.getStructure();
+        return markdown.getMdStructure();
     }
 
-    public sendMarkdownFile(apiPath: string, response: Response): void {
+    public async sendMarkdownFile(apiPath: string, response: Response): Promise<void> {
         const markdown = this.getRootComponent(apiPath).getMarkdown();
         return markdown.sendFile(apiPath, response);
     }

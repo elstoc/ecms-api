@@ -1,281 +1,470 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import fs from 'fs';
-import * as fsUtils from '../../../src/utils/site/fs';
-
 import { MarkdownRecurse } from '../../../src/services/markdown/MarkdownRecurse';
-import { LocalFileStorageAdapter } from '../../../src/adapters/LocalFileStorageAdapter';
+import YAML from 'yaml';
+import { splitFrontMatter } from '../../../src/utils';
+
+jest.mock('yaml');
+jest.mock('../../../src/utils');
 
 const config = {
     dataDir: '/path/to/data',
 } as any;
 
-jest.mock('fs', () => ({
-    promises: {
-        readFile: jest.fn(),
-        readdir: jest.fn()
-    }
-}));
+const mockStorage = {
+    listContentChildren: jest.fn() as jest.Mock,
+    contentFileExists: jest.fn() as jest.Mock,
+    getContentFile: jest.fn() as jest.Mock,
+    getGeneratedFile: jest.fn() as jest.Mock,
+    storeGeneratedFile: jest.fn() as jest.Mock,
+    generatedFileIsOlder: jest.fn() as jest.Mock,
+    getContentFileModifiedTime: jest.fn() as jest.Mock,
+    contentDirectoryExists: jest.fn() as jest.Mock,
+    splitPath: jest.fn() as jest.Mock
+};
 
-jest.mock('../../../src/utils/site/fs');
+const mockResponse = {
+    send: jest.fn() as jest.Mock,
+    sendStatus: jest.fn() as jest.Mock
+};
 
-const
-    pathIsDirectoryMock = fsUtils.pathIsDirectory as jest.Mock,
-    pathIsFileMock = fsUtils.pathIsFile as jest.Mock,
-    pathModifiedTimeMock = fsUtils.pathModifiedTime as jest.Mock,
-    readFileMock = fs.promises.readFile as jest.Mock,
-    readdirMock = fs.promises.readdir as jest.Mock;
-
-const storageAdapter = new LocalFileStorageAdapter('/path/to/data');
+const mockYAMLparse = YAML.parse as jest.Mock;
+const mockSplitFrontMatter = splitFrontMatter as jest.Mock;
 
 describe('MarkdownRecurse', () => {
-    describe('constructor', () => {
-        it('throws an error for a root path that ends in .md', () => {
-            const expectedError = 'Root path must not point to a markdown file';
-            expect(() => new MarkdownRecurse('apidir.md', config, storageAdapter, true)).toThrow(expectedError);
-        });
+    const contentFileBuf = Buffer.from('content-file');
 
-        it('throws an error for a root path that is not an existing directory', () => {
-            pathIsDirectoryMock.mockReturnValue(false);
-            const expectedError = 'Root path must point to an existing directory';
-            expect(() => new MarkdownRecurse('apidir', config, storageAdapter, true)).toThrow(expectedError);
-        });
-
-        it('throws an error for a root path that does not have a backing file', () => {
-            pathIsDirectoryMock.mockImplementation((path) => path.endsWith('apidir'));
-            pathIsFileMock.mockReturnValue(false);
-            const expectedError = 'The path apidir must be backed by a valid markdown file';
-            expect(() => new MarkdownRecurse('apidir', config, storageAdapter, true)).toThrow(expectedError);
-        });
-
-        it('succeeds for a root path with an index.md backing file', () => {
-            pathIsDirectoryMock.mockImplementation((path) => path.endsWith('apidir'));
-            pathIsFileMock.mockImplementation((path) => path.endsWith('index.md'));
-            expect(() => new MarkdownRecurse('apidir', config, storageAdapter, true)).not.toThrow();
-        });
-
-        it('throws an error for a non-root path with a valid file that does not end in .md', () => {
-            pathIsFileMock.mockReturnValue(true);
-            const expectedError = 'The path apidir.mdd must be backed by a valid markdown file';
-            expect(() => new MarkdownRecurse('apidir.mdd', config, storageAdapter)).toThrow(expectedError);
-        });
-
-        it('throws an error for a non-root path that ends in .md but is not a valid file', () => {
-            pathIsFileMock.mockReturnValue(false);
-            const expectedError = 'The path apidir.md must be backed by a valid markdown file';
-            expect(() => new MarkdownRecurse('apidir.md', config, storageAdapter)).toThrow(expectedError);
-        });
-
-        it('succeeds for a non-root path that is a valid .md file', () => {
-            pathIsFileMock.mockReturnValue(true);
-            expect(() => new MarkdownRecurse('apidir.md', config, storageAdapter)).not.toThrow();
-        });
-    });
-
-    describe('getMetadata', () => {
-        beforeEach(() => {
-            pathModifiedTimeMock.mockReturnValue(1234);
-            readFileMock.mockResolvedValue('---\ntitle: The Title\n---');
-        });
-
-        it('(for example) throws an error if the backing file no longer exists', async () => {
-            pathIsFileMock.mockReturnValue(true);
-            const page = new MarkdownRecurse('path/to/file.md', config, storageAdapter);
-            pathIsFileMock.mockReturnValueOnce(false);
-            await expect(page.getMetadata()).rejects.toThrow('The path path/to/file.md must be backed by a valid markdown file');
-        });
-
-        it('Attempts to parse front matter the first time it is called (check all call params)', async () => {
-            pathIsFileMock.mockReturnValue(true);
-            const page = new MarkdownRecurse('path/to/file.md', config, storageAdapter);
-            const expectedPageMeta = {
-                apiPath: 'path/to/file.md',
-                title: 'The Title'
-            };
-            const pageMeta = await page.getMetadata();
-            const readFileCallParams = readFileMock.mock.calls[0];
-            expect(readFileCallParams).toEqual(['/path/to/data/content/path/to/file.md','utf-8']);
-            expect(pageMeta).toStrictEqual(expectedPageMeta);
-        });
-
-        it('Does not attempt to parse front matter the second time it is called', async () => {
-            pathIsFileMock.mockReturnValue(true);
-            const page = new MarkdownRecurse('path/to/file.md', config, storageAdapter);
-            const expectedPageMeta = {
-                apiPath: 'path/to/file.md',
-                title: 'The Title'
-            };
-            await page.getMetadata();
-            const pageMeta = await page.getMetadata();
-            expect(readFileMock).toBeCalledTimes(1);
-            expect(pageMeta).toStrictEqual(expectedPageMeta);
-        });
-
-        it('Attempts to re-parse front matter if file becomes out of date', async () => {
-            pathIsFileMock.mockReturnValue(true);
-
-            const page = new MarkdownRecurse('path/to/file.md', config, storageAdapter);
-            await page.getMetadata();
-
-            pathIsDirectoryMock.mockReturnValue(false);
-            pathModifiedTimeMock.mockReturnValue(9999);
-            readFileMock.mockResolvedValue('---\ntitle: The New Title\n---');
-
-            const expectedPageMeta = {
-                apiPath: 'path/to/file.md',
-                title: 'The New Title'
-            };
-            const pageMeta = await page.getMetadata();
-            expect(readFileMock).toBeCalledTimes(2);
-            expect(pageMeta).toStrictEqual(expectedPageMeta);
-        });
-
-        it('Sets the title to the file/path name (without extension) if it is not present', async () => {
-            pathIsFileMock.mockReturnValue(true);
-
-            const page = new MarkdownRecurse('path/to/file.md', config, storageAdapter);
-            readFileMock.mockResolvedValue('');
-            const pageMeta = await page.getMetadata();
-            const expectedPageMeta = {
-                apiPath: 'path/to/file.md',
-                title: 'file'
-            };
-            expect(pageMeta).toStrictEqual(expectedPageMeta);
+    beforeEach(() => {
+        mockStorage.splitPath.mockImplementation((path) => {
+            return path
+                .replace(/^\//, '')
+                .replace(/\/$/, '')
+                .split('/');
         });
     });
 
     describe('sendFile', () => {
-        let response: any;
-
         beforeEach(() => {
-            response = {
-                sendFile: jest.fn(),
-                sendStatus: jest.fn()
-            } as any;
-            pathIsDirectoryMock.mockImplementation((path) => path.endsWith('Dir'));
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
         });
 
-        it('(for example) throws an error if the backing file no longer exists', () => {
-            pathIsFileMock.mockReturnValue(true);
-            const page = new MarkdownRecurse('path/to/file.md', config, storageAdapter);
-            pathIsFileMock.mockReturnValueOnce(false);
-            expect(() => page.sendFile('path/to/file.md', response)).toThrow('The path path/to/file.md must be backed by a valid markdown file');
+        it('sends 404 for a root object if the object\'s root/index.md file does not exist', async () => {
+            mockStorage.contentFileExists.mockReturnValue(false);
+
+            const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
+            await page.sendFile('path/to/root', mockResponse as any);
+
+            expect(mockStorage.contentFileExists).toBeCalledWith('path/to/root/index.md');
+            expect(mockResponse.sendStatus).toBeCalledWith(404);
         });
 
-        it('sends the index file if called on a root object with the root path', () => {
-            pathIsFileMock.mockReturnValue(true);
-            const page = new MarkdownRecurse('rootDir', config, storageAdapter, true);
-            page.sendFile('rootDir', response);
-            expect(response.sendFile).toBeCalledTimes(1);
-            expect(response.sendStatus).toBeCalledTimes(0);
-            expect(response.sendFile).toBeCalledWith('/path/to/data/content/rootDir/index.md');
+        it('sends 404 for a non-root object if the object\'s api path does not end in md', async () => {
+            const page = new MarkdownRecurse('path/to/file', config, mockStorage);
+            await page.sendFile('path/to/file', mockResponse as any);
+
+            expect(mockStorage.contentFileExists).not.toBeCalled();
+            expect(mockResponse.sendStatus).toBeCalledWith(404);
         });
 
-        it('sends 404 if the requested file is not the root dir and does not end in .md', () => {
-            pathIsFileMock.mockImplementation((path: string) => path.endsWith('somefile') || path.endsWith('index.md'));
-            const page = new MarkdownRecurse('rootDir', config, storageAdapter, true);
-            page.sendFile('rootDir/somefile', response);
-            expect(response.sendFile).toBeCalledTimes(0);
-            expect(response.sendStatus).toBeCalledTimes(1);
-            expect(response.sendStatus).toBeCalledWith(404);
+        it('sends 404 for a non-root object if the object\'s content file does not exist', async () => {
+            mockStorage.contentFileExists.mockReturnValue(false);
+
+            const page = new MarkdownRecurse('path/to/file.md', config, mockStorage);
+            await page.sendFile('path/to/file.md', mockResponse as any);
+
+            expect(mockStorage.contentFileExists).toBeCalledWith('path/to/file.md');
+            expect(mockResponse.sendStatus).toBeCalledWith(404);
         });
 
-        it('sends the requested file if it is a direct .md child of the root object', () => {
-            pathIsFileMock.mockImplementation((path) => path.endsWith('somefile.md') || path.endsWith('index.md'));
-            const page = new MarkdownRecurse('rootDir', config, storageAdapter, true);
-            page.sendFile('rootDir/somefile.md', response);
-            expect(response.sendStatus).toBeCalledTimes(0);
-            expect(response.sendFile).toBeCalledTimes(1);
-            expect(response.sendFile).toBeCalledWith('/path/to/data/content/rootDir/somefile.md');
+        it('sends the index.md content file for a root object where the targetPath matches the first object', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+
+            const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
+            await page.sendFile('path/to/root', mockResponse as any);
+
+            expect(mockStorage.getContentFile).toBeCalledWith('path/to/root/index.md');
+            expect(mockResponse.send).toBeCalledWith(contentFileBuf);
         });
 
-        it('sends the requested file if it is a child-of-a-child of the root object (where all directories are backed by files)', () => {
-            pathIsFileMock.mockImplementation((path) => path.endsWith('Dir.md') || path.endsWith('someFile.md') || path.endsWith('index.md'));
-            const page = new MarkdownRecurse('rootDir', config, storageAdapter, true);
-            page.sendFile('rootDir/someDir/someotherDir/someFile.md', response);
-            expect(response.sendStatus).toBeCalledTimes(0);
-            expect(response.sendFile).toBeCalledTimes(1);
-            expect(response.sendFile).toBeCalledWith('/path/to/data/content/rootDir/someDir/someotherDir/someFile.md');
+        it('sends the requested content file for a non-root object where the targetPath matches the first object', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+
+            const page = new MarkdownRecurse('path/to/file.md', config, mockStorage);
+            await page.sendFile('path/to/file.md', mockResponse as any);
+
+            expect(mockStorage.getContentFile).toBeCalledWith('path/to/file.md');
+            expect(mockResponse.send).toBeCalledWith(contentFileBuf);
         });
 
-        it('sends 404 if one of the intermediate directories in the path has no backing file', () => {
-            pathIsFileMock.mockImplementation((path) => path.endsWith('fileBackedDir.md') || path.endsWith('someFile.md') || path.endsWith('index.md'));
-            const page = new MarkdownRecurse('rootDir', config, storageAdapter, true);
-            page.sendFile('rootDir/fileBackedDir/someOtherDir/someFile.md', response);
-            expect(response.sendStatus).toBeCalledTimes(1);
-            expect(response.sendFile).toBeCalledTimes(0);
-            expect(response.sendStatus).toBeCalledWith(404);
+        it('recurses through objects for a long path and sends the file from the last object', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+
+            const page = new MarkdownRecurse('root', config, mockStorage, true);
+            await page.sendFile('root/path/to/page.md', mockResponse as any);
+
+            expect(mockStorage.contentFileExists).toBeCalledTimes(4);
+            expect(mockStorage.contentFileExists.mock.calls[0][0]).toBe('root/index.md');
+            expect(mockStorage.contentFileExists.mock.calls[1][0]).toBe('root/path.md');
+            expect(mockStorage.contentFileExists.mock.calls[2][0]).toBe('root/path/to.md');
+            expect(mockStorage.contentFileExists.mock.calls[3][0]).toBe('root/path/to/page.md');
+            expect(mockStorage.getContentFile).toBeCalledWith('root/path/to/page.md');
+            expect(mockResponse.send).toBeCalledWith(contentFileBuf);
         });
 
-        it('sends 404 if the final part of the path is a non-existing markdown file', () => {
-            pathIsFileMock.mockImplementation((path) => path.endsWith('Dir.md') || path.endsWith('index.md'));
-            const page = new MarkdownRecurse('rootDir', config, storageAdapter, true);
-            page.sendFile('rootDir/someDir/someOtherDir/someFile.md', response);
-            expect(response.sendStatus).toBeCalledTimes(1);
-            expect(response.sendFile).toBeCalledTimes(0);
-            expect(response.sendStatus).toBeCalledWith(404);
+        it('sends 404 if any object in the path does not have a markdown file associated with it', async () => {
+            mockStorage.contentFileExists.mockImplementation((file) => {
+                return !file.endsWith('to.md');
+            });
+
+            const page = new MarkdownRecurse('root', config, mockStorage, true);
+            await page.sendFile('root/path/to/page.md', mockResponse as any);
+
+            expect(mockStorage.contentFileExists).toBeCalledTimes(3);
+            expect(mockStorage.contentFileExists.mock.calls[0][0]).toBe('root/index.md');
+            expect(mockStorage.contentFileExists.mock.calls[1][0]).toBe('root/path.md');
+            expect(mockStorage.contentFileExists.mock.calls[2][0]).toBe('root/path/to.md');
+            expect(mockResponse.send).not.toBeCalled();
+            expect(mockResponse.sendStatus).toBeCalledWith(404);
         });
     });
 
-    describe('getStructure', () => {
+    describe('getMetadata', () => {
+        it('throws an error if the content file does not exist for a root object', async () => {
+            mockStorage.contentFileExists.mockReturnValue(false);
+
+            const page = new MarkdownRecurse('root', config, mockStorage, true);
+
+            await expect(() => page.getMetadata())
+                .rejects.toThrow('No markdown file found matching path root');
+            expect(mockStorage.contentFileExists).toBeCalledWith('root/index.md');
+        });
+
+        it('throws an error if the path does not end in md for a non-root object', async () => {
+            const page = new MarkdownRecurse('root', config, mockStorage);
+
+            await expect(() => page.getMetadata())
+                .rejects.toThrow('No markdown file found matching path root');
+            expect(mockStorage.contentFileExists).not.toBeCalled();
+        });
+
+        it('throws an error if the content file does not exist for a non-root object', async () => {
+            mockStorage.contentFileExists.mockReturnValue(false);
+
+            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
+
+            await expect(() => page.getMetadata())
+                .rejects.toThrow('No markdown file found matching path root/file.md');
+            expect(mockStorage.contentFileExists).toBeCalledWith('root/file.md');
+        });
+
+        it('gets metadata from the source file where none is cached', async () => {
+            const parsedYaml = { title: 'Some Title' };
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(5000);
+            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+            mockYAMLparse.mockReturnValue(parsedYaml);
+
+            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
+            const actualMetadata = await page.getMetadata();
+
+            const expectedMetadata = {
+                apiPath: 'root/file.md',
+                title: 'Some Title'
+            };
+            expect(mockStorage.getContentFileModifiedTime).toBeCalledWith('root/file.md');
+            expect(mockStorage.getContentFile).toBeCalledWith('root/file.md');
+            expect(mockSplitFrontMatter).toBeCalledWith(contentFileBuf.toString('utf-8'));
+            expect(mockYAMLparse).toBeCalledWith(parsedYaml);
+
+            expect(actualMetadata).toEqual(expectedMetadata);
+        });
+
+        it('returns identical metadata on the second run without re-reading the source file', async () => {
+            const parsedYaml = { title: 'Some Title' };
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(5000);
+            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+            mockYAMLparse.mockReturnValue(parsedYaml);
+
+            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
+            const actualMetadata1 = await page.getMetadata();
+            const actualMetadata2 = await page.getMetadata();
+
+            const expectedMetadata = {
+                apiPath: 'root/file.md',
+                title: 'Some Title'
+            };
+            expect(mockStorage.getContentFileModifiedTime).toBeCalledTimes(2);
+            expect(mockStorage.getContentFile).toBeCalledTimes(1);
+            expect(mockSplitFrontMatter).toBeCalledTimes(1);
+            expect(mockYAMLparse).toBeCalledTimes(1);
+
+            expect(actualMetadata1).toEqual(expectedMetadata);
+            expect(actualMetadata2).toEqual(expectedMetadata);
+        });
+
+        it('re-obtains metadata from the source file if it was updated since the last call', async () => {
+            const parsedYaml = { title: 'Some Title' };
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.getContentFileModifiedTime
+                .mockReturnValueOnce(5000)
+                .mockReturnValue(6000);
+            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+            mockYAMLparse.mockReturnValue(parsedYaml);
+
+            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
+            const actualMetadata1 = await page.getMetadata();
+            const actualMetadata2 = await page.getMetadata();
+
+            const expectedMetadata = {
+                apiPath: 'root/file.md',
+                title: 'Some Title'
+            };
+            expect(mockStorage.getContentFileModifiedTime).toBeCalledTimes(2);
+            expect(mockStorage.getContentFile).toBeCalledTimes(2);
+            expect(mockSplitFrontMatter).toBeCalledTimes(2);
+            expect(mockYAMLparse).toBeCalledTimes(2);
+
+            expect(actualMetadata1).toEqual(expectedMetadata);
+            expect(actualMetadata2).toEqual(expectedMetadata);
+        });
+
+        it('sets the title to the file/path name (without extension) if not present in parsed metadata', async () => {
+            const parsedYaml = { };
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(5000);
+            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+            mockYAMLparse.mockReturnValue(parsedYaml);
+
+            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
+            const actualMetadata = await page.getMetadata();
+
+            const expectedMetadata = {
+                apiPath: 'root/file.md',
+                title: 'file'
+            };
+            expect(mockStorage.getContentFileModifiedTime).toBeCalledWith('root/file.md');
+            expect(mockStorage.getContentFile).toBeCalledWith('root/file.md');
+            expect(mockSplitFrontMatter).toBeCalledWith(contentFileBuf.toString('utf-8'));
+            expect(mockYAMLparse).toBeCalledWith(parsedYaml);
+
+            expect(actualMetadata).toEqual(expectedMetadata);
+        });
+    });
+
+    describe('getMdStructure', () => {
 
         beforeEach(() => {
-            pathModifiedTimeMock.mockReturnValue(1234);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
         });
 
-        it('returns index file metadata as a single child for a root directory with no (other) children', async () => {
-            pathIsFileMock.mockReturnValue(true);
-            pathIsDirectoryMock.mockReturnValue(true);
-            readdirMock.mockResolvedValue(['index.md']);
-            readFileMock.mockResolvedValue('');
-            const page = new MarkdownRecurse('rootDir', config, storageAdapter, true);
-            const expectedStructure = {
-                children: [{ metadata: { title: 'rootDir', apiPath: 'rootDir' } } ]
-            };
-            const structure = await page.getStructure();
-            expect(structure).toStrictEqual(expectedStructure);
+        it('throws an error if the content file does not exist for a root object', async () => {
+            mockStorage.contentFileExists.mockReturnValue(false);
+
+            const page = new MarkdownRecurse('root', config, mockStorage, true);
+
+            await expect(() => page.getMdStructure())
+                .rejects.toThrow('No markdown file found matching path root');
+            expect(mockStorage.contentFileExists).toBeCalledWith('root/index.md');
         });
 
-        it('returns children (including index) for a root directory with other markdown children', async () => {
-            pathIsFileMock.mockImplementation((file) => file.endsWith('.md'));
-            pathIsDirectoryMock.mockImplementation((file) => file.endsWith('rootDir'));
-            readdirMock.mockResolvedValue(['index.md', 'firstfile.md', 'secondfile.md', 'thirdfile.txt']);
-            readFileMock.mockResolvedValue('');
-            const page = new MarkdownRecurse('rootDir', config, storageAdapter, true);
+        it('throws an error if the path does not end in md for a non-root object', async () => {
+            const page = new MarkdownRecurse('root', config, mockStorage);
+
+            await expect(() => page.getMdStructure())
+                .rejects.toThrow('No markdown file found matching path root');
+            expect(mockStorage.contentFileExists).not.toBeCalled();
+        });
+
+        it('throws an error if the content file does not exist for a non-root object', async () => {
+            mockStorage.contentFileExists.mockReturnValue(false);
+
+            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
+
+            await expect(() => page.getMdStructure())
+                .rejects.toThrow('No markdown file found matching path root/file.md');
+            expect(mockStorage.contentFileExists).toBeCalledWith('root/file.md');
+        });
+
+        it('root: lists root page as first child, removes index.md and non-md files from child list', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.listContentChildren.mockImplementation(async (directory, filterFn) => {
+                if (directory === 'rootDir') {
+                    return ['notmarkdown.mdd', 'markdown1.md', 'markdown2.md', 'noextension', 'index.md']
+                        .filter(filterFn);
+                }
+                return [];
+            });
+            mockSplitFrontMatter.mockReturnValue(['']);
+            mockYAMLparse.mockReturnValue({});
+
+            const page = new MarkdownRecurse('rootDir', config, mockStorage, true);
+
             const expectedStructure = {
                 children: [
                     { metadata: { title: 'rootDir', apiPath: 'rootDir' } },
-                    { metadata: { title: 'firstfile', apiPath: 'rootDir/firstfile.md' } },
-                    { metadata: { title: 'secondfile', apiPath: 'rootDir/secondfile.md' } },
+                    { metadata: { title: 'markdown1', apiPath: 'rootDir/markdown1.md' } },
+                    { metadata: { title: 'markdown2', apiPath: 'rootDir/markdown2.md' } }
                 ]
             };
-            const structure = await page.getStructure();
-            expect(structure).toEqual(expectedStructure);
+            const structure = await page.getMdStructure();
+            expect(structure).toStrictEqual(expectedStructure);
+        });
+
+        it('non-root: lists main page and then children with non-md and index.md removed', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.listContentChildren.mockImplementation(async (directory, filterFn) => {
+                if (directory === 'rootDir') {
+                    return ['notmarkdown.mdd', 'markdown1.md', 'markdown2.md', 'noextension', 'index.md']
+                        .filter(filterFn);
+                }
+                return [];
+            });
+            mockSplitFrontMatter.mockReturnValue(['']);
+            mockYAMLparse.mockReturnValue({});
+
+            const page = new MarkdownRecurse('rootDir.md', config, mockStorage, false);
+
+            const expectedStructure = {
+                metadata: { title: 'rootDir', apiPath: 'rootDir.md' },
+                children: [
+                    { metadata: { title: 'markdown1', apiPath: 'rootDir/markdown1.md' } },
+                    { metadata: { title: 'markdown2', apiPath: 'rootDir/markdown2.md' } }
+                ]
+            };
+            const structure = await page.getMdStructure();
+            expect(structure).toStrictEqual(expectedStructure);
+        });
+
+        it('returns index file metadata as a single child for a root directory with no (other) children', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.listContentChildren.mockResolvedValue([]);
+            mockSplitFrontMatter.mockReturnValue(['']);
+            mockYAMLparse.mockReturnValue({});
+
+            const page = new MarkdownRecurse('rootDir', config, mockStorage, true);
+
+            const expectedStructure = {
+                children: [{ metadata: { title: 'rootDir', apiPath: 'rootDir' } } ]
+            };
+            const structure = await page.getMdStructure();
+            expect(structure).toStrictEqual(expectedStructure);
+        });
+
+        it('returns a single metadata item for a non-root page with no children', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.listContentChildren.mockResolvedValue([]);
+            mockSplitFrontMatter.mockReturnValue(['']);
+            mockYAMLparse.mockReturnValue({});
+
+            const page = new MarkdownRecurse('rootDir/page.md', config, mockStorage);
+
+            const expectedStructure = {
+                metadata: { title: 'page', apiPath: 'rootDir/page.md' }
+            };
+            const structure = await page.getMdStructure();
+            expect(structure).toStrictEqual(expectedStructure);
+        });
+
+        it('orders non-root children by weight (ascending) first and then by title (ascending)', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockImplementation((path) => Buffer.from(path));
+            mockStorage.listContentChildren.mockImplementation((path) => {
+                if (path.endsWith('rootDir'))
+                    return ['fileA.md', 'fileB.md', 'fileC.md', 'fileD.md', 'fileE.md', 'fileF.md'];
+                return [];
+            });
+            mockSplitFrontMatter.mockImplementation((path) => [path]);
+            mockYAMLparse.mockImplementation((path) => {
+                if (path.endsWith('C.md')) return { weight: 10 };
+                if (path.endsWith('B.md')) return { weight: 20 };
+                if (path.endsWith('A.md')) return { weight: 30 };
+                return {};
+            });
+
+            const page = new MarkdownRecurse('rootDir.md', config, mockStorage);
+            const actualStructure = await page.getMdStructure();
+
+            const expectedStructure = {
+                metadata: { title: 'rootDir', apiPath: 'rootDir.md' },
+                children: [
+                    { metadata: { title: 'fileC', apiPath: 'rootDir/fileC.md', weight: 10 } },
+                    { metadata: { title: 'fileB', apiPath: 'rootDir/fileB.md', weight: 20 } },
+                    { metadata: { title: 'fileA', apiPath: 'rootDir/fileA.md', weight: 30 } },
+                    { metadata: { title: 'fileD', apiPath: 'rootDir/fileD.md' } },
+                    { metadata: { title: 'fileE', apiPath: 'rootDir/fileE.md' } },
+                    { metadata: { title: 'fileF', apiPath: 'rootDir/fileF.md' } },
+                ]
+            };
+            expect(actualStructure).toEqual(expectedStructure);
+        });
+
+        it('orders root children with index.md first, then by weight (ascending) and then by title (ascending)', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockImplementation((path) => Buffer.from(path));
+            mockStorage.listContentChildren.mockImplementation((path) => {
+                if (path.endsWith('rootDir'))
+                    return ['fileA.md', 'fileB.md', 'fileC.md', 'fileD.md', 'fileE.md', 'fileF.md'];
+                return [];
+            });
+            mockSplitFrontMatter.mockImplementation((path) => [path]);
+            mockYAMLparse.mockImplementation((path) => {
+                if (path.endsWith('C.md')) return { weight: 10 };
+                if (path.endsWith('B.md')) return { weight: 20 };
+                if (path.endsWith('A.md')) return { weight: 30 };
+                return {};
+            });
+
+            const page = new MarkdownRecurse('rootDir', config, mockStorage, true);
+            const actualStructure = await page.getMdStructure();
+
+            const expectedStructure = {
+                children: [
+                    { metadata: { title: 'rootDir', apiPath: 'rootDir' } },
+                    { metadata: { title: 'fileC', apiPath: 'rootDir/fileC.md', weight: 10 } },
+                    { metadata: { title: 'fileB', apiPath: 'rootDir/fileB.md', weight: 20 } },
+                    { metadata: { title: 'fileA', apiPath: 'rootDir/fileA.md', weight: 30 } },
+                    { metadata: { title: 'fileD', apiPath: 'rootDir/fileD.md' } },
+                    { metadata: { title: 'fileE', apiPath: 'rootDir/fileE.md' } },
+                    { metadata: { title: 'fileF', apiPath: 'rootDir/fileF.md' } },
+                ]
+            };
+            expect(actualStructure).toEqual(expectedStructure);
         });
 
         it('returns correct data for a complex deep directory structure', async () => {
-            pathIsDirectoryMock.mockImplementation((path) => path.endsWith('Dir'));
-            pathIsFileMock.mockImplementation((path: string) => (
-                path.includes('file') || path.endsWith('/index.md')
-                || path.endsWith('SubDir.md') || path.endsWith('firstDir.md')
-            ));
-            readdirMock.mockImplementation( async (path) => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockImplementation((path) => Buffer.from(path));
+            mockStorage.listContentChildren.mockImplementation((path) => {
                 if (path.endsWith('rootDir')) {
-                    return ['index.md', 'somefile.txt', 'file1.md', 'file2.md', 'firstDir.md', 'firstDir'];
+                    return ['file1.md', 'file2.md', 'firstDir.md'];
                 } else if (path.endsWith('firstDir')) {
-                    return ['emptyDir', 'noMdFileDir', 'firstSubDir', 'firstSubDir.md', 'file3.md', 'file4.md'];
-                } else if (path.endsWith('emptyDir')) {
-                    return [];
-                } else if (path.endsWith('noMdFileDir')) {
-                    return ['image1file.jpg', 'textfile.txt', 'noextfile'];
+                    return ['firstSubDir.md', 'file3.md', 'file4.md'];
                 } else if (path.endsWith('firstSubDir')) {
-                    return ['file5.md', 'file6.md', 'secondSubDir.md', 'secondSubDir'];
+                    return ['file5.md', 'file6.md', 'secondSubDir.md'];
                 } else if (path.endsWith('secondSubDir')) {
                     return ['file7.md', 'file8.md', 'file9.md'];
                 }
+                return [];
             });
-            readFileMock.mockResolvedValue('');
+            mockSplitFrontMatter.mockImplementation((path) => [path]);
+            mockYAMLparse.mockImplementation((path) => {
+                if (path.endsWith('C.md')) return { weight: 10 };
+                if (path.endsWith('B.md')) return { weight: 20 };
+                if (path.endsWith('A.md')) return { weight: 30 };
+                return {};
+            });
 
-            const page = new MarkdownRecurse('rootDir', config, storageAdapter, true);
+            const page = new MarkdownRecurse('rootDir', config, mockStorage, true);
+            const actualStructure = await page.getMdStructure();
+
             const expectedStructure = {
                 children: [
                     { metadata: { title: 'rootDir', apiPath: 'rootDir' } },
@@ -305,61 +494,7 @@ describe('MarkdownRecurse', () => {
                     },
                 ]
             };
-            const structure = await page.getStructure();
-            expect(structure).toEqual(expectedStructure);
-        });
-
-        it('orders non-root children by weight (ascending) first and then by title (ascending)', async () => {
-            pathIsFileMock.mockImplementation((file) => file.endsWith('.md'));
-            pathIsDirectoryMock.mockImplementation((file) => file.endsWith('rootDir'));
-            readdirMock.mockResolvedValue(['index.md', 'fileA.md', 'fileB.md', 'fileC.md', 'fileD.md', 'fileE.md', 'fileF.md']);
-            readFileMock.mockImplementation((path) => {
-                if (path.endsWith('C.md')) return '---\nweight: 10\n---';
-                if (path.endsWith('B.md')) return '---\nweight: 20\n---';
-                if (path.endsWith('A.md')) return '---\nweight: 30\n---';
-                return '';
-            });
-            const page = new MarkdownRecurse('rootDir.md', config, storageAdapter, false);
-            const expectedStructure = {
-                metadata: { title: 'rootDir', apiPath: 'rootDir.md' },
-                children: [
-                    { metadata: { title: 'fileC', apiPath: 'rootDir/fileC.md', weight: 10 } },
-                    { metadata: { title: 'fileB', apiPath: 'rootDir/fileB.md', weight: 20 } },
-                    { metadata: { title: 'fileA', apiPath: 'rootDir/fileA.md', weight: 30 } },
-                    { metadata: { title: 'fileD', apiPath: 'rootDir/fileD.md' } },
-                    { metadata: { title: 'fileE', apiPath: 'rootDir/fileE.md' } },
-                    { metadata: { title: 'fileF', apiPath: 'rootDir/fileF.md' } },
-                    { metadata: { title: 'index', apiPath: 'rootDir/index.md' } },
-                ]
-            };
-            const structure = await page.getStructure();
-            expect(structure).toEqual(expectedStructure);
-        });
-
-        it('orders root children with index.md first, then by weight (ascending) and then by title (ascending)', async () => {
-            pathIsFileMock.mockImplementation((file) => file.endsWith('.md'));
-            pathIsDirectoryMock.mockImplementation((file) => file.endsWith('rootDir'));
-            readdirMock.mockResolvedValue(['index.md', 'fileA.md', 'fileB.md', 'fileC.md', 'fileD.md', 'fileE.md', 'fileF.md']);
-            readFileMock.mockImplementation((path) => {
-                if (path.endsWith('C.md')) return '---\nweight: 10\n---';
-                if (path.endsWith('B.md')) return '---\nweight: 20\n---';
-                if (path.endsWith('A.md')) return '---\nweight: 30\n---';
-                return '';
-            });
-            const page = new MarkdownRecurse('rootDir', config, storageAdapter, true);
-            const expectedStructure = {
-                children: [
-                    { metadata: { title: 'rootDir', apiPath: 'rootDir' } },
-                    { metadata: { title: 'fileC', apiPath: 'rootDir/fileC.md', weight: 10 } },
-                    { metadata: { title: 'fileB', apiPath: 'rootDir/fileB.md', weight: 20 } },
-                    { metadata: { title: 'fileA', apiPath: 'rootDir/fileA.md', weight: 30 } },
-                    { metadata: { title: 'fileD', apiPath: 'rootDir/fileD.md' } },
-                    { metadata: { title: 'fileE', apiPath: 'rootDir/fileE.md' } },
-                    { metadata: { title: 'fileF', apiPath: 'rootDir/fileF.md' } },
-                ]
-            };
-            const structure = await page.getStructure();
-            expect(structure).toEqual(expectedStructure);
+            expect(actualStructure).toEqual(expectedStructure);
         });
     });
 });

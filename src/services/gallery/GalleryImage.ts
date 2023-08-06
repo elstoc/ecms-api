@@ -1,8 +1,7 @@
-import fs from 'fs';
-import path from 'path';
+import { basename } from 'path';
 
-import { Dimensions, IGalleryImage, ImageData, ImageSize } from './IGalleryImage';
-import { getExif, resizeImage, getImageDimensions, pathModifiedTime, Config } from '../../utils';
+import { IGalleryImage, ImageData, ImageSize } from './IGalleryImage';
+import { getExif, resizeImage, getImageDimensions, Config } from '../../utils';
 import { Response } from 'express';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
@@ -13,122 +12,83 @@ const RESIZE_OPTIONS = {
 };
 
 export class GalleryImage implements IGalleryImage {
-    private sourceFileModifiedTimeForCache = 0;
-    private thumbDimensions?: Dimensions;
-    private exif?: { [key: string]: string | undefined };
-    private description?: string;
-    private thumbSrcUrl?: string;
-    private fhdSrcUrl?: string;
+    private imageDataFromSourceFileTime = -1;
+
+    private imageData?: ImageData;
 
     public constructor(
         private config: Config,
-        private uiPath: string,
+        private contentPath: string,
         private storage: IStorageAdapter
-    ) {
-        this.clearCacheIfOutdated();
-    }
+    ) { }
     
-    private clearCacheIfOutdated(): void {
-        const sourceFileModifiedTime = this.getFileModifiedTime('source');
-        if (sourceFileModifiedTime === 0) {
-            throw new Error(`File ${this.getFullPath('source')} does not exist`);
-        } else if (sourceFileModifiedTime !== this.sourceFileModifiedTimeForCache) {
-            this.exif = undefined;
-            this.description = undefined;
-            this.thumbDimensions = undefined;
-            this.sourceFileModifiedTimeForCache = sourceFileModifiedTime;
-            this.thumbSrcUrl = undefined;
-            this.fhdSrcUrl = undefined;
+    public async getImageData(): Promise<ImageData> {
+        this.throwIfNoSourceFile();
+
+        const sourceModifiedTime = this.storage.getContentFileModifiedTime(this.contentPath);
+
+        if (this.imageData && sourceModifiedTime <= this.imageDataFromSourceFileTime) {
+            return this.imageData;
         }
-    }
-
-    private getFileModifiedTime(size: string): number {
-        return pathModifiedTime(this.getFullPath(size));
-    }
-
-    private getFullPath(size: string): string {
-        if (size === 'source') {
-            return path.join(this.config.dataDir, 'content', this.uiPath);
-        }
-        const [dirName, baseName] = [path.dirname(this.uiPath), path.basename(this.uiPath)];
-        return path.join(this.config.dataDir, 'cache', dirName, size, baseName);
-    }
-
-    public async getMetadata(): Promise<ImageData> {
-        this.clearCacheIfOutdated();
-        await Promise.all([
-            this.refreshThumbDimensions(),
-            this.refreshExif()
+        
+        const [thumbFileBuf, exifFileBuf] = await Promise.all([
+            this.getResizedImageBuf('thumb'),
+            this.getResizedImageBuf('forExif')
         ]);
 
-        if (!this.exif || !this.thumbDimensions) {
-            throw new Error('Metadata unavailable');
+        const exif = getExif(exifFileBuf);
+
+        let description = exif.title ?? '';
+        if (exif.dateTaken) {
+            const exifDate = new Date(exif.dateTaken);
+            description += ` (${exifDate.toLocaleDateString('default', { month: 'short' })} ${exifDate.getFullYear()})`;
         }
 
-        return {
-            fileName: path.basename(this.uiPath),
-            description: this.description,
-            exif: this.exif,
-            thumbDimensions: this.thumbDimensions,
-            thumbSrcUrl: this.thumbSrcUrl,
-            fhdSrcUrl: this.fhdSrcUrl
+        this.imageDataFromSourceFileTime = sourceModifiedTime;
+
+        this.imageData =  {
+            fileName: basename(this.contentPath),
+            description,
+            exif,
+            thumbDimensions: getImageDimensions(thumbFileBuf),
+            thumbSrcUrl: this.getSourceUrl('thumb'),
+            fhdSrcUrl: this.getSourceUrl('fhd')
         };
+
+        return this.imageData;
     }
 
-    private async refreshThumbDimensions(): Promise<void> {
-        if (!this.thumbDimensions) {
-            await this.resizeStaleImage('thumb');
-            const thumbFile = await fs.promises.readFile(this.getFullPath('thumb'));
-            this.thumbDimensions = getImageDimensions(thumbFile);
+    private throwIfNoSourceFile(): void {
+        if (!this.storage.contentFileExists(this.contentPath)) {
+            throw new Error(`Source file ${this.contentPath} does not exist`);
         }
     }
 
-    private async refreshExif(): Promise<void> {
-        if (!this.exif) {
-            await this.resizeStaleImage('forExif');
-            const file = await fs.promises.readFile(this.getFullPath('forExif'));
-            this.exif = getExif(file);
-            this.description = this.exif.title ?? '';
-
-            if (this.exif.dateTaken) {
-                const exifDate = new Date(this.exif.dateTaken);
-                this.description += ` (${exifDate.toLocaleDateString('default', { month: 'short' })} ${exifDate.getFullYear()})`;
-            }
-            this.thumbSrcUrl = `${this.config.url}/gallery/image/${this.uiPath}?id=${this.sourceFileModifiedTimeForCache}&size=thumb`;
-            this.fhdSrcUrl = `${this.config.url}/gallery/image/${this.uiPath}?id=${this.sourceFileModifiedTimeForCache}&size=fhd`;
-        }
+    private getSourceUrl(size: ImageSize) {
+        return `${this.config.url}/gallery/image/${this.contentPath}?id=${this.imageDataFromSourceFileTime}&size=${size}`;
     }
 
     public async sendFile(size: ImageSize, response: Response): Promise<void> {
         if (!['fhd', 'thumb'].includes(size)) {
             throw new Error('Incorrect size description');
         }
-        this.clearCacheIfOutdated();
-        await this.resizeStaleImage(size);
-        const path =  this.getFullPath(size);
-        response.sendFile(path);
+        this.throwIfNoSourceFile();
+
+        const fileBuf = await this.getResizedImageBuf(size);
+        response.send(fileBuf);
     }
 
-    private async resizeStaleImage(size: ImageSize): Promise<void> {
-        if (this.cacheFileStale(size)) {
-            await this.resizeImage(size);
+    private async getResizedImageBuf(size: ImageSize): Promise<Buffer> {
+        if (this.storage.generatedFileIsOlder(this.contentPath, size)) {
+            return this.generateResizedImage(size);
         }
+        return this.storage.getGeneratedFile(this.contentPath, size);
     }
 
-    private cacheFileStale(size: string): boolean {
-        return this.getFileModifiedTime(size) < this.sourceFileModifiedTimeForCache;
-    }
-
-    private async resizeImage(size: ImageSize) {
-        const targetDir = path.dirname(this.getFullPath(size));
-        if (!fs.existsSync(targetDir)) {
-            fs.mkdirSync(targetDir, { recursive: true });
-        }
-        const sourceFile = await fs.promises.readFile(this.getFullPath('source'));
-        const targetFile = await resizeImage(sourceFile, RESIZE_OPTIONS[size]);
-        await fs.promises.writeFile(this.getFullPath(size), targetFile);
-        if (size === 'thumb') {
-            this.thumbDimensions = undefined;
-        }
+    private async generateResizedImage(size: ImageSize): Promise<Buffer> {
+        const sourceFileBuf = await this.storage.getContentFile(this.contentPath);
+        const targetFileBuf = await resizeImage(sourceFileBuf, RESIZE_OPTIONS[size]);
+        await this.storage.storeGeneratedFile(this.contentPath, size, targetFileBuf);
+        return targetFileBuf;
     }
 }

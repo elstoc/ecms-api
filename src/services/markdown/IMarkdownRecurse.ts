@@ -12,7 +12,7 @@ export type MarkdownStructure = {
 }
 
 export interface IMarkdownRecurse {
-    getStructure(): Promise<MarkdownStructure>;
+    getMdStructure(): Promise<MarkdownStructure>;
     getMetadata(): Promise<MarkdownMetadata>;
-    sendFile(apiPath: string, response: Response): void;
+    sendFile(apiPath: string, response: Response): Promise<void>;
 }

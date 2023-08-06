@@ -157,9 +157,9 @@ describe('Site', () => {
     });
 
     describe('getMarkdownStructure', () => {
-        it('runs getMarkdownStructure on the appropriate markdown object', async () => {
+        it('runs getMdStructure on the appropriate markdown object', async () => {
             (SiteComponent as jest.Mock).mockImplementation((_, inputFilePath) => ({
-                getMarkdown: () => ({ getStructure: () => `${inputFilePath}-struct` })
+                getMarkdown: () => ({ getMdStructure: () => `${inputFilePath}-struct` })
             }));
             (fs.readdirSync as jest.Mock).mockReturnValue([
                 'component01.yaml',
@@ -174,9 +174,10 @@ describe('Site', () => {
     });
 
     describe('sendMarkdownFile', () => {
-        it('runs sendFile on the appropriate markdown object', () => {
-            (SiteComponent as jest.Mock).mockImplementation((_, inputFilePath) => ({
-                getMarkdown: () => ({ sendFile: (apiPath: string) => `${inputFilePath}-${apiPath}-markdown` })
+        it('runs sendFile on the appropriate markdown object', async () => {
+            const mockSendFile = jest.fn();
+            (SiteComponent as jest.Mock).mockImplementation(() => ({
+                getMarkdown: () => ({ sendFile: mockSendFile })
             }));
             (fs.readdirSync as jest.Mock).mockReturnValue([
                 'component01.yaml',
@@ -184,9 +185,8 @@ describe('Site', () => {
                 'component03.yaml',
             ]);
             const site = new Site(config, mockStorageAdapter);
-            const expectedPath = 'component02-component02/path/to/file-markdown';
-            const actualPath = site.sendMarkdownFile('component02/path/to/file', 'nothing' as any);
-            expect(actualPath).toBe(expectedPath);
+            await site.sendMarkdownFile('component02/path/to/file', 'nothing' as any);
+            expect(mockSendFile).toBeCalled();
         });
     });
 });

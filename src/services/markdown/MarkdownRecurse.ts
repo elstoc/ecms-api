@@ -1,7 +1,5 @@
-import fs from 'fs';
 import path from 'path';
 import YAML from 'yaml';
-import { pathIsDirectory, pathIsFile, pathModifiedTime } from '../../utils/site/fs';
 import { IMarkdownRecurse, MarkdownMetadata, MarkdownStructure } from './IMarkdownRecurse';
 import { Config, splitFrontMatter } from '../../utils';
 import { Response } from 'express';
@@ -9,9 +7,11 @@ import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
 export class MarkdownRecurse implements IMarkdownRecurse {
     private apiPath: string;
+    private contentPath: string;
+    private childrenContentDir: string;
     private metadata?: MarkdownMetadata;
     private children: { [key: string]: IMarkdownRecurse } = {};
-    private metadataModifiedTime = 0;
+    private metadataFromSourceFileTime = 0;
 
     constructor(
         apiPath: string,
@@ -20,75 +20,49 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         private isRoot = false
     ) {
         this.apiPath = apiPath.replace(/^\//, '');
-        this.throwIfInvalidPath();
-        this.clearMetadataIfOutdated();
+        this.childrenContentDir = this.apiPath.replace(/\.md$/, '');
+        this.contentPath = this.isRoot
+            ? `${this.apiPath}/index.md`
+            : this.apiPath;
     }
 
-    private throwIfInvalidPath(): void {
-        if (this.isRoot && this.apiPath.endsWith('.md')) {
-            throw new Error('Root path must not point to a markdown file');
-        }
-        if (this.isRoot && !pathIsDirectory(this.fullApiPath())) {
-            throw new Error('Root path must point to an existing directory');
-        }
-        if (!this.hasBackingFile()) {
-            throw new Error(`The path ${this.apiPath} must be backed by a valid markdown file`);
-        }
-    }
-
-    private hasBackingFile(): boolean {
-        return this.backingFileFullPath().endsWith('.md') && pathIsFile(this.backingFileFullPath());
-    }
-
-    private backingFileFullPath(): string {
-        return this.isRoot
-            ? `${this.fullApiPath()}/index.md`
-            : this.fullApiPath();
-    }
-
-    private childrenApiDir(): string {
-        return this.isRoot
-            ? this.apiPath
-            : this.apiPath.substring(0, this.apiPath.lastIndexOf('.md'));
-    }
-
-    private fullApiPath(): string {
-        return path.join(this.config.dataDir, 'content', this.apiPath);
-    }
-
-    private clearMetadataIfOutdated(): void {
-        if (this.backingFileModifiedTime() !== this.metadataModifiedTime) {
-            this.metadata = undefined;
-            this.metadataModifiedTime = this.backingFileModifiedTime();
-        }
-    }
-
-    private backingFileModifiedTime(): number {
-        return pathModifiedTime(this.backingFileFullPath());
-    }
-
-    public sendFile(apiPath: string, response: Response): void {
-        this.throwIfInvalidPath();
+    public async sendFile(targetApiPath: string, response: Response): Promise<void> {
         try {
-            if (this.apiPath === apiPath) {
-                response.sendFile(this.backingFileFullPath());
+            this.throwIfNoContentFile();
+            if (targetApiPath === this.apiPath) {
+                const fileBuf = await this.storage.getContentFile(this.contentPath);
+                response.send(fileBuf);
             } else {
-                this.getNextChildInPath(apiPath).sendFile(apiPath, response);
+                const nextChild = this.getNextChildInTargetPath(targetApiPath);
+                await nextChild.sendFile(targetApiPath, response);
             }
         } catch (e: unknown) {
             response.sendStatus(404);
         }
     }
 
-    private getNextChildInPath(apiPath: string): IMarkdownRecurse {
-        const nextChildPathPart = apiPath.replace(`${this.childrenApiDir()}/`, '').split('/')[0];
-        let nextChildApiPath = `${path.join(this.childrenApiDir(), nextChildPathPart)}`;
-        if (pathIsDirectory(path.join(this.config.dataDir, 'content', nextChildApiPath))) {
-            nextChildApiPath += '.md';
+    private throwIfNoContentFile(): void {
+        if (!this.contentPath.endsWith('.md') || !this.storage.contentFileExists(this.contentPath)) {
+            throw new Error(`No markdown file found matching path ${this.apiPath}`);
         }
-        if (!pathIsFile(path.join(this.config.dataDir, 'content', nextChildApiPath))) {
-            throw new Error('No backing file found for some portions of the path');
+    }
+
+    private getNextChildInTargetPath(targetApiPath: string): IMarkdownRecurse {
+        /* split the "target path" and "directory containing this instance's children"
+           into path segment arrays */
+        const targetApiPathSplit = this.storage.splitPath(targetApiPath);
+        const thisChildrenContentDirSplit = this.storage.splitPath(this.childrenContentDir);
+
+        /* if the target path has one more path segment than the children directory,
+           it must be a direct child of this instance */
+        if (targetApiPathSplit.length === thisChildrenContentDirSplit.length + 1) {
+            return this.getChild(targetApiPath);
         }
+
+        /* target is a deeper child
+           get the api path to the next file in the chain */
+        const nextChildApiDirSplit = targetApiPathSplit.slice(0, thisChildrenContentDirSplit.length + 1);
+        const nextChildApiPath = path.join(...nextChildApiDirSplit) + '.md';
         return this.getChild(nextChildApiPath);
     }
 
@@ -98,41 +72,65 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     }
 
     public async getMetadata(): Promise<MarkdownMetadata> {
-        this.throwIfInvalidPath();
-        await this.refreshMetadata();
-        return this.metadata ?? {};
-    }
+        this.throwIfNoContentFile();
 
-    private async refreshMetadata(): Promise<void> {
-        this.clearMetadataIfOutdated();
-        if (this.metadata) return;
+        const contentModifiedTime = this.storage.getContentFileModifiedTime(this.contentPath);
+
+        if (this.metadata && contentModifiedTime === this.metadataFromSourceFileTime) {
+            return this.metadata;
+        }
+
         const frontMatter = await this.parseFrontMatter();
+
+        this.metadataFromSourceFileTime = contentModifiedTime;
+
         this.metadata = {
             apiPath: this.apiPath,
             ...frontMatter,
             title: frontMatter?.title ?? path.basename(this.apiPath, '.md')
         };
+
+        return this.metadata ?? {};
     }
-    
+
     private async parseFrontMatter(): Promise<{ [key: string]: string }> {
-        const file = await fs.promises.readFile(this.backingFileFullPath(), 'utf-8');
-        const [yaml] = splitFrontMatter(file);
+        const file = await this.storage.getContentFile(this.contentPath);
+        const [yaml] = splitFrontMatter(file.toString('utf-8'));
         return YAML.parse(yaml);
     }
     
-    public async getStructure(): Promise<MarkdownStructure> {
+    public async getMdStructure(): Promise<MarkdownStructure> {
+        this.throwIfNoContentFile();
         const metadata = await this.getMetadata();
         const childObjects = await this.getChildren();
-        const childStructPromises = childObjects.map((child) => child.getStructure());
+        const childStructPromises = childObjects.map((child) => child.getMdStructure());
         const children = await Promise.all(childStructPromises);
         children.sort(this.sortByWeightAndTitle);
 
         if (this.isRoot) {
+            // metadata for the root instance is added to the top of the list
             children.unshift({ metadata });
             return { children };
+        } else if (children.length === 0) {
+            return { metadata };
         }
-        if (children.length === 0) return { metadata };
+
         return {metadata, children};
+    }
+
+    private async getChildren(): Promise<IMarkdownRecurse[]> {
+        const childMdFiles = await this.storage.listContentChildren(
+            this.childrenContentDir,
+            (childFile) => (
+                childFile.endsWith('.md') && !(childFile.endsWith('index.md'))
+            )
+        );
+
+        return childMdFiles
+            .map((childFileName) => {
+                const childApiPath = path.join(this.childrenContentDir, childFileName);
+                return this.getChild(childApiPath);
+            });
     }
 
     private sortByWeightAndTitle(a: MarkdownStructure, b: MarkdownStructure): number {
@@ -147,23 +145,5 @@ export class MarkdownRecurse implements IMarkdownRecurse {
             if (aTitle > bTitle) return 1;
             if (aTitle === bTitle) return 0;
             return -1;
-    }
-
-    private async getChildren(): Promise<IMarkdownRecurse[]> {
-        const childrenDirFullPath = path.join(this.config.dataDir, 'content', this.childrenApiDir());
-
-        if (!pathIsDirectory(childrenDirFullPath)) return [];
-
-        const childMdFiles = await this.storage.listChildren(
-            'content',
-            this.childrenApiDir(),
-            (childFile) => (
-                childFile.endsWith('.md') && !(this.isRoot && childFile.endsWith('index.md'))
-            )
-        );
-
-        return childMdFiles.map((childFile) => (
-            this.getChild(`${this.childrenApiDir()}/${childFile}`)
-        ));
     }
 }

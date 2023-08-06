@@ -7,6 +7,6 @@ export interface ISite {
     listComponents(): ComponentMetadata[];
     sendGalleryImage(apiPath: string, size: string, response: Response): Promise<void>;
     getGalleryImages(apiPath: string, limit?: number): Promise<GalleryImages>;
-    sendMarkdownFile(apiPath: string, response: Response): void;
+    sendMarkdownFile(apiPath: string, response: Response): Promise<void>;
     getMarkdownStructure(apiPath: string): Promise<MarkdownStructure>;
 }

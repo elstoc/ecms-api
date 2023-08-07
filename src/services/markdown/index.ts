@@ -1,2 +1,2 @@
 export { MarkdownRecurse } from './MarkdownRecurse';
-export { IMarkdownRecurse } from './IMarkdownRecurse';
+export { MarkdownStructure, IMarkdownRecurse } from './IMarkdownRecurse';

@@ -4,7 +4,7 @@ import { MarkdownStructure } from '../markdown/IMarkdownRecurse';
 import { ComponentMetadata } from './ISiteComponent';
 
 export interface ISite {
-    listComponents(): ComponentMetadata[];
+    listComponents(): Promise<ComponentMetadata[]>;
     sendGalleryImage(apiPath: string, size: string, response: Response): Promise<void>;
     getGalleryImages(apiPath: string, limit?: number): Promise<GalleryImages>;
     sendMarkdownFile(apiPath: string, response: Response): Promise<void>;

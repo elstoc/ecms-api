@@ -1,4 +1,3 @@
-import fs from 'fs';
 import path from 'path';
 import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
 import { ISite } from './ISite';
@@ -6,8 +5,8 @@ import { SiteComponent } from './SiteComponent';
 import { Config } from '../../utils';
 import { GalleryImages, ImageSize } from '../gallery';
 import { Response } from 'express';
-import { MarkdownStructure } from '../markdown/IMarkdownRecurse';
-import { IStorageAdapter } from '../../adapters/IStorageAdapter';
+import { MarkdownStructure } from '../markdown';
+import { IStorageAdapter } from '../../adapters';
 
 export class Site implements ISite {
     private components: { [key: string]: ISiteComponent } = {};
@@ -15,19 +14,10 @@ export class Site implements ISite {
     constructor(
         private config: Config,
         private storage: IStorageAdapter
-    ) {
-        this.refreshComponents();
-    }
+    ) { }
 
-    private refreshComponents(): void {
-        this.listComponentYamlFiles().forEach((file) => (
-            this.getComponent(path.basename(file, '.yaml')))
-        );
-    }
-
-    private listComponentYamlFiles(): string[] {
-        const files = fs.readdirSync(path.join(this.config.dataDir, 'content'));
-        return files.filter((file) => file.endsWith('.yaml'));
+    private async listComponentYamlFiles(): Promise<string[]> {
+        return this.storage.listContentChildren('', (file: string) => file.endsWith('.yaml'));
     }
 
     private getComponent(apiPath: string): ISiteComponent {
@@ -35,8 +25,8 @@ export class Site implements ISite {
         return this.components[apiPath];
     }
 
-    public listComponents(): ComponentMetadata[] {
-        const components = this.listComponentYamlFiles().map((file) => (
+    public async listComponents(): Promise<ComponentMetadata[]> {
+        const components = (await this.listComponentYamlFiles()).map((file) => (
             this.getComponentMetadata(path.basename(file, '.yaml')))
         );
 

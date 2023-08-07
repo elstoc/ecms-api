@@ -8,7 +8,8 @@ export const createGetSiteNavHandler = (site: ISite, logger: winston.Logger): Re
     try {
         const siteNavData = await site.listComponents();
         res.json(siteNavData);
-    } catch {
+    } catch (e: unknown) {
+        if (e instanceof Error) logger.log('error', e.message);
         res.sendStatus(404);
     }
 };

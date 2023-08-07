@@ -1,13 +1,10 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import fs from 'fs';
+import YAML from 'yaml';
 import { Gallery } from '../../../src/services/gallery/Gallery';
 import { MarkdownRecurse } from '../../../src/services/markdown/MarkdownRecurse';
 import { SiteComponent } from '../../../src/services';
-import { pathIsDirectory, pathIsFile, pathModifiedTime } from '../../../src/utils/site/fs';
-import { IStorageAdapter } from '../../../src/adapters/IStorageAdapter';
 
-jest.mock('fs');
-jest.mock('../../../src/utils/site/fs');
+jest.mock('yaml');
 jest.mock('../../../src/services/gallery/Gallery');
 jest.mock('../../../src/services/markdown/MarkdownRecurse');
 
@@ -15,179 +12,295 @@ const config = {
     dataDir: '/path/to/data',
 } as any;
 
-const pathIsDirectoryMock = pathIsDirectory as jest.Mock;
-const pathIsFileMock = pathIsFile as jest.Mock;
-const pathModifiedTimeMock = pathModifiedTime as jest.Mock;
-const GalleryMock = Gallery as jest.Mock;
-const MarkdownRecurseMock = MarkdownRecurse as jest.Mock;
+const mockStorage = {
+    listContentChildren: jest.fn() as jest.Mock,
+    contentFileExists: jest.fn() as jest.Mock,
+    getContentFile: jest.fn() as jest.Mock,
+    getGeneratedFile: jest.fn() as jest.Mock,
+    storeGeneratedFile: jest.fn() as jest.Mock,
+    generatedFileIsOlder: jest.fn() as jest.Mock,
+    getContentFileModifiedTime: jest.fn() as jest.Mock,
+    contentDirectoryExists: jest.fn() as jest.Mock,
+    splitPath: jest.fn() as jest.Mock
+};
 
-let mockStorageAdapter: jest.MockedObject<IStorageAdapter>;
+const mockGallery = Gallery as jest.Mock;
+const mockMarkdown = MarkdownRecurse as jest.Mock;
+const contentFileBuf = Buffer.from('content-file');
+const yamlParseMock = YAML.parse as jest.Mock;
 
 describe('SiteComponent', () => {
-    describe('constructor', () => {
-        beforeEach(() => {
-            pathModifiedTimeMock.mockReturnValue(1234);
-        });
+    let component: SiteComponent;
 
-        it('throws an error if the content directory does not exist', () => {
-            pathIsDirectoryMock.mockReturnValueOnce(false);
-            expect(() => new SiteComponent(config, 'apipath', mockStorageAdapter)).toThrowError('A content directory does not exist for the path apipath');
-        });
-
-        it('throws an error if the component file does not exist', () => {
-            pathIsDirectoryMock.mockReturnValueOnce(true);
-            pathIsFileMock.mockReturnValueOnce(false);
-            expect(() => new SiteComponent(config, 'apipath', mockStorageAdapter)).toThrowError('A yaml file does not exist for the path apipath');
-        });
-
-        it('throws an error if the file does not contain any component type', () => {
-            pathIsDirectoryMock.mockReturnValueOnce(true);
-            pathIsFileMock.mockReturnValueOnce(true);
-            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title');
-            expect(() => new SiteComponent(config, 'apipath', mockStorageAdapter)).toThrowError('Valid component type not found');
-        });
-
-        it('throws an error if the file contains an invalid component type', () => {
-            pathIsDirectoryMock.mockReturnValueOnce(true);
-            pathIsFileMock.mockReturnValueOnce(true);
-            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: notgallery');
-            expect(() => new SiteComponent(config, 'apipath', mockStorageAdapter)).toThrowError('Valid component type not found');
-        });
-
-        it('throws an error if the file cannot be parsed', () => {
-            pathIsDirectoryMock.mockReturnValueOnce(true);
-            pathIsFileMock.mockReturnValueOnce(true);
-            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath test\ntitle: The Title\ntype: notgallery');
-            expect(() => new SiteComponent(config, 'apipath', mockStorageAdapter)).toThrowError();
-        });
-
-        it('attempts to parse component file yaml', () => {
-            pathIsDirectoryMock.mockReturnValueOnce(true);
-            pathIsFileMock.mockReturnValueOnce(true);
-            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
-            new SiteComponent(config, 'my-component', mockStorageAdapter);
-
-            expect(fs.readFileSync).toBeCalledTimes(1);
-            expect(fs.readFileSync).toBeCalledWith('/path/to/data/content/my-component.yaml', 'utf-8');
-        });
-
-        it('creates a Markdown root object if the component type is "markdown"', () => {
-            pathIsDirectoryMock.mockReturnValueOnce(true);
-            pathIsFileMock.mockReturnValueOnce(true);
-            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: markdown');
-            new SiteComponent(config, 'my-component', mockStorageAdapter);
-            expect(GalleryMock).toBeCalledTimes(0);
-            expect(MarkdownRecurseMock).toBeCalledTimes(1);
-        });
-
-        it('creates a Gallery root object if the component type is "gallery"', () => {
-            pathIsDirectoryMock.mockReturnValueOnce(true);
-            pathIsFileMock.mockReturnValueOnce(true);
-            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
-            new SiteComponent(config, 'my-component', mockStorageAdapter);
-            expect(GalleryMock).toBeCalledTimes(1);
-            expect(MarkdownRecurseMock).toBeCalledTimes(0);
-        });
+    beforeEach(() => {
+        component = new SiteComponent(config, 'my-component', mockStorage);
     });
 
     describe('getMetadata', () => {
-        let component: SiteComponent;
+        it('throws if no yaml file is found', async () => {
+            mockStorage.contentFileExists.mockReturnValue(false);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
 
-        beforeEach(() => {
-            pathModifiedTimeMock.mockReturnValue(1234);
-            pathIsFileMock.mockReturnValue(true);
-            pathIsDirectoryMock.mockReturnValue(true);
+            await expect(component.getMetadata()).rejects
+                .toThrow('A yaml file does not exist for the path my-component');
+            expect(mockStorage.contentFileExists).toBeCalledWith('my-component.yaml');
         });
 
-        it('gets metadata without re-parsing the component file (after object creation)', () => {
-            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
+        it('throws if no content directory is found', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(false);
+
+            await expect(component.getMetadata()).rejects
+                .toThrow('A content directory does not exist for the path my-component');
+            expect(mockStorage.contentDirectoryExists).toBeCalledWith('my-component');
+        });
+
+        it('throws if the type is not markdown or gallery', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                uiPath: 'test',
+                title: 'The Title',
+                type: 'not-markdown-or-gallery'
+            });
+
+            await expect(component.getMetadata()).rejects.toThrow('Valid component type not found');
+        });
+
+        it('gets metadata by parsing the component file on the first run', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                uiPath: 'test',
+                title: 'The Title',
+                type: 'gallery'
+            });
+
+            const actualMetadata = await component.getMetadata();
+
             const expectedMetadata = {
                 uiPath: 'test',
                 apiPath: 'my-component',
                 title: 'The Title',
                 type: 'gallery'
             };
-            component = new SiteComponent(config, 'my-component', mockStorageAdapter);
-
-            const actualMetadata = component.getMetadata();
-
-            expect(fs.readFileSync).toBeCalledTimes(1);
+            expect(mockStorage.contentDirectoryExists).toBeCalled();
+            expect(mockStorage.contentFileExists).toBeCalled();
+            expect(mockStorage.getContentFileModifiedTime).toBeCalledWith('my-component.yaml');
+            expect(mockStorage.getContentFile).toBeCalledWith('my-component.yaml');
+            expect(yamlParseMock).toBeCalledWith(contentFileBuf.toString('utf-8'));
             expect(expectedMetadata).toStrictEqual(actualMetadata);
         });
 
-        it('attempts to re-parse component file if file becomes out of date', () => {
-            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
-            component = new SiteComponent(config, 'my-component', mockStorageAdapter);
+        it('gets identical metadata without parsing the component file on the second run (file unchanged)', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                uiPath: 'test',
+                title: 'The Title',
+                type: 'gallery'
+            });
 
-            pathModifiedTimeMock.mockReturnValue(9999);
-            component.getMetadata();
+            const actualMetadata1 = await component.getMetadata();
+            const actualMetadata2 = await component.getMetadata();
 
-            expect(fs.readFileSync).toBeCalledTimes(2);
+            const expectedMetadata = {
+                uiPath: 'test',
+                apiPath: 'my-component',
+                title: 'The Title',
+                type: 'gallery'
+            };
+            expect(mockStorage.contentDirectoryExists).toBeCalledTimes(2);
+            expect(mockStorage.contentFileExists).toBeCalledTimes(2);
+            expect(mockStorage.getContentFileModifiedTime).toBeCalledTimes(2);
+            expect(mockStorage.getContentFile).toBeCalledTimes(1);
+            expect(yamlParseMock).toBeCalledTimes(1);
+            expect(expectedMetadata).toStrictEqual(actualMetadata1);
+            expect(expectedMetadata).toStrictEqual(actualMetadata2);
         });
 
-        it('sets uiPath and title to apiPath if they do not exist', () => {
-            (fs.readFileSync as jest.Mock).mockReturnValue('type: gallery');
+        it('attempts to re-parse component file if a newer file is present', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime
+                .mockReturnValueOnce(1234)
+                .mockReturnValue(2345);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValueOnce({
+                uiPath: 'test',
+                title: 'The Title',
+                type: 'gallery'
+            }).mockReturnValue({
+                uiPath: 'test',
+                title: 'The New Title',
+                type: 'gallery'
+            });
+
+            const actualMetadata1 = await component.getMetadata();
+            const actualMetadata2 = await component.getMetadata();
+
+            const expectedMetadata1 = {
+                uiPath: 'test',
+                apiPath: 'my-component',
+                title: 'The Title',
+                type: 'gallery'
+            };
+            const expectedMetadata2 = { ...expectedMetadata1, title: 'The New Title' };
+            expect(mockStorage.contentDirectoryExists).toBeCalledTimes(2);
+            expect(mockStorage.contentFileExists).toBeCalledTimes(2);
+            expect(mockStorage.getContentFileModifiedTime).toBeCalledTimes(2);
+            expect(mockStorage.getContentFile).toBeCalledTimes(2);
+            expect(yamlParseMock).toBeCalledTimes(2);
+            expect(expectedMetadata1).toStrictEqual(actualMetadata1);
+            expect(expectedMetadata2).toStrictEqual(actualMetadata2);
+        });
+
+        it('sets uiPath and title to apiPath if they do not exist', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                type: 'gallery'
+            });
+
+            const actualMetadata = await component.getMetadata();
+
             const expectedMetadata = {
                 uiPath: 'my-component',
                 apiPath: 'my-component',
                 title: 'my-component',
                 type: 'gallery'
             };
-            component = new SiteComponent(config, 'my-component', mockStorageAdapter);
-
-            const actualMetadata = component.getMetadata();
-
-            expect(fs.readFileSync).toBeCalledTimes(1);
-            expect(fs.readFileSync).toBeCalledWith('/path/to/data/content/my-component.yaml', 'utf-8');
             expect(expectedMetadata).toStrictEqual(actualMetadata);
         });
     });
 
     describe('getGallery', () => {
-        let component: SiteComponent;
+        it('throws if no yaml file is found', async () => {
+            mockStorage.contentFileExists.mockReturnValue(false);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
 
-        it('returns a Gallery object if this is a gallery path', () => {
-            pathIsDirectoryMock.mockReturnValueOnce(true);
-            pathIsFileMock.mockReturnValueOnce(true);
-            (GalleryMock).mockImplementation(() => ({
+            await expect(component.getGallery()).rejects
+                .toThrow('A yaml file does not exist for the path my-component');
+            expect(mockStorage.contentFileExists).toBeCalledWith('my-component.yaml');
+        });
+
+        it('throws if no content directory is found', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(false);
+
+            await expect(component.getGallery()).rejects
+                .toThrow('A content directory does not exist for the path my-component');
+            expect(mockStorage.contentDirectoryExists).toBeCalledWith('my-component');
+        });
+
+        it('throws if the type is not markdown or gallery', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                type: 'not-gallery-or-markdown'
+            });
+
+            await expect(component.getGallery()).rejects.toThrow('Valid component type not found');
+        });
+
+        it('returns a Gallery object if this is a gallery component', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                type: 'gallery'
+            });
+            (mockGallery).mockImplementation(() => ({
                 name: 'mocked gallery'
             }));
-            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
-            component = new SiteComponent(config, 'my-component', mockStorageAdapter);
-            const galleryComponent = component.getGallery();
+
+            const galleryComponent = await component.getGallery();
+
             expect(galleryComponent).toEqual({ name: 'mocked gallery' });
         });
 
-        it('throws an error if this is not a gallery path', () => {
-            pathIsDirectoryMock.mockReturnValueOnce(true);
-            pathIsFileMock.mockReturnValueOnce(true);
-            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: markdown');
-            component = new SiteComponent(config, 'my-component', mockStorageAdapter);
-            expect(() => component.getGallery()).toThrowError('No gallery component at this path');
+        it('throws an error if this is a markdown component', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                type: 'markdown'
+            });
+
+            await expect(component.getGallery()).rejects.toThrow('No gallery component found at the path my-component');
         });
     });
 
     describe('getMarkdown', () => {
-        let component: SiteComponent;
+        it('throws if no yaml file is found', async () => {
+            mockStorage.contentFileExists.mockReturnValue(false);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
 
-        it('returns a Markdown object if this is a markdown path', () => {
-            pathIsDirectoryMock.mockReturnValueOnce(true);
-            pathIsFileMock.mockReturnValueOnce(true);
-            (MarkdownRecurseMock).mockImplementation(() => ({
-                name: 'mocked markdown'
-            }));
-            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: markdown');
-            component = new SiteComponent(config, 'my-component', mockStorageAdapter);
-            const galleryComponent = component.getMarkdown();
-            expect(galleryComponent).toEqual({ name: 'mocked markdown'});
+            await expect(component.getMarkdown()).rejects
+                .toThrow('A yaml file does not exist for the path my-component');
+            expect(mockStorage.contentFileExists).toBeCalledWith('my-component.yaml');
         });
 
-        it('throws an error if this is not a markdown path', () => {
-            pathIsDirectoryMock.mockReturnValueOnce(true);
-            pathIsFileMock.mockReturnValueOnce(true);
-            (fs.readFileSync as jest.Mock).mockReturnValue('uiPath: test\ntitle: The Title\ntype: gallery');
-            component = new SiteComponent(config, 'my-component', mockStorageAdapter);
-            expect(() => component.getMarkdown()).toThrowError('No markdown component at this path');
+        it('throws if no content directory is found', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(false);
+
+            await expect(component.getMarkdown()).rejects
+                .toThrow('A content directory does not exist for the path my-component');
+            expect(mockStorage.contentDirectoryExists).toBeCalledWith('my-component');
+        });
+
+        it('throws if the type is not markdown or gallery', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                type: 'not-gallery-or-markdown'
+            });
+
+            await expect(component.getMarkdown()).rejects.toThrow('Valid component type not found');
+        });
+
+        it('returns a Markdown object if this is a markdown component', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                type: 'markdown'
+            });
+            mockMarkdown.mockImplementation(() => ({
+                name: 'mocked markdown'
+            }));
+
+            const markdownComponent = await component.getMarkdown();
+
+            expect(markdownComponent).toEqual({ name: 'mocked markdown' });
+        });
+
+        it('throws an error if this is a gallery component', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                type: 'gallery'
+            });
+
+            await expect(component.getMarkdown()).rejects.toThrow('No markdown component found at the path my-component');
         });
     });
 });

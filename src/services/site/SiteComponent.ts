@@ -1,88 +1,73 @@
-import fs from 'fs';
-import path from 'path';
 import YAML from 'yaml';
-import { Config, pathIsDirectory, pathIsFile, pathModifiedTime } from '../../utils';
-import { Gallery, IGallery } from '../gallery';
-import { IMarkdownRecurse } from '../markdown/IMarkdownRecurse';
-import { MarkdownRecurse } from '../markdown/MarkdownRecurse';
 
+import { Config } from '../../utils';
+import { Gallery, IGallery } from '../gallery';
+import { IMarkdownRecurse, MarkdownRecurse } from '../markdown';
 import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
-import { IStorageAdapter } from '../../adapters/IStorageAdapter';
+import { IStorageAdapter } from '../../adapters';
 
 export class SiteComponent implements ISiteComponent {
+    private contentYamlPath: string;
     private gallery?: IGallery;
     private markdown?: IMarkdownRecurse;
-    private sourceFileModifiedTimeForCache = 0;
+    private metadataFromSourceTime = -1;
     private metadata?: ComponentMetadata;
 
     public constructor(
         private config: Config,
-        private apiPath: string,
+        private contentDir: string,
         private storage: IStorageAdapter
     ) {
-        if (!pathIsDirectory(path.join(this.config.dataDir, 'content', apiPath))) {
-            throw new Error(`A content directory does not exist for the path ${this.apiPath}`);
-        }
-        if (!pathIsFile(this.getContentPath())) {
-            throw new Error(`A yaml file does not exist for the path ${this.apiPath}`);
-        }
-        this.refreshMetadata();
-        if (this.metadata?.type === 'gallery') {
-            this.gallery = new Gallery(this.apiPath, this.config, this.storage);
-        } else if (this.metadata?.type === 'markdown') {
-            this.markdown = new MarkdownRecurse(this.apiPath, this.config, this.storage, true);
-        }
+        this.contentYamlPath = contentDir + '.yaml';
     }
 
-    private clearCacheIfOutdated(): void {
-        const sourceFileModifiedTime = this.getFileModifiedTime();
-        if (sourceFileModifiedTime !== this.sourceFileModifiedTimeForCache) {
-            this.metadata = undefined;
-            this.sourceFileModifiedTimeForCache = sourceFileModifiedTime;
+    public async getMetadata(): Promise<ComponentMetadata> {
+        this.throwIfNoContent();
+        const sourceFileModifiedTime = this.storage.getContentFileModifiedTime(this.contentYamlPath);
+        if (sourceFileModifiedTime === this.metadataFromSourceTime && this.metadata) {
+            return this.metadata;
         }
-    }
-
-    private getFileModifiedTime(): number {
-        return pathModifiedTime(this.getContentPath());
-    }
-
-    private getContentPath(): string {
-        return path.join(this.config.dataDir, 'content', `${this.apiPath}.yaml`);
-    }
-
-    public getMetadata(): ComponentMetadata {
-        this.refreshMetadata();
-        if (!this.metadata) throw new Error('unable to retrieve metadata');
-        return this.metadata;
-    }
-
-    private refreshMetadata(): void {
-        this.clearCacheIfOutdated();
-        if (this.metadata) return;
-        const fullPath = this.getContentPath();
-
-        if (!pathIsFile(fullPath)) {
-            this.metadata = undefined;
-        }
-
-        const yaml = fs.readFileSync(fullPath, 'utf-8');
-        const parsedYaml = YAML.parse(yaml);
-        if (!['gallery', 'markdown', 'markdownPage'].includes(parsedYaml?.type)) {
+        const yamlFileBuf = await this.storage.getContentFile(this.contentYamlPath);
+        const parsedYaml = YAML.parse(yamlFileBuf.toString('utf-8'));
+        if (!['gallery', 'markdown'].includes(parsedYaml?.type)) {
             throw new Error('Valid component type not found');
         }
-        parsedYaml.apiPath = this.apiPath;
-        parsedYaml.uiPath ??= this.apiPath;
-        parsedYaml.title ??= this.apiPath;
+
+        parsedYaml.apiPath = this.contentDir;
+        parsedYaml.uiPath ??= this.contentDir;
+        parsedYaml.title ??= this.contentDir;
+
         this.metadata = parsedYaml;
+        this.metadataFromSourceTime = sourceFileModifiedTime;
+        return parsedYaml;
     }
 
-    public getGallery(): IGallery {
-        if (!this.gallery) throw new Error('No gallery component at this path');
-        return this.gallery;
+    private throwIfNoContent(): void {
+        if (!this.storage.contentDirectoryExists(this.contentDir)) {
+            throw new Error(`A content directory does not exist for the path ${this.contentDir}`);
+        }
+        if (!this.storage.contentFileExists(`${this.contentDir}.yaml`)) {
+            throw new Error(`A yaml file does not exist for the path ${this.contentDir}`);
+        }
     }
 
-    public getMarkdown(): IMarkdownRecurse {
-        if (!this.markdown) throw new Error('No markdown component at this path');
-        return this.markdown;
+    public async getGallery(): Promise<IGallery> {
+        await this.getMetadata();
+        if (this.metadata?.type === 'gallery') {
+            this.gallery ??= new Gallery(this.contentDir, this.config, this.storage);
+            return this.gallery;
+        } else {
+            throw new Error(`No gallery component found at the path ${this.contentDir}`);
+        }
+    }
+
+    public async getMarkdown(): Promise<IMarkdownRecurse> {
+        await this.getMetadata();
+        if (this.metadata?.type === 'markdown') {
+            this.markdown ??= new MarkdownRecurse(this.contentDir, this.config, this.storage, true);
+            return this.markdown;
+        } else {
+            throw new Error(`No markdown component found at the path ${this.contentDir}`);
+        }
     }
 }

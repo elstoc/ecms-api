@@ -26,9 +26,11 @@ export class Site implements ISite {
     }
 
     public async listComponents(): Promise<ComponentMetadata[]> {
-        const components = (await this.listComponentYamlFiles()).map((file) => (
+        const componentPromises = (await this.listComponentYamlFiles()).map((file) => (
             this.getComponentMetadata(path.basename(file, '.yaml')))
         );
+
+        const components = await Promise.all(componentPromises);
 
         return components.sort((a, b) => {
             if (a.weight && !b.weight) return -1;
@@ -40,28 +42,28 @@ export class Site implements ISite {
         });
     }
 
-    private getComponentMetadata(apiRootPath: string): ComponentMetadata {
+    private async getComponentMetadata(apiRootPath: string): Promise<ComponentMetadata> {
         const component = this.getComponent(apiRootPath);
         return component.getMetadata();
     }
 
     public async getGalleryImages(apiPath: string, limit?: number): Promise<GalleryImages> {
-        const gallery = this.getRootComponent(apiPath).getGallery();
+        const gallery = await this.getRootComponent(apiPath).getGallery();
         return gallery.getImages(limit);
     }
 
     public async sendGalleryImage(apiPath: string, size: string, response: Response): Promise<void> {
-        const gallery = this.getRootComponent(apiPath).getGallery();
+        const gallery = await this.getRootComponent(apiPath).getGallery();
         await gallery.sendImageFile(apiPath, size as ImageSize, response);
     }
 
     public async getMarkdownStructure(apiPath: string): Promise<MarkdownStructure> {
-        const markdown = this.getRootComponent(apiPath).getMarkdown();
+        const markdown = await this.getRootComponent(apiPath).getMarkdown();
         return markdown.getMdStructure();
     }
 
     public async sendMarkdownFile(apiPath: string, response: Response): Promise<void> {
-        const markdown = this.getRootComponent(apiPath).getMarkdown();
+        const markdown = await this.getRootComponent(apiPath).getMarkdown();
         return markdown.sendFile(apiPath, response);
     }
 

@@ -12,7 +12,7 @@ export type ComponentMetadata = {
 }
 
 export interface ISiteComponent {
-    getMetadata(): ComponentMetadata;
-    getGallery(): IGallery;
-    getMarkdown(): IMarkdownRecurse;
+    getMetadata(): Promise<ComponentMetadata>;
+    getGallery(): Promise<IGallery>;
+    getMarkdown(): Promise<IMarkdownRecurse>;
 }

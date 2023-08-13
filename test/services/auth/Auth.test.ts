@@ -1,12 +1,17 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 /* eslint-disable  @typescript-eslint/no-unused-vars */
-import fs from 'fs';
 import { Auth } from '../../../src/services';
-import * as hash from '../../../src/utils/auth/hash';
-import * as jwt from '../../../src/utils/auth/jwt';
-import { IStorageAdapter } from '../../../src/adapters/IStorageAdapter';
+import { hashPassword, verifyPasswordWithHash } from '../../../src/utils/auth/hash';
+import { jwtSign, jwtVerify, jwtDecode } from '../../../src/utils/auth/jwt';
 
-jest.mock('fs');
+jest.mock('../../../src/utils/auth/hash');
+jest.mock('../../../src/utils/auth/jwt');
+
+const mockHashPassword = hashPassword as jest.Mock;
+const mockVerifyPasswordWithHash = verifyPasswordWithHash as jest.Mock;
+const mockJwtSign = jwtSign as jest.Mock;
+const mockJwtVerify = jwtVerify as jest.Mock;
+const mockJwtDecode = jwtDecode as jest.Mock;
 
 const config = {
     dataDir: '/path/to/data',
@@ -18,267 +23,340 @@ const config = {
     jwtAccessSecret: 'accessSecret',
 } as any;
 
-let mockStorageAdapter: jest.MockedObject<IStorageAdapter>;
+const mockStorage = {
+    listContentChildren: jest.fn() as jest.Mock,
+    contentFileExists: jest.fn() as jest.Mock,
+    getContentFile: jest.fn() as jest.Mock,
+    getGeneratedFile: jest.fn() as jest.Mock,
+    storeGeneratedFile: jest.fn() as jest.Mock,
+    generatedFileIsOlder: jest.fn() as jest.Mock,
+    getContentFileModifiedTime: jest.fn() as jest.Mock,
+    contentDirectoryExists: jest.fn() as jest.Mock,
+    splitPath: jest.fn() as jest.Mock,
+    getAdminFile: jest.fn() as jest.Mock,
+    storeAdminFile: jest.fn() as jest.Mock,
+    getAdminFileModifiedTime: jest.fn() as jest.Mock,
+};
 
-const initialUsers = { 'thefirstuser': { id: 'thefirstuser', fullName: 'The first user', roles: ['admin'] } };
-
-describe('When creating an Auth Object', () => {
-    it('Loads users from the users file if it exists', () => {
-        (fs.existsSync as jest.Mock).mockReturnValue(true);
-        const mockReadFileSync = (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers, null, 4));
-        const auth = new Auth(config, mockStorageAdapter);
-        expect(mockReadFileSync).toBeCalledTimes(1);
-        const readFromLocation = mockReadFileSync.mock.calls[0][0];
-        expect(readFromLocation).toBe('/path/to/data/admin/users.json');
-    });
-
-    it('Does not load from the users file if it does not exist', () => {
-        (fs.existsSync as jest.Mock).mockReturnValue(false);
-        const mockReadFileSync = (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers, null, 4));
-        const auth = new Auth(config, mockStorageAdapter);
-        expect(mockReadFileSync).not.toBeCalled();
-    });
-});
-
-describe('After creating an Auth object', () => {
-    const user = 'thefirstuser';
-    const userFullName = 'The first user';
-    const userRoles = ['admin'];
-    const userPassword = 'This-is-my-password';
+describe('Auth', () => {
     let auth: Auth;
-    let mockWriteFileSync: jest.Mock;
+    const emptyUsersFileBuf = Buffer.from('{}');
     
-    beforeEach(() => {
-        (fs.existsSync as jest.Mock).mockReturnValue(true);
-        (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(initialUsers, null, 4));
-        jest.spyOn(jwt, 'jwtDecode').mockReturnValue({ exp: 123 });
-        mockWriteFileSync = (fs.writeFileSync as jest.Mock);
-        auth = new Auth(config, mockStorageAdapter);
+    beforeEach(async () => {
+        auth = new Auth(config, mockStorage);
+        mockJwtDecode.mockReturnValue({ exp: 123 });
+        mockHashPassword.mockImplementation(async (password) => `${password}-hashed`);
+        mockVerifyPasswordWithHash.mockImplementation(async (password, hashedPassword) => `${password}-hashed` === hashedPassword);
     });
 
-    describe('running createUser', () => {
-        it('does not throw an error for a new user', () => {
-            expect(() => auth.createUser('anotheruser', userFullName, userRoles)).not.toThrow();
+    describe('createUser', () => {
+
+        beforeEach(() => {
+            mockStorage.getAdminFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getAdminFile.mockResolvedValue(emptyUsersFileBuf);
         });
 
-        it('writes users to a file after creation', () => {
-            const expectedUsers = { ...initialUsers, anotheruser: { id: 'anotheruser', fullName: 'The first user', roles: ['admin'] } };
-            auth.createUser('anotheruser', userFullName, userRoles);
-            const writeFileLocation = mockWriteFileSync.mock.calls[0][0];
-            const writeFileContent = mockWriteFileSync.mock.calls[0][1];
-            expect(writeFileLocation).toBe('/path/to/data/admin/users.json');
-            expect(writeFileContent).toBe(JSON.stringify(expectedUsers, null, 4));
+        it('loads the users file the first time it is run', async () => {
+            await auth.createUser('chris');
+
+            expect(mockStorage.getAdminFileModifiedTime).toBeCalledWith('users.json');
+            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
+            expect(mockStorage.getAdminFile).toBeCalledWith('users.json');
         });
 
-        it('throws an error if a user already exists', () => {
-            expect(() => auth.createUser(user, userFullName)).toThrow('user already exists');
+        it('does not load the users file if is run again without the file changing (e.g. if it errored the first time)', async () => {
+            await auth.createUser('chris');
+            await auth.createUser('john');
+
+            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
+        });
+
+        it('reloads the users file if is changed externally', async () => {
+            mockStorage.getAdminFileModifiedTime
+                .mockClear()
+                .mockReturnValueOnce(1234) //check whether to read users.json
+                .mockReturnValueOnce(2345) //written users.json
+                .mockReturnValueOnce(3456) //check whether to read users.json
+                .mockReturnValue(4567);    //written users.json
+
+            await auth.createUser('chris');
+            await auth.createUser('john');
+
+            expect(mockStorage.getAdminFile).toBeCalledTimes(2);
+        });
+
+        it('throws an error if added user already exists; doesn\'t attempt to write users.json', async () => {
+            mockStorage.getAdminFile
+                .mockClear()
+                .mockResolvedValue(Buffer.from('{ "chris": {} }'));
+
+            await expect(auth.createUser('chris')).rejects.toThrow('user already exists');
+            expect(mockStorage.storeAdminFile).not.toBeCalled();
+        });
+
+        it('writes newly created user to users.json', async () => {
+            await auth.createUser('chris');
+
+            const expectedFileContent = JSON.stringify({ chris: { id: 'chris' } }, null, 4);
+            expect(mockStorage.storeAdminFile).toBeCalledWith('users.json', Buffer.from(expectedFileContent, 'utf-8'));
         });
     });
 
-    describe('running setPassword', () => {
+    describe('setPassword', () => {
+
+        beforeEach(() => {
+            mockStorage.getAdminFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getAdminFile.mockResolvedValue(Buffer.from('{ "chris": {} }'));
+        });
+
+        it('loads the users file the first time it is run', async () => {
+            await auth.setPassword('chris', 'Blob');
+
+            expect(mockStorage.getAdminFileModifiedTime).toBeCalledWith('users.json');
+            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
+            expect(mockStorage.getAdminFile).toBeCalledWith('users.json');
+        });
+
+        it('does not load the users file if is run again without the file changing (e.g. if it errored the first time)', async () => {
+            await auth.setPassword('chris', 'Blob');
+            await auth.setPassword('chris', 'Blib', 'Blob');
+
+            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
+        });
+
+        it('reloads the users file if is changed externally', async () => {
+            mockStorage.getAdminFileModifiedTime
+                .mockClear()
+                .mockReturnValueOnce(1234) //check whether to read users.json
+                .mockReturnValueOnce(2345) //written users.json
+                .mockReturnValueOnce(3456) //check whether to read users.json
+                .mockReturnValue(4567);    //written users.json
+
+            await auth.setPassword('chris', 'Blob');
+            await auth.setPassword('chris', 'Blib', 'Blob');
+
+            expect(mockStorage.getAdminFile).toBeCalledTimes(2);
+        });
+
         it('throws error for a non-existent user', async () => {
-            await expect(auth.setPassword('anotheruser', userPassword)).rejects.toThrow('user does not exist');
+            await expect(auth.setPassword('john', 'Blob')).rejects.toThrow('user does not exist');
         });
 
         it('runs successfully (attempts to hash password) for an existing user with no password stored and no old password given', async () => {
-            const spiedHashPassword = jest.spyOn(hash, 'hashPassword');
+            await expect(auth.setPassword('chris', 'some-password')).resolves.toBeUndefined();
 
-            await expect(auth.setPassword(user, userPassword)).resolves.toBeUndefined();
-
-            const passwordBeingHashed = spiedHashPassword.mock.calls[0][0];
-            expect(passwordBeingHashed).toBe(userPassword);
-
-            spiedHashPassword.mockRestore();
+            const passwordBeingHashed = mockHashPassword.mock.calls[0][0];
+            expect(passwordBeingHashed).toBe('some-password');
         });
 
         it('writes the users file when the password is successfully changed', async () => {
-            await auth.setPassword(user, userPassword);
-            expect(mockWriteFileSync).toBeCalledTimes(1);
-            const writeFilePath = mockWriteFileSync.mock.calls[0][0];
-            expect(writeFilePath).toBe('/path/to/data/admin/users.json');
+            await auth.setPassword('chris', 'some-password');
+            const writeFilePath = mockStorage.storeAdminFile.mock.calls[0][0];
+            expect(writeFilePath).toBe('users.json');
         });
 
         it('throws error for an existing user with a previous password stored and no old password given', async () => {
-            const newPassword = 'This-is-my-new-password';
-            await auth.setPassword(user, userPassword);
-            await expect(auth.setPassword(user, newPassword)).rejects.toThrow('old password not entered');
+            await auth.setPassword('chris', 'some-password');
+            await expect(auth.setPassword('chris', 'some-new-password')).rejects.toThrow('old password not entered');
         });
 
         it('throws error for an existing user with a previous password stored and incorrect old password given', async () => {
-            const newPassword = 'This-is-my-new-password';
-            await auth.setPassword(user, userPassword);
-            await expect(auth.setPassword(user, newPassword, newPassword))
+            await auth.setPassword('chris', 'some-password');
+            await expect(auth.setPassword('chris', 'some-new-password', 'some-wrong-password'))
                 .rejects.toThrow('passwords do not match');
         });
 
         it('runs successfully for an existing user with a previous password stored and correct old password given', async () => {
-            const newPassword = 'This-is-my-new-password';
-            await auth.setPassword(user, userPassword);
-            await expect(auth.setPassword(user, newPassword, userPassword))
-                .resolves.toBeUndefined();
+            await auth.setPassword('chris', 'some-password');
+            expect(auth.setPassword('chris', 'some-new-password', 'some-password')).resolves.toBeUndefined();
         });
 
         it('verifies hashed password by calling verifyPasswordWithHash using appropriate params, then creates new hash', async () => {
-            const newPassword = 'This-is-my-new-password';
-            const spiedHashPassword = jest.spyOn(hash, 'hashPassword').mockResolvedValue('oldHash');
-            const spiedVerifyPasswordWithHash = jest.spyOn(hash, 'verifyPasswordWithHash').mockResolvedValue(true);
+            await auth.setPassword('chris', 'some-password');
+            await auth.setPassword('chris', 'some-new-password', 'some-password');
 
-            await auth.setPassword(user, userPassword);
-            await auth.setPassword(user, newPassword, userPassword);
-
-            expect(spiedVerifyPasswordWithHash).toBeCalledWith(userPassword, 'oldHash');
-            expect(spiedHashPassword).lastCalledWith(newPassword);
-
-            spiedHashPassword.mockRestore();
-            spiedVerifyPasswordWithHash.mockRestore();
+            expect(mockVerifyPasswordWithHash).toBeCalledWith('some-password', 'some-password-hashed');
+            expect(mockHashPassword).lastCalledWith('some-new-password');
         });
     });
 
-    describe('running getTokensFromPassword', () => {
-        it('throws error when called for a non-existent user', async () => {
-            await expect(auth.getTokensFromPassword('nouser', 'nopassword'))
-                .rejects.toThrow('user does not exist');
+    describe('getTokensFromPassword', () => {
+        const initialUserFileContent = {
+            chris: {
+                id: 'chris',
+                roles: 'chris-has-roles',
+                fullName: 'Chris Has A Name',
+                hashedPassword: 'some-password-hashed'
+            }
+        };
+
+        beforeEach( async () => {
+            mockStorage.getAdminFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getAdminFile.mockResolvedValue(Buffer.from(JSON.stringify(initialUserFileContent)));
+        });
+
+        it('loads the users file the first time it is run', async () => {
+            await auth.getTokensFromPassword('chris', 'some-password');
+
+            expect(mockStorage.getAdminFileModifiedTime).toBeCalledWith('users.json');
+            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
+            expect(mockStorage.getAdminFile).toBeCalledWith('users.json');
+        });
+
+        it('does not load the users file if is run again without the file changing (e.g. if it errored the first time)', async () => {
+            await auth.getTokensFromPassword('chris', 'some-password');
+
+            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
+        });
+
+        it('reloads the users file if is changed externally', async () => {
+            mockStorage.getAdminFileModifiedTime
+                .mockClear()
+                .mockReturnValueOnce(1234) //check whether to read users.json
+                .mockReturnValueOnce(2345) //written users.json
+                .mockReturnValueOnce(3456) //check whether to read users.json
+                .mockReturnValue(4567);    //written users.json
+
+            await auth.getTokensFromPassword('chris', 'some-password');
+            await auth.getTokensFromPassword('chris', 'some-password');
+
+            expect(mockStorage.getAdminFile).toBeCalledTimes(2);
+        });
+
+        it('throws error for a non-existent user', async () => {
+            await expect(auth.getTokensFromPassword('john', 'Blob')).rejects.toThrow('user does not exist');
         });
 
         it('throws error when called with incorrect password', async () => {
-            const notPassword = 'This-is-not-my-password';
-
-            await auth.setPassword(user, userPassword);
-            await expect(auth.getTokensFromPassword(user, notPassword))
+            await expect(auth.getTokensFromPassword('chris', 'a-different-password'))
                 .rejects.toThrow('incorrect password');
         });
 
         it('returns a pair of jwt tokens (generated with correct params) when called with correct password', async () => {
-            const spiedJwtSign = jest.spyOn(jwt, 'jwtSign');
-            const expectedTokens = { id: 'thefirstuser', accessToken: 'access-token', accessTokenExpiry: 123, refreshToken: 'refresh-token' };
-
-            spiedJwtSign.mockResolvedValueOnce('access-token')
+            mockJwtSign.mockResolvedValueOnce('access-token')
                 .mockResolvedValueOnce('refresh-token');
 
-            await auth.setPassword(user, userPassword);
-
-            await expect(auth.getTokensFromPassword(user, userPassword))
-                .resolves.toStrictEqual(expectedTokens);
-
-            spiedJwtSign.mockRestore();
-        });
-
-        it('generates jwt tokens using the appropriate parameters', async () => {
-            const spiedJwtSign = jest.spyOn(jwt, 'jwtSign');
-
-            await auth.setPassword(user, userPassword);
-            await auth.getTokensFromPassword(user, userPassword);
-
-            const [accessJwtCallPayload, accessJwtCallSecret, accessJwtCallExpires] = spiedJwtSign.mock.calls[0];
-            const [refreshJwtCallPayload, refreshJwtCallSecret, refreshJwtCallExpires] = spiedJwtSign.mock.calls[1];
-
-            const expectedAccessPayload = { id: user, fullName: userFullName, roles: userRoles };
-            const expectedRefreshPayload = { id: user };
-
-            expect(accessJwtCallPayload).toStrictEqual(expectedAccessPayload);
-            expect(accessJwtCallSecret).toBe(config.jwtAccessSecret);
-            expect(accessJwtCallExpires).toBe(config.jwtAccessExpires);
-            expect(refreshJwtCallPayload).toStrictEqual(expectedRefreshPayload);
-            expect(refreshJwtCallSecret).toBe(config.jwtRefreshSecret);
-            expect(refreshJwtCallExpires).toBe(config.jwtRefreshExpires);
-
-            spiedJwtSign.mockRestore();
+            const actualTokens = await auth.getTokensFromPassword('chris', 'some-password');
+            
+            const expectedTokens = { id: 'chris', accessToken: 'access-token', accessTokenExpiry: 123, refreshToken: 'refresh-token' };
+            const { id, fullName, roles } = initialUserFileContent.chris;
+            const accessPayload = {
+                id,
+                fullName,
+                roles
+            };
+            expect(actualTokens).toStrictEqual(expectedTokens);
+            expect(mockJwtSign).toBeCalledWith(accessPayload, config.jwtAccessSecret, config.jwtAccessExpires);
+            expect(mockJwtSign).toBeCalledWith({ id }, config.jwtRefreshSecret, config.jwtRefreshExpires);
         });
     });
 
-    describe('running getTokensFromRefreshToken', () => {
-        it('throws error when called with an expired token', async () => {
-            const payload = { id: 'notanid' };
-            const refreshToken = await jwt.jwtSign(payload, config.jwtRefreshSecret, '-1s');
-            await expect(auth.getTokensFromRefreshToken(refreshToken as string))
+    describe('getTokensFromRefreshToken', () => {
+        const initialUserFileContent = {
+            chris: {
+                id: 'chris',
+                roles: 'chris-has-roles',
+                fullName: 'Chris Has A Name',
+                hashedPassword: 'some-password-hashed'
+            }
+        };
+
+        beforeEach( async () => {
+            mockStorage.getAdminFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getAdminFile.mockResolvedValue(Buffer.from(JSON.stringify(initialUserFileContent)));
+            mockJwtVerify.mockImplementation(async (payload) => JSON.parse(payload));
+        });
+
+        it('loads the users file the first time it is run', async () => {
+            await auth.getTokensFromRefreshToken('{ "id": "chris" }');
+
+            expect(mockStorage.getAdminFileModifiedTime).toBeCalledWith('users.json');
+            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
+            expect(mockStorage.getAdminFile).toBeCalledWith('users.json');
+        });
+
+        it('does not load the users file if is run again without the file changing (e.g. if it errored the first time)', async () => {
+            await auth.getTokensFromRefreshToken('{ "id": "chris" }');
+
+            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
+        });
+
+        it('reloads the users file if is changed externally', async () => {
+            mockStorage.getAdminFileModifiedTime
+                .mockClear()
+                .mockReturnValueOnce(1234) //check whether to read users.json
+                .mockReturnValueOnce(2345) //written users.json
+                .mockReturnValueOnce(3456) //check whether to read users.json
+                .mockReturnValue(4567);    //written users.json
+
+            await auth.getTokensFromRefreshToken('{ "id": "chris" }');
+            await auth.getTokensFromRefreshToken('{ "id": "chris" }');
+
+            expect(mockStorage.getAdminFile).toBeCalledTimes(2);
+        });
+
+        it('throws an error if jwtVerify throws (e.g. expired/incorrectly-signed token)', async () => {
+            mockJwtVerify.mockRejectedValue(new Error('jwt expired'));
+            await expect(auth.getTokensFromRefreshToken('{ "id": "chris" }'))
                 .rejects.toThrow('jwt expired');
         });
 
-        it('throws error when called with an incorrectly signed token', async () => {
-            const payload = { id: 'notanid' };
-            const refreshToken = await jwt.jwtSign(payload, 'not-a-secret', config.jwtRefreshExpires);
-            await expect(auth.getTokensFromRefreshToken(refreshToken as string))
-                .rejects.toThrow('invalid signature');
-        });
-
         it('throws error when called for a token that does not contain an id', async () => {
-            const payload = { notId: 'notanid' };
-            const refreshToken = await jwt.jwtSign(payload, config.jwtRefreshSecret, config.jwtRefreshExpires);
-            await expect(auth.getTokensFromRefreshToken(refreshToken as string)).
-                rejects.toThrow('id not stored in payload');
+            await expect(auth.getTokensFromRefreshToken('{ "not-an-id": "chris" }'))
+                .rejects.toThrow('id not stored in payload');
         });
 
-        it('throws error when called for a token containing a non-existent id', async () => {
-            const payload = { id: 'notanid' };
-            const refreshToken = await jwt.jwtSign(payload, config.jwtRefreshSecret, config.jwtRefreshExpires);
-            await expect(auth.getTokensFromRefreshToken(refreshToken as string))
+        it('throws error when called for non-existent user', async () => {
+            await expect(auth.getTokensFromRefreshToken('{ "id": "not-chris" }'))
                 .rejects.toThrow('user does not exist');
         });
 
         it('returns a pair of jwt tokens (generated with correct params) when called with correct refresh token', async () => {
-            const expectedTokens = { id: 'thefirstuser', accessToken: 'access-token', accessTokenExpiry: 123, refreshToken: 'refresh-token' };
-
-            await auth.setPassword(user, userPassword);
-
-            const { refreshToken } = await auth.getTokensFromPassword(user, userPassword);
-
-            const spiedJwtSign = jest.spyOn(jwt, 'jwtSign');
-            spiedJwtSign.mockResolvedValueOnce('access-token')
+            const expectedTokens = { id: 'chris', accessToken: 'access-token', accessTokenExpiry: 123, refreshToken: 'refresh-token' };
+            mockJwtSign.mockResolvedValueOnce('access-token')
                 .mockResolvedValueOnce('refresh-token');
 
-            const returnedTokens = await auth.getTokensFromRefreshToken(refreshToken as string);
-            expect(returnedTokens).toStrictEqual(expectedTokens);
+            const actualTokens = await auth.getTokensFromRefreshToken('{ "id": "chris" }');
 
-            spiedJwtSign.mockRestore();
-        });
-
-        it('generates jwt tokens using the appropriate parameters', async () => {
-            await auth.setPassword(user, userPassword);
-            const { refreshToken } = await auth.getTokensFromPassword(user, userPassword);
-
-            const spiedJwtSign = jest.spyOn(jwt, 'jwtSign');
-            await auth.getTokensFromRefreshToken(refreshToken as string);
-
-            const [accessJwtCallPayload, accessJwtCallSecret, accessJwtCallExpires] = spiedJwtSign.mock.calls[0];
-            const [refreshJwtCallPayload, refreshJwtCallSecret, refreshJwtCallExpires] = spiedJwtSign.mock.calls[1];
-
-            const expectedAccessPayload = { id: user, fullName: userFullName, roles: userRoles };
-            const expectedRefreshPayload = { id: user };
-
-            expect(accessJwtCallPayload).toStrictEqual(expectedAccessPayload);
-            expect(accessJwtCallSecret).toBe(config.jwtAccessSecret);
-            expect(accessJwtCallExpires).toBe(config.jwtAccessExpires);
-            expect(refreshJwtCallPayload).toStrictEqual(expectedRefreshPayload);
-            expect(refreshJwtCallSecret).toBe(config.jwtRefreshSecret);
-            expect(refreshJwtCallExpires).toBe(config.jwtRefreshExpires);
-
-            spiedJwtSign.mockRestore();
+            const { id, fullName, roles } = initialUserFileContent.chris;
+            const accessPayload = {
+                id,
+                fullName,
+                roles
+            };
+            expect(actualTokens).toStrictEqual(expectedTokens);
+            expect(mockJwtSign).toBeCalledWith(accessPayload, config.jwtAccessSecret, config.jwtAccessExpires);
+            expect(mockJwtSign).toBeCalledWith({ id }, config.jwtRefreshSecret, config.jwtRefreshExpires);
         });
     });
 
-    describe('running getUserInfoFromAccessToken', () => {
-        it('throws error when called with an expired token', async () => {
-            const payload = { id: 'notanid' };
-            const accessToken = await jwt.jwtSign(payload, config.jwtAccessSecret, '-1s');
-            await expect(auth.getUserInfoFromAuthHeader(`Bearer ${accessToken}`))
+    describe('getUserInfoFromAccessToken', () => {
+        const initialUserFileContent = {
+            chris: {
+                id: 'chris',
+                roles: 'chris-has-roles',
+                fullName: 'Chris Has A Name',
+                hashedPassword: 'some-password-hashed'
+            }
+        };
+
+        beforeEach( async () => {
+            mockJwtVerify.mockImplementation(async (payload) => JSON.parse(payload));
+        });
+
+        it('throws an error if jwtVerify throws (e.g. expired/incorrectly-signed token)', async () => {
+            mockJwtVerify.mockRejectedValue(new Error('jwt expired'));
+            await expect(auth.getUserInfoFromAuthHeader('Bearer some-bearer-token'))
                 .rejects.toThrow('jwt expired');
         });
 
-        it('throws error when called with an incorrectly signed token', async () => {
-            const payload = { id: 'notanid' };
-            const accessToken = await jwt.jwtSign(payload, 'not-a-secret', config.jwtAccessExpires);
-            await expect(auth.getUserInfoFromAuthHeader(`Bearer ${accessToken}`))
-                .rejects.toThrow('invalid signature');
-        });
-
         it('returns appropriate user data when called using a token generated by getTokensFromPassword', async () => {
-            await auth.setPassword(user, userPassword);
-            const { accessToken } = await auth.getTokensFromPassword(user, userPassword);
-            const expectedAccessPayload = { id: user, fullName: userFullName, roles: userRoles };
+            const { id, fullName, roles } = initialUserFileContent.chris;
+            const expectedAccessPayload = { id, fullName, roles };
 
-            const accessPayload = await auth.getUserInfoFromAuthHeader(`Bearer ${accessToken}`);
+            const actualAccessPayload = await auth.getUserInfoFromAuthHeader(`Bearer ${JSON.stringify(expectedAccessPayload)}`);
 
-            expect(accessPayload).toStrictEqual(expectedAccessPayload);
+            expect(actualAccessPayload).toStrictEqual(expectedAccessPayload);
         });
 
         it('returns guest user data when called without a bearer token', async () => {

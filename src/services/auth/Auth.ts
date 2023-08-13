@@ -1,5 +1,3 @@
-import fs from 'fs';
-import path from 'path';
 import { Config, jwtSign, jwtVerify, jwtDecode, hashPassword, verifyPasswordWithHash } from '../../utils';
 import { User, Token, Tokens, IAuth } from './IAuth';
 import { JwtPayload } from 'jsonwebtoken';
@@ -12,6 +10,7 @@ export class Auth implements IAuth {
     private jwtAccessExpires: string;
     private jwtRefreshSecret: string;
     private jwtAccessSecret: string;
+    private usersfromFileTime = -1;
     private users: { [key: string]: User } = {};
     private usersFile = 'users.json';
 
@@ -29,31 +28,35 @@ export class Auth implements IAuth {
         } = config);
 
         this.config = config;
-        this.readUsersFromFile();
     }
 
-    private readUsersFromFile(): void {
-        const fullPath = path.join(this.config.dataDir, 'admin', this.usersFile);
-        if (fs.existsSync(fullPath)) {
-            const usersJson = fs.readFileSync(fullPath, 'utf-8');
-            this.users = JSON.parse(usersJson);
-        }
-    }
-
-    public createUser(id: string, fullName?: string, roles?: string[]): void {
+    public async createUser(id: string, fullName?: string, roles?: string[]): Promise<void> {
+        await this.readUsersFromFile();
         if (this.users[id]) {
             throw new Error('user already exists');
         }
         this.users[id] = { id, fullName, roles };
-        this.writeUsersToFile();
+        await this.writeUsersToFile();
     }
 
-    private writeUsersToFile(): void {
-        const fullPath = path.join(this.config.dataDir, 'admin', this.usersFile);
-        fs.writeFileSync(fullPath, JSON.stringify(this.users, null, 4));
+    private async readUsersFromFile(): Promise<void> {
+        const usersFileModifiedTime = this.storage.getAdminFileModifiedTime(this.usersFile);
+        if (this.usersfromFileTime === usersFileModifiedTime) {
+            return;
+        }
+        const usersFileBuf = await this.storage.getAdminFile(this.usersFile);
+        this.users = JSON.parse(usersFileBuf.toString('utf-8'));
+        this.usersfromFileTime = usersFileModifiedTime;
+    }
+
+    private async writeUsersToFile(): Promise<void> {
+        const usersJson = JSON.stringify(this.users, null, 4);
+        await this.storage.storeAdminFile(this.usersFile, Buffer.from(usersJson));
+        this.usersfromFileTime = this.storage.getAdminFileModifiedTime(this.usersFile);
     }
 
     public async setPassword(id: string, newPassword: string, oldPassword?: string): Promise<void> {
+        await this.readUsersFromFile();
         this.throwIfNoUser(id);
         if (this.users[id].hashedPassword) {
             if (!oldPassword) {
@@ -65,7 +68,7 @@ export class Auth implements IAuth {
         }
         const hashed = await hashPassword(newPassword);
         this.users[id].hashedPassword = hashed;
-        this.writeUsersToFile();
+        await this.writeUsersToFile();
     }
 
     private throwIfNoUser(id: string): void {
@@ -82,6 +85,7 @@ export class Auth implements IAuth {
     }
 
     public async getTokensFromPassword(id: string, password: string): Promise<Tokens> {
+        await this.readUsersFromFile();
         this.throwIfNoUser(id);
         if (!(await this.verifyPassword(id, password))) {
             throw new Error('incorrect password');
@@ -90,6 +94,7 @@ export class Auth implements IAuth {
     }
 
     public async getTokensFromRefreshToken(refreshToken: string): Promise<Tokens> {
+        await this.readUsersFromFile();
         const id = await this.verifyRefreshTokenAndGetId(refreshToken);
         return await this.getTokensFromId(id);
     }
@@ -107,7 +112,7 @@ export class Auth implements IAuth {
     private async getTokensFromId(id: string): Promise<Tokens> {
         const accessToken = await this.getAccessToken(id);
         const refreshToken = await this.getRefreshToken(id);
-        const accessTokenExpiry = (jwtDecode(accessToken as string) as JwtPayload).exp || 0;
+        const accessTokenExpiry = (jwtDecode(accessToken as string) as JwtPayload).exp ?? 0;
         return { id, accessToken, refreshToken, accessTokenExpiry };
     }
 

@@ -43,6 +43,10 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
         return this.getFile(this.getContentFullPath(contentPath));
     }
 
+    public async getAdminFile(adminPath: string): Promise<Buffer> {
+        return this.getFile(this.getAdminFullPath(adminPath));
+    }
+
     public async getGeneratedFile(contentPath: string, tag: string): Promise<Buffer> {
         return this.getFile(this.getGeneratedFileFullPath(contentPath, tag));
     }
@@ -56,6 +60,12 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
 
     public async storeGeneratedFile(contentPath: string, tag: string, fileBuffer: Buffer): Promise<void> {
         const targetFilePath = this.getGeneratedFileFullPath(contentPath, tag);
+        this.createDirectoryIfNotExists(path.dirname(targetFilePath));
+        await fs.promises.writeFile(targetFilePath, fileBuffer);
+    }
+
+    public async storeAdminFile(adminPath: string, fileBuffer: Buffer): Promise<void> {
+        const targetFilePath = this.getAdminFullPath(adminPath);
         this.createDirectoryIfNotExists(path.dirname(targetFilePath));
         await fs.promises.writeFile(targetFilePath, fileBuffer);
     }
@@ -77,6 +87,10 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
         return this.pathModifiedTime(this.getContentFullPath(contentPath));
     }
 
+    public getAdminFileModifiedTime(adminPath: string): number {
+        return this.pathModifiedTime(this.getAdminFullPath(adminPath));
+    }
+
     private pathModifiedTime(fullPath: string): number {
         return fs.existsSync(fullPath)
             ? fs.statSync(fullPath).mtimeMs
@@ -85,6 +99,10 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
 
     private getContentFullPath(contentPath: string): string {
         return path.join(this.dataDir, 'content', contentPath);
+    }
+
+    private getAdminFullPath(adminPath: string): string {
+        return path.join(this.dataDir, 'admin', adminPath);
     }
 
     private getGeneratedFileFullPath(contentPath: string, tag: string): string {

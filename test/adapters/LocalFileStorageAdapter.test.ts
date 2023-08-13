@@ -183,6 +183,30 @@ describe('LocalFileStorageAdapter', () => {
         });
     });
 
+    describe('getAdminFile', () => {
+        it('retrieves the file at the correct location', async () => {
+            existsSyncMock.mockReturnValue(true);
+            statsyncMock.mockReturnValueOnce({ isFile: () => true });
+
+            await storage.getAdminFile('path/to/file');
+            
+            expect(promiseReadFileMock).toBeCalledWith(`${dataDir}/admin/path/to/file`);
+        });
+
+        it('throws an error if the path does not exist', async () => {
+            existsSyncMock.mockReturnValue(false);
+
+            await expect(storage.getAdminFile('path/to/file')).rejects.toThrowError();
+        });
+
+        it('throws an error if the path does not point to a file', async () => {
+            existsSyncMock.mockReturnValue(true);
+            statsyncMock.mockReturnValueOnce({ isFile: () => false });
+
+            await expect(storage.getAdminFile('path/to/file')).rejects.toThrowError();
+        });
+    });
+
     describe('getGeneratedFile', () => {
         it('retrieves the file at the correct location', async () => {
             existsSyncMock.mockReturnValue(true);
@@ -204,6 +228,26 @@ describe('LocalFileStorageAdapter', () => {
             statsyncMock.mockReturnValueOnce({ isFile: () => false });
 
             await expect(storage.getGeneratedFile('path/to/file', 'tag')).rejects.toThrowError();
+        });
+    });
+
+    describe('storeAdminFile', () => {
+        it('creates directories if they do not exist', async () => {
+            existsSyncMock.mockReturnValue(false);
+            await storage.storeAdminFile('dir/file', Buffer.from('file-contents'));
+            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/admin/dir`, { recursive: true });
+        });
+
+        it('does not create directories if they do exist', async () => {
+            existsSyncMock.mockReturnValue(true);
+            await storage.storeAdminFile('dir/file', Buffer.from('file-contents'));
+            expect(mkdirSyncMock).not.toBeCalled();
+        });
+
+        it('attempts to store the file with the correct parameters', async () => {
+            existsSyncMock.mockReturnValue(true);
+            await storage.storeAdminFile('dir/file', Buffer.from('file-contents'));
+            expect(promiseWriteFileMock).toBeCalledWith(`${dataDir}/admin/dir/file`, Buffer.from('file-contents'));
         });
     });
 
@@ -248,6 +292,26 @@ describe('LocalFileStorageAdapter', () => {
         });
     });
 
+    describe('getAdminFileModifiedTime', () => {
+        it('returns 0 if the file does not exist', () => {
+            existsSyncMock.mockReturnValue(false);
+
+            const mTime = storage.getAdminFileModifiedTime('path/to/file');
+
+            expect(existsSyncMock).toBeCalledWith(`${dataDir}/admin/path/to/file`);
+            expect(mTime).toBe(0);
+        });
+
+        it('returns the modified time if the file does exist', () => {
+            existsSyncMock.mockReturnValue(true);
+            statsyncMock.mockReturnValue({ mtimeMs: 100 });
+
+            const mTime = storage.getAdminFileModifiedTime('path/to/file');
+
+            expect(statsyncMock).toBeCalledWith(`${dataDir}/admin/path/to/file`);
+            expect(mTime).toBe(100);
+        });
+    });
     describe('generatedFileIsOlder', () => {
         it('returns true if the generated file is older', () => {
             existsSyncMock.mockReturnValue(true);

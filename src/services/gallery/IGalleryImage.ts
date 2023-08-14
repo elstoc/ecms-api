@@ -1,5 +1,3 @@
-import { Response } from 'express';
-
 export type ImageSize = 'thumb' | 'fhd' | 'forExif';
 
 export type Dimensions = {
@@ -18,5 +16,5 @@ export type ImageData = {
 
 export interface IGalleryImage {
     getImageData(): Promise<ImageData>;
-    sendFile(size: ImageSize, response: Response): Promise<void>;
+    getFile(size: ImageSize): Promise<Buffer>;
 }

@@ -1,4 +1,3 @@
-import { Response } from 'express';
 import { ImageData, ImageSize } from './IGalleryImage';
 
 export type GalleryImages = {
@@ -8,5 +7,5 @@ export type GalleryImages = {
 
 export interface IGallery {
     getImages(limit?: number): Promise<GalleryImages>;
-    sendImageFile(apiPath: string, size: ImageSize, response: Response): Promise<void>;
+    getImageFile(apiPath: string, size: ImageSize): Promise<Buffer>;
 }

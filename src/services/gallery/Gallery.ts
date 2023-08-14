@@ -2,7 +2,6 @@ import { IGallery, GalleryImages } from './IGallery';
 import { GalleryImage } from './GalleryImage';
 import { ImageData, ImageSize } from './IGalleryImage';
 import { Config } from '../../utils';
-import { Response } from 'express';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
 export class Gallery implements IGallery {
@@ -35,9 +34,9 @@ export class Gallery implements IGallery {
         return await image.getImageData();
     }
 
-    public async sendImageFile(apiPath: string, size: ImageSize, response: Response): Promise<void> {
+    public async getImageFile(apiPath: string, size: ImageSize): Promise<Buffer> {
         const image = this.getGalleryImage(apiPath);
-        await image.sendFile(size, response);
+        return image.getFile(size);
     }
 
     private getGalleryImage(apiPath: string): GalleryImage {

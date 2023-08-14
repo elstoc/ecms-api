@@ -25,11 +25,6 @@ const mockStorage = {
     getAdminFileModifiedTime: jest.fn() as jest.Mock,
 };
 
-const mockResponse = {
-    send: jest.fn() as jest.Mock,
-    sendStatus: jest.fn() as jest.Mock
-};
-
 const mockYAMLparse = YAML.parse as jest.Mock;
 const mockSplitFrontMatter = splitFrontMatter as jest.Mock;
 
@@ -45,64 +40,61 @@ describe('MarkdownRecurse', () => {
         });
     });
 
-    describe('sendFile', () => {
+    describe('getFile', () => {
         beforeEach(() => {
             mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
         });
 
-        it('sends 404 for a root object if the object\'s root/index.md file does not exist', async () => {
+        it('throws error for a root object if the object\'s root/index.md file does not exist', async () => {
             mockStorage.contentFileExists.mockReturnValue(false);
 
             const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
-            await page.sendFile('path/to/root', mockResponse as any);
+            await expect(page.getFile('path/to/root')).rejects.toThrow();
 
             expect(mockStorage.contentFileExists).toBeCalledWith('path/to/root/index.md');
-            expect(mockResponse.sendStatus).toBeCalledWith(404);
         });
 
-        it('sends 404 for a non-root object if the object\'s api path does not end in md', async () => {
+        it('throws error for a non-root object if the object\'s api path does not end in md', async () => {
             const page = new MarkdownRecurse('path/to/file', config, mockStorage);
-            await page.sendFile('path/to/file', mockResponse as any);
+            await expect(page.getFile('path/to/file')).rejects.toThrow();
 
             expect(mockStorage.contentFileExists).not.toBeCalled();
-            expect(mockResponse.sendStatus).toBeCalledWith(404);
         });
 
-        it('sends 404 for a non-root object if the object\'s content file does not exist', async () => {
+        it('throws error for a non-root object if the object\'s content file does not exist', async () => {
             mockStorage.contentFileExists.mockReturnValue(false);
 
             const page = new MarkdownRecurse('path/to/file.md', config, mockStorage);
-            await page.sendFile('path/to/file.md', mockResponse as any);
+            await expect(page.getFile('path/to/file.md')).rejects.toThrow();
 
             expect(mockStorage.contentFileExists).toBeCalledWith('path/to/file.md');
-            expect(mockResponse.sendStatus).toBeCalledWith(404);
         });
 
-        it('sends the index.md content file for a root object where the targetPath matches the first object', async () => {
+        it('gets the index.md content file for a root object where the targetPath matches the first object', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
 
             const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
-            await page.sendFile('path/to/root', mockResponse as any);
+            const actualFileBuf = await page.getFile('path/to/root');
 
             expect(mockStorage.getContentFile).toBeCalledWith('path/to/root/index.md');
-            expect(mockResponse.send).toBeCalledWith(contentFileBuf);
+            expect(actualFileBuf).toBe(contentFileBuf);
         });
 
-        it('sends the requested content file for a non-root object where the targetPath matches the first object', async () => {
+        it('gets the requested content file for a non-root object where the targetPath matches the first object', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
 
             const page = new MarkdownRecurse('path/to/file.md', config, mockStorage);
-            await page.sendFile('path/to/file.md', mockResponse as any);
+            const actualFileBuf = await page.getFile('path/to/file.md');
 
             expect(mockStorage.getContentFile).toBeCalledWith('path/to/file.md');
-            expect(mockResponse.send).toBeCalledWith(contentFileBuf);
+            expect(actualFileBuf).toBe(contentFileBuf);
         });
 
-        it('recurses through objects for a long path and sends the file from the last object', async () => {
+        it('recurses through objects for a long path and gets the file from the last object', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
 
             const page = new MarkdownRecurse('root', config, mockStorage, true);
-            await page.sendFile('root/path/to/page.md', mockResponse as any);
+            const actualFileBuf = await page.getFile('root/path/to/page.md');
 
             expect(mockStorage.contentFileExists).toBeCalledTimes(4);
             expect(mockStorage.contentFileExists.mock.calls[0][0]).toBe('root/index.md');
@@ -110,23 +102,21 @@ describe('MarkdownRecurse', () => {
             expect(mockStorage.contentFileExists.mock.calls[2][0]).toBe('root/path/to.md');
             expect(mockStorage.contentFileExists.mock.calls[3][0]).toBe('root/path/to/page.md');
             expect(mockStorage.getContentFile).toBeCalledWith('root/path/to/page.md');
-            expect(mockResponse.send).toBeCalledWith(contentFileBuf);
+            expect(actualFileBuf).toBe(contentFileBuf);
         });
 
-        it('sends 404 if any object in the path does not have a markdown file associated with it', async () => {
+        it('throws error if any object in the path does not have a markdown file associated with it', async () => {
             mockStorage.contentFileExists.mockImplementation((file) => {
                 return !file.endsWith('to.md');
             });
 
             const page = new MarkdownRecurse('root', config, mockStorage, true);
-            await page.sendFile('root/path/to/page.md', mockResponse as any);
+            await expect(page.getFile('root/path/to/page.md')).rejects.toThrow();
 
             expect(mockStorage.contentFileExists).toBeCalledTimes(3);
             expect(mockStorage.contentFileExists.mock.calls[0][0]).toBe('root/index.md');
             expect(mockStorage.contentFileExists.mock.calls[1][0]).toBe('root/path.md');
             expect(mockStorage.contentFileExists.mock.calls[2][0]).toBe('root/path/to.md');
-            expect(mockResponse.send).not.toBeCalled();
-            expect(mockResponse.sendStatus).toBeCalledWith(404);
         });
     });
 

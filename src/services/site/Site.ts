@@ -4,7 +4,6 @@ import { ISite } from './ISite';
 import { SiteComponent } from './SiteComponent';
 import { Config } from '../../utils';
 import { GalleryImages, ImageSize } from '../gallery';
-import { Response } from 'express';
 import { MarkdownStructure } from '../markdown';
 import { IStorageAdapter } from '../../adapters';
 
@@ -52,9 +51,9 @@ export class Site implements ISite {
         return gallery.getImages(limit);
     }
 
-    public async sendGalleryImage(apiPath: string, size: string, response: Response): Promise<void> {
+    public async getGalleryImage(apiPath: string, size: string): Promise<Buffer> {
         const gallery = await this.getRootComponent(apiPath).getGallery();
-        await gallery.sendImageFile(apiPath, size as ImageSize, response);
+        return gallery.getImageFile(apiPath, size as ImageSize);
     }
 
     public async getMarkdownStructure(apiPath: string): Promise<MarkdownStructure> {
@@ -62,9 +61,9 @@ export class Site implements ISite {
         return markdown.getMdStructure();
     }
 
-    public async sendMarkdownFile(apiPath: string, response: Response): Promise<void> {
+    public async getMarkdownFile(apiPath: string): Promise<Buffer> {
         const markdown = await this.getRootComponent(apiPath).getMarkdown();
-        return markdown.sendFile(apiPath, response);
+        return markdown.getFile(apiPath);
     }
 
     private getRootComponent(apiPath: string): ISiteComponent {

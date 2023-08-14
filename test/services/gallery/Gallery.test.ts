@@ -108,35 +108,33 @@ describe('Gallery', () => {
             gallery = new Gallery('gallery', config, mockStorage);
         });
     
-        it('creates a new image object and calls image.sendFile the first time it is called', async () => {
-            const response = {} as any;
-            const sendFile = jest.fn();
+        it('creates a new image object and calls image.getFile the first time it is called', async () => {
+            const getFile = jest.fn();
             GalleryImageMock.mockImplementation(() => ({
-                sendFile
+                getFile
             }));
     
-            await gallery.sendImageFile('gallery/image1.jpg', 'thumb', response);
+            await gallery.getImageFile('gallery/image1.jpg', 'thumb');
     
             expect(GalleryImageMock).toBeCalledTimes(1);
-            expect(sendFile).toBeCalledWith('thumb', response);
+            expect(getFile).toBeCalledWith('thumb');
         });
     
         it('calls image.sendFile on the existing object the second time it is called', async () => {
-            const response = {} as any;
-            const sendFile = jest.fn();
+            const getFile = jest.fn();
             GalleryImageMock.mockImplementation(() => ({
-                sendFile
+                getFile
             }));
     
-            await gallery.sendImageFile('gallery/image1.jpg', 'thumb', response);
-            await gallery.sendImageFile('gallery/image1.jpg', 'fhd', response);
+            await gallery.getImageFile('gallery/image1.jpg', 'thumb');
+            await gallery.getImageFile('gallery/image1.jpg', 'fhd');
     
             expect(GalleryImageMock).toBeCalledTimes(1);
-            expect(sendFile).toBeCalledTimes(2);
-            const path1Parms = sendFile.mock.calls[0];
-            const path2Parms = sendFile.mock.calls[1];
-            expect(path1Parms).toEqual(['thumb', response]);
-            expect(path2Parms).toEqual(['fhd', response]);
+            expect(getFile).toBeCalledTimes(2);
+            const path1Parms = getFile.mock.calls[0];
+            const path2Parms = getFile.mock.calls[1];
+            expect(path1Parms).toEqual(['thumb']);
+            expect(path2Parms).toEqual(['fhd']);
         });
     });
 });

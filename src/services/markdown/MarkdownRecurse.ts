@@ -2,7 +2,6 @@ import path from 'path';
 import YAML from 'yaml';
 import { IMarkdownRecurse, MarkdownMetadata, MarkdownStructure } from './IMarkdownRecurse';
 import { Config, splitFrontMatter } from '../../utils';
-import { Response } from 'express';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
 export class MarkdownRecurse implements IMarkdownRecurse {
@@ -26,18 +25,13 @@ export class MarkdownRecurse implements IMarkdownRecurse {
             : this.apiPath;
     }
 
-    public async sendFile(targetApiPath: string, response: Response): Promise<void> {
-        try {
-            this.throwIfNoContentFile();
-            if (targetApiPath === this.apiPath) {
-                const fileBuf = await this.storage.getContentFile(this.contentPath);
-                response.send(fileBuf);
-            } else {
-                const nextChild = this.getNextChildInTargetPath(targetApiPath);
-                await nextChild.sendFile(targetApiPath, response);
-            }
-        } catch (e: unknown) {
-            response.sendStatus(404);
+    public async getFile(targetApiPath: string): Promise<Buffer> {
+        this.throwIfNoContentFile();
+        if (targetApiPath === this.apiPath) {
+            return this.storage.getContentFile(this.contentPath);
+        } else {
+            const nextChild = this.getNextChildInTargetPath(targetApiPath);
+            return nextChild.getFile(targetApiPath);
         }
     }
 

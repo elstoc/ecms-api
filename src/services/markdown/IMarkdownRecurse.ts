@@ -1,5 +1,3 @@
-import { Response } from 'express';
-
 export type MarkdownMetadata = {
     title?: string;
     weight?: number;
@@ -14,5 +12,5 @@ export type MarkdownStructure = {
 export interface IMarkdownRecurse {
     getMdStructure(): Promise<MarkdownStructure>;
     getMetadata(): Promise<MarkdownMetadata>;
-    sendFile(apiPath: string, response: Response): Promise<void>;
+    getFile(apiPath: string): Promise<Buffer>;
 }

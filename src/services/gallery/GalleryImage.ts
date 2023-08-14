@@ -2,7 +2,6 @@ import { basename } from 'path';
 
 import { IGalleryImage, ImageData, ImageSize } from './IGalleryImage';
 import { getExif, resizeImage, getImageDimensions, Config } from '../../utils';
-import { Response } from 'express';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
 const RESIZE_OPTIONS = {
@@ -68,14 +67,13 @@ export class GalleryImage implements IGalleryImage {
         return `${this.config.url}/gallery/image/${this.contentPath}?id=${this.imageDataFromSourceFileTime}&size=${size}`;
     }
 
-    public async sendFile(size: ImageSize, response: Response): Promise<void> {
+    public async getFile(size: ImageSize): Promise<Buffer> {
         if (!['fhd', 'thumb'].includes(size)) {
             throw new Error('Incorrect size description');
         }
         this.throwIfNoSourceFile();
 
-        const fileBuf = await this.getResizedImageBuf(size);
-        response.send(fileBuf);
+        return this.getResizedImageBuf(size);
     }
 
     private async getResizedImageBuf(size: ImageSize): Promise<Buffer> {

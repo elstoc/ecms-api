@@ -7,7 +7,8 @@ export const createGetMarkdownFileHandler = (site: ISite, logger: winston.Logger
     const { mdPath } = req.params;
     logger.log('info', `getting md file ${mdPath}`);
     try {
-        await site.sendMarkdownFile(mdPath, res);
+        const mdFileBuf = await site.getMarkdownFile(mdPath);
+        res.send(mdFileBuf);
     } catch {
         res.sendStatus(404);
     }

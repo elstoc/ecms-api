@@ -172,18 +172,17 @@ describe('Site', () => {
         });
     });
 
-    describe('sendGalleryImage', () => {
-        it('calls sendImageFile on the appropriate gallery object', async () => {
-            const response = { } as any;
-            const sendImageFile = jest.fn();
+    describe('getGalleryImage', () => {
+        it('calls getImageFile on the appropriate gallery object', async () => {
+            const getImageFile = jest.fn();
             mockSiteComponent.mockImplementation(() => ({
-                getGallery: () => ({ sendImageFile })
+                getGallery: () => ({ getImageFile })
             }));
 
             const site = new Site(config, mockStorage);
-            await site.sendGalleryImage('component01/image1.jpg', 'thumb', response);
+            await site.getGalleryImage('component01/image1.jpg', 'thumb');
 
-            expect(sendImageFile).toBeCalledWith('component01/image1.jpg', 'thumb', response);
+            expect(getImageFile).toBeCalledWith('component01/image1.jpg', 'thumb');
         });
     });
 
@@ -203,16 +202,15 @@ describe('Site', () => {
 
     describe('sendMarkdownFile', () => {
         it('runs sendFile on the appropriate markdown object', async () => {
-            const response = { } as any;
-            const mockSendFile = jest.fn();
+            const getFile = jest.fn();
             mockSiteComponent.mockImplementation(() => ({
-                getMarkdown: () => ({ sendFile: mockSendFile })
+                getMarkdown: () => ({ getFile })
             }));
 
             const site = new Site(config, mockStorage);
-            await site.sendMarkdownFile('component02/path/to/file', response as any);
+            await site.getMarkdownFile('component02/path/to/file');
 
-            expect(mockSendFile).toBeCalledWith('component02/path/to/file', response);
+            expect(getFile).toBeCalledWith('component02/path/to/file');
         });
     });
 });

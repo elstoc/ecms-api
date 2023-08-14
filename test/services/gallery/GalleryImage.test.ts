@@ -44,29 +44,20 @@ describe('GalleryImage', () => {
         galleryImage = new GalleryImage(config, imagePath, mockStorage);
     });
 
-    describe('sendFile', () => {
-        let response: any;
-
-        beforeEach(() => {
-            response = {
-                send: jest.fn(),
-                sendStatus: jest.fn()
-            } as any;
-        });
-
+    describe('getFile', () => {
         it.each([
             'source',
             'test',
             'something'
         ])('throws an error if the size description is not valid - %s', async (size) => {
-            await expect(galleryImage.sendFile(size as any, response))
+            await expect(galleryImage.getFile(size as any))
                 .rejects.toThrow('Incorrect size description');
         });
 
         it('throws an error if the source image does not exist', async () => {
             mockStorage.contentFileExists.mockReturnValue(false);
 
-            await expect(galleryImage.sendFile('thumb', response))
+            await expect(galleryImage.getFile('thumb'))
                 .rejects.toThrow(`Source file ${imagePath} does not exist`);
             expect(mockStorage.contentFileExists).toBeCalledWith(imagePath);
         });
@@ -82,11 +73,11 @@ describe('GalleryImage', () => {
             mockStorage.getContentFile.mockResolvedValue(sourceContentBuf);
             resizeImageMock.mockResolvedValue(targetContentBuf);
 
-            await galleryImage.sendFile(size as ImageSize, response);
+            const actualFileBuf = await galleryImage.getFile(size as ImageSize);
 
             expect(resizeImageMock).toBeCalledWith(sourceContentBuf, imageParams);
             expect(mockStorage.storeGeneratedFile).toBeCalledWith(imagePath, size, targetContentBuf);
-            expect(response.send).toBeCalledWith(targetContentBuf);
+            expect(actualFileBuf).toBe(targetContentBuf);
 
             expect(mockStorage.getGeneratedFile).not.toBeCalled();
         });
@@ -100,10 +91,10 @@ describe('GalleryImage', () => {
             mockStorage.generatedFileIsOlder.mockReturnValue(false);
             mockStorage.getGeneratedFile.mockResolvedValue(generatedContentBuf);
 
-            await galleryImage.sendFile(size as ImageSize, response);
+            const actualFileBuf = await galleryImage.getFile(size as ImageSize);
 
             expect(mockStorage.getGeneratedFile).toBeCalledWith(imagePath, size);
-            expect(response.send).toBeCalledWith(generatedContentBuf);
+            expect(actualFileBuf).toBe(generatedContentBuf);
 
             expect(resizeImageMock).not.toBeCalled();
             expect(mockStorage.storeGeneratedFile).not.toBeCalled();

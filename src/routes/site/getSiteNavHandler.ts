@@ -9,7 +9,9 @@ export const createGetSiteNavHandler = (site: ISite, logger: winston.Logger): Re
         const siteNavData = await site.listComponents();
         res.json(siteNavData);
     } catch (e: unknown) {
-        if (e instanceof Error) logger.log('error', e.message);
+        if (e instanceof Error) {
+            logger.error(`Error getting site nav: ${e.message}`);
+        }
         res.sendStatus(404);
     }
 };

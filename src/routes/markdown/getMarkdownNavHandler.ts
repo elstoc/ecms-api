@@ -9,7 +9,10 @@ export const createGetMarkdownNavHandler = (site: ISite, logger: winston.Logger)
     try {
         const mdNavContents = await site.getMarkdownStructure(rootPath);
         res.json(mdNavContents);
-    } catch {
+    } catch (e: unknown) {
+        if (e instanceof Error) {
+            logger.error(`Error getting markdown nav ${rootPath}: ${e.message}`);
+        }
         res.sendStatus(404);
     }
 };

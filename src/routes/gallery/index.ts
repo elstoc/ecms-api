@@ -8,7 +8,7 @@ import { createGetImageListHandler } from './getImageListHandler';
 export const createGalleryRouter = (site: ISite, logger: Logger): Router => {
     const router = Router();
 
-    const getImageFileHandler = createGetImageFileHandler(site);
+    const getImageFileHandler = createGetImageFileHandler(site, logger);
     const getImageListHandler = createGetImageListHandler(site, logger);
 
     router.get(

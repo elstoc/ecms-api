@@ -10,7 +10,6 @@ const mockStorage = {
     generatedFileIsOlder: jest.fn() as jest.Mock,
     getContentFileModifiedTime: jest.fn() as jest.Mock,
     contentDirectoryExists: jest.fn() as jest.Mock,
-    splitPath: jest.fn() as jest.Mock,
     getAdminFile: jest.fn() as jest.Mock,
     storeAdminFile: jest.fn() as jest.Mock,
     getAdminFileModifiedTime: jest.fn() as jest.Mock,

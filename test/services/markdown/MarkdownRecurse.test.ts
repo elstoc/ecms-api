@@ -1,10 +1,10 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { MarkdownRecurse } from '../../../src/services/markdown/MarkdownRecurse';
 import YAML from 'yaml';
-import { splitFrontMatter } from '../../../src/utils';
+import { splitFrontMatter } from '../../../src/utils/markdown/splitFrontMatter';
 
 jest.mock('yaml');
-jest.mock('../../../src/utils');
+jest.mock('../../../src/utils/markdown/splitFrontMatter');
 
 const config = {
     dataDir: '/path/to/data',
@@ -19,7 +19,6 @@ const mockStorage = {
     generatedFileIsOlder: jest.fn() as jest.Mock,
     getContentFileModifiedTime: jest.fn() as jest.Mock,
     contentDirectoryExists: jest.fn() as jest.Mock,
-    splitPath: jest.fn() as jest.Mock,
     getAdminFile: jest.fn() as jest.Mock,
     storeAdminFile: jest.fn() as jest.Mock,
     getAdminFileModifiedTime: jest.fn() as jest.Mock,
@@ -30,15 +29,6 @@ const mockSplitFrontMatter = splitFrontMatter as jest.Mock;
 
 describe('MarkdownRecurse', () => {
     const contentFileBuf = Buffer.from('content-file');
-
-    beforeEach(() => {
-        mockStorage.splitPath.mockImplementation((path) => {
-            return path
-                .replace(/^\//, '')
-                .replace(/\/$/, '')
-                .split('/');
-        });
-    });
 
     describe('getFile', () => {
         beforeEach(() => {

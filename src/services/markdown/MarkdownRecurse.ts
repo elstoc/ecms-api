@@ -1,7 +1,8 @@
 import path from 'path';
 import YAML from 'yaml';
+
 import { IMarkdownRecurse, MarkdownMetadata, MarkdownStructure } from './IMarkdownRecurse';
-import { Config, splitFrontMatter } from '../../utils';
+import { Config, splitFrontMatter, splitPath } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
 export class MarkdownRecurse implements IMarkdownRecurse {
@@ -44,8 +45,8 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     private getNextChildInTargetPath(targetApiPath: string): IMarkdownRecurse {
         /* split the "target path" and "directory containing this instance's children"
            into path segment arrays */
-        const targetApiPathSplit = this.storage.splitPath(targetApiPath);
-        const thisChildrenContentDirSplit = this.storage.splitPath(this.childrenContentDir);
+        const targetApiPathSplit = splitPath(targetApiPath);
+        const thisChildrenContentDirSplit = splitPath(this.childrenContentDir);
 
         /* if the target path has one more path segment than the children directory,
            it must be a direct child of this instance */

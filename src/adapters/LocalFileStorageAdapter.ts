@@ -110,11 +110,4 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
         const dirName = path.dirname(contentPath);
         return path.join(this.dataDir, 'cache', dirName, tag, baseName);
     }
-    
-    public splitPath(pathToSplit: string): string[] {
-        return pathToSplit
-            .replace(/^\//, '')
-            .replace(/\/$/, '')
-            .split('/');
-    }
 }

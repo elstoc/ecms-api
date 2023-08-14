@@ -10,5 +10,4 @@ export interface IStorageAdapter {
     generatedFileIsOlder(apiPath: string, tag: string): boolean;
     getContentFileModifiedTime(apiPath: string): number;
     getAdminFileModifiedTime(adminPath: string): number;
-    splitPath(pathToSplit: string): string[];
 }

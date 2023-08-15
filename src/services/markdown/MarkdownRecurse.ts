@@ -3,7 +3,7 @@ import YAML from 'yaml';
 import _ from 'lodash';
 
 import { IMarkdownRecurse, MarkdownStructure } from './IMarkdownRecurse';
-import { Config, splitFrontMatter, splitPath } from '../../utils';
+import { Config, sortByWeightAndTitle, splitFrontMatter, splitPath } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
 export class MarkdownRecurse implements IMarkdownRecurse {
@@ -104,8 +104,8 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         const metadata = await this.getMetadata();
         const childObjects = await this.getChildren();
         const childStructPromises = childObjects.map((child) => child.getMdStructure());
-        const children = await Promise.all(childStructPromises);
-        children.sort(this.sortByWeightAndTitle);
+        let children = await Promise.all(childStructPromises);
+        children = sortByWeightAndTitle(children);
 
         if (this.isRoot) {
             // metadata for the root instance is added to the top of the list
@@ -131,19 +131,5 @@ export class MarkdownRecurse implements IMarkdownRecurse {
                 const childApiPath = path.join(this.childrenContentDir, childFileName);
                 return this.getChild(childApiPath);
             });
-    }
-
-    private sortByWeightAndTitle(a: MarkdownStructure, b: MarkdownStructure): number {
-            const aWeight = a?.weight ?? 0;
-            const bWeight = b?.weight ?? 0;
-            const aTitle = a?.title ?? '';
-            const bTitle = b?.title ?? '';
-
-            if (aWeight && !bWeight) return -1;
-            if (bWeight && !aWeight) return 1;
-            if (aWeight && bWeight) return aWeight - bWeight;
-            if (aTitle > bTitle) return 1;
-            if (aTitle === bTitle) return 0;
-            return -1;
     }
 }

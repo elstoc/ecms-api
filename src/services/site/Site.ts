@@ -2,7 +2,7 @@ import path from 'path';
 import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
 import { ISite } from './ISite';
 import { SiteComponent } from './SiteComponent';
-import { Config } from '../../utils';
+import { Config, sortByWeightAndTitle } from '../../utils';
 import { GalleryImages, ImageSize } from '../gallery';
 import { MarkdownStructure } from '../markdown';
 import { IStorageAdapter } from '../../adapters';
@@ -31,14 +31,7 @@ export class Site implements ISite {
 
         const components = await Promise.all(componentPromises);
 
-        return components.sort((a, b) => {
-            if (a.weight && !b.weight) return -1;
-            if (b.weight && !a.weight) return 1;
-            if (a.weight && b.weight) return a.weight - b.weight;
-            if (a.title > b.title) return 1;
-            if (a.title === b.title) return 0;
-            return -1;
-        });
+        return sortByWeightAndTitle(components);
     }
 
     private async getComponentMetadata(apiRootPath: string): Promise<ComponentMetadata> {

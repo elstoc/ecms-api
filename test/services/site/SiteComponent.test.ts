@@ -79,7 +79,7 @@ describe('SiteComponent', () => {
             yamlParseMock.mockReturnValue({
                 uiPath: 'test',
                 title: 'The Title',
-                type: 'gallery'
+                type: 'gallery',
             });
 
             const actualMetadata = await component.getMetadata();
@@ -88,14 +88,43 @@ describe('SiteComponent', () => {
                 uiPath: 'test',
                 apiPath: 'my-component',
                 title: 'The Title',
-                type: 'gallery'
+                type: 'gallery',
+                additionalData: {}
             };
             expect(mockStorage.contentDirectoryExists).toBeCalled();
             expect(mockStorage.contentFileExists).toBeCalled();
             expect(mockStorage.getContentFileModifiedTime).toBeCalledWith('my-component.yaml');
             expect(mockStorage.getContentFile).toBeCalledWith('my-component.yaml');
             expect(yamlParseMock).toBeCalledWith(contentFileBuf.toString('utf-8'));
-            expect(expectedMetadata).toStrictEqual(actualMetadata);
+            expect(actualMetadata).toStrictEqual(expectedMetadata);
+        });
+
+        it('places any additional unidentified metadata into additionalData', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                uiPath: 'test',
+                title: 'The Title',
+                type: 'gallery',
+                anotherField: 'anotherValue',
+                aDifferentField: 'aDifferentValue'
+            });
+
+            const actualMetadata = await component.getMetadata();
+
+            const expectedMetadata = {
+                uiPath: 'test',
+                apiPath: 'my-component',
+                title: 'The Title',
+                type: 'gallery',
+                additionalData: {
+                    anotherField: 'anotherValue',
+                    aDifferentField: 'aDifferentValue'
+                }
+            };
+            expect(actualMetadata).toStrictEqual(expectedMetadata);
         });
 
         it('gets identical metadata without parsing the component file on the second run (file unchanged)', async () => {
@@ -106,7 +135,7 @@ describe('SiteComponent', () => {
             yamlParseMock.mockReturnValue({
                 uiPath: 'test',
                 title: 'The Title',
-                type: 'gallery'
+                type: 'gallery',
             });
 
             const actualMetadata1 = await component.getMetadata();
@@ -116,15 +145,16 @@ describe('SiteComponent', () => {
                 uiPath: 'test',
                 apiPath: 'my-component',
                 title: 'The Title',
-                type: 'gallery'
+                type: 'gallery',
+                additionalData: {}
             };
             expect(mockStorage.contentDirectoryExists).toBeCalledTimes(2);
             expect(mockStorage.contentFileExists).toBeCalledTimes(2);
             expect(mockStorage.getContentFileModifiedTime).toBeCalledTimes(2);
             expect(mockStorage.getContentFile).toBeCalledTimes(1);
             expect(yamlParseMock).toBeCalledTimes(1);
-            expect(expectedMetadata).toStrictEqual(actualMetadata1);
-            expect(expectedMetadata).toStrictEqual(actualMetadata2);
+            expect(actualMetadata1).toStrictEqual(expectedMetadata);
+            expect(actualMetadata2).toStrictEqual(expectedMetadata);
         });
 
         it('attempts to re-parse component file if a newer file is present', async () => {
@@ -151,7 +181,8 @@ describe('SiteComponent', () => {
                 uiPath: 'test',
                 apiPath: 'my-component',
                 title: 'The Title',
-                type: 'gallery'
+                type: 'gallery',
+                additionalData: {}
             };
             const expectedMetadata2 = { ...expectedMetadata1, title: 'The New Title' };
             expect(mockStorage.contentDirectoryExists).toBeCalledTimes(2);
@@ -159,8 +190,8 @@ describe('SiteComponent', () => {
             expect(mockStorage.getContentFileModifiedTime).toBeCalledTimes(2);
             expect(mockStorage.getContentFile).toBeCalledTimes(2);
             expect(yamlParseMock).toBeCalledTimes(2);
-            expect(expectedMetadata1).toStrictEqual(actualMetadata1);
-            expect(expectedMetadata2).toStrictEqual(actualMetadata2);
+            expect(actualMetadata1).toStrictEqual(expectedMetadata1);
+            expect(actualMetadata2).toStrictEqual(expectedMetadata2);
         });
 
         it('sets uiPath and title to apiPath if they do not exist', async () => {
@@ -178,9 +209,10 @@ describe('SiteComponent', () => {
                 uiPath: 'my-component',
                 apiPath: 'my-component',
                 title: 'my-component',
-                type: 'gallery'
+                type: 'gallery',
+                additionalData: {}
             };
-            expect(expectedMetadata).toStrictEqual(actualMetadata);
+            expect(actualMetadata).toStrictEqual(expectedMetadata);
         });
     });
 

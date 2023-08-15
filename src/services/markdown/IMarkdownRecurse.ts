@@ -1,16 +1,16 @@
-export type MarkdownMetadata = {
-    title?: string;
-    weight?: number;
-    [key: string]: string | number | boolean | undefined;
-}
+import { AdditionalData } from '../site';
 
 export type MarkdownStructure = {
-    metadata?: MarkdownMetadata;
+    apiPath?: string;
+    title?: string;
+    uiPath?: string;
+    weight?: number;
+    additionalData?: AdditionalData;
     children?: MarkdownStructure[];
 }
 
 export interface IMarkdownRecurse {
     getMdStructure(): Promise<MarkdownStructure>;
-    getMetadata(): Promise<MarkdownMetadata>;
+    getMetadata(): Promise<MarkdownStructure>;
     getFile(apiPath: string): Promise<Buffer>;
 }

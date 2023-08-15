@@ -1,14 +1,18 @@
 import { IGallery } from '../gallery';
 import { IMarkdownRecurse } from '../markdown/IMarkdownRecurse';
 
+export type AdditionalData = {
+    [key: string]: boolean | number | string | undefined; 
+};
+
 export type ComponentMetadata = {
+    type: string;
     apiPath: string;
     uiPath: string;
     title: string;
-    type: string;
     weight?: number;
     restrict?: string;
-    [key: string]: boolean | number | string | undefined;
+    additionalData?: AdditionalData;
 }
 
 export interface ISiteComponent {

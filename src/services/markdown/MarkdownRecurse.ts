@@ -1,7 +1,8 @@
 import path from 'path';
 import YAML from 'yaml';
+import _ from 'lodash';
 
-import { IMarkdownRecurse, MarkdownMetadata, MarkdownStructure } from './IMarkdownRecurse';
+import { IMarkdownRecurse, MarkdownStructure } from './IMarkdownRecurse';
 import { Config, splitFrontMatter, splitPath } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
@@ -9,7 +10,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     private apiPath: string;
     private contentPath: string;
     private childrenContentDir: string;
-    private metadata?: MarkdownMetadata;
+    private metadata?: MarkdownStructure;
     private children: { [key: string]: IMarkdownRecurse } = {};
     private metadataFromSourceFileTime = 0;
 
@@ -66,7 +67,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         return this.children[childApiPath];
     }
 
-    public async getMetadata(): Promise<MarkdownMetadata> {
+    public async getMetadata(): Promise<MarkdownStructure> {
         this.throwIfNoContentFile();
 
         const contentModifiedTime = this.storage.getContentFileModifiedTime(this.contentPath);
@@ -77,15 +78,19 @@ export class MarkdownRecurse implements IMarkdownRecurse {
 
         const frontMatter = await this.parseFrontMatter();
 
-        this.metadataFromSourceFileTime = contentModifiedTime;
+        const fieldList = ['apiPath', 'title', 'uiPath', 'weight'];
+        const pickedFields = _.pick(frontMatter, fieldList);
+        const additionalData = _.omit(frontMatter, fieldList);
 
         this.metadata = {
             apiPath: this.apiPath,
-            ...frontMatter,
-            title: frontMatter?.title ?? path.basename(this.apiPath, '.md')
+            title: path.basename(this.apiPath, '.md'),
+            ...pickedFields,
+            additionalData
         };
 
-        return this.metadata ?? {};
+        this.metadataFromSourceFileTime = contentModifiedTime;
+        return this.metadata;
     }
 
     private async parseFrontMatter(): Promise<{ [key: string]: string }> {
@@ -104,13 +109,13 @@ export class MarkdownRecurse implements IMarkdownRecurse {
 
         if (this.isRoot) {
             // metadata for the root instance is added to the top of the list
-            children.unshift({ metadata });
+            children.unshift({ ...metadata });
             return { children };
         } else if (children.length === 0) {
-            return { metadata };
+            return { ...metadata };
         }
 
-        return {metadata, children};
+        return { ...metadata, children };
     }
 
     private async getChildren(): Promise<IMarkdownRecurse[]> {
@@ -129,10 +134,10 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     }
 
     private sortByWeightAndTitle(a: MarkdownStructure, b: MarkdownStructure): number {
-            const aWeight = a.metadata?.weight ?? 0;
-            const bWeight = b.metadata?.weight ?? 0;
-            const aTitle = a.metadata?.title ?? '';
-            const bTitle = b.metadata?.title ?? '';
+            const aWeight = a?.weight ?? 0;
+            const bWeight = b?.weight ?? 0;
+            const aTitle = a?.title ?? '';
+            const bTitle = b?.title ?? '';
 
             if (aWeight && !bWeight) return -1;
             if (bWeight && !aWeight) return 1;

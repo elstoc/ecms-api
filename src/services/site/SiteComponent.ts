@@ -1,4 +1,5 @@
 import YAML from 'yaml';
+import _ from 'lodash';
 
 import { Config } from '../../utils';
 import { Gallery, IGallery } from '../gallery';
@@ -33,13 +34,21 @@ export class SiteComponent implements ISiteComponent {
             throw new Error('Valid component type not found');
         }
 
-        parsedYaml.apiPath = this.contentDir;
-        parsedYaml.uiPath ??= this.contentDir;
-        parsedYaml.title ??= this.contentDir;
+        const fieldList = ['type', 'apiPath', 'uiPath', 'title', 'weight', 'restrict'];
+        const pickedFields = _.pick(parsedYaml, fieldList);
+        const additionalData = _.omit(parsedYaml, fieldList);
 
-        this.metadata = parsedYaml;
+        this.metadata = {
+            type: parsedYaml.type,
+            uiPath: this.contentDir,
+            title: this.contentDir,
+            ...pickedFields,
+            apiPath: this.contentDir,
+            additionalData
+        };
+
         this.metadataFromSourceTime = sourceFileModifiedTime;
-        return parsedYaml;
+        return this.metadata;
     }
 
     private throwIfNoContent(): void {

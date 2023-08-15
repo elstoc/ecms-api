@@ -59,15 +59,16 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
     }
 
     public async storeGeneratedFile(contentPath: string, tag: string, fileBuffer: Buffer): Promise<void> {
-        const targetFilePath = this.getGeneratedFileFullPath(contentPath, tag);
-        this.createDirectoryIfNotExists(path.dirname(targetFilePath));
-        await fs.promises.writeFile(targetFilePath, fileBuffer);
+        this.storeFile(this.getGeneratedFileFullPath(contentPath, tag), fileBuffer);
     }
 
     public async storeAdminFile(adminPath: string, fileBuffer: Buffer): Promise<void> {
-        const targetFilePath = this.getAdminFullPath(adminPath);
-        this.createDirectoryIfNotExists(path.dirname(targetFilePath));
-        await fs.promises.writeFile(targetFilePath, fileBuffer);
+        this.storeFile(this.getAdminFullPath(adminPath), fileBuffer);
+    }
+
+    private async storeFile(fullPath: string, fileBuffer: Buffer): Promise<void> {
+        this.createDirectoryIfNotExists(path.dirname(fullPath));
+        await fs.promises.writeFile(fullPath, fileBuffer);
     }
 
     public generatedFileIsOlder(contentPath: string, tag: string): boolean {
@@ -106,8 +107,6 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
     }
 
     private getGeneratedFileFullPath(contentPath: string, tag: string): string {
-        const baseName = path.basename(contentPath);
-        const dirName = path.dirname(contentPath);
-        return path.join(this.dataDir, 'cache', dirName, tag, baseName);
+        return path.join(this.dataDir, 'cache', path.dirname(contentPath), tag, path.basename(contentPath));
     }
 }

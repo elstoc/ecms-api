@@ -1,4 +1,5 @@
 export type Config = {
+    logLevel: string;
     url: string;
     port: number;
     uiUrl: string;
@@ -13,6 +14,7 @@ export type Config = {
 
 export const getConfig = (): Config => {
     return {
+        logLevel: process.env.LOG_LEVEL ?? 'debug',
         url: process.env.URL ?? 'http://localhost:3123',
         port: parseInt(process.env.PORT ?? '3123'),
         uiUrl: process.env.UI_URL ?? '',

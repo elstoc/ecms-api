@@ -5,7 +5,7 @@ import { ISite } from '../../services';
 
 export const createGetMarkdownFileHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
     const { mdPath } = req.params;
-    logger.log('info', `getting md file ${mdPath}`);
+    logger.debug(`getting md file ${mdPath}`);
     try {
         const mdFileBuf = await site.getMarkdownFile(mdPath);
         res.send(mdFileBuf);

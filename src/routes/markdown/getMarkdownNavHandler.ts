@@ -5,7 +5,7 @@ import { ISite } from '../../services';
 
 export const createGetMarkdownNavHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
     const { rootPath } = req.params;
-    logger.log('info', `getting md nav contents ${rootPath}`);
+    logger.debug(`getting md nav contents ${rootPath}`);
     try {
         const mdNavContents = await site.getMarkdownStructure(rootPath);
         res.json(mdNavContents);

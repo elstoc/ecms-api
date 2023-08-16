@@ -13,15 +13,16 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const start = async () => {
+    const config = getConfig();
+
     const logger = winston.createLogger({
-        level: 'info',
+        level: config.logLevel,
         format: winston.format.simple(),
         transports: [
             new winston.transports.Console(),
         ]
     });
 
-    const config = getConfig();
     const storageAdapter = new LocalFileStorageAdapter(config.dataDir);
     const site = new Site(config, storageAdapter);
     const auth = new Auth(config, storageAdapter);

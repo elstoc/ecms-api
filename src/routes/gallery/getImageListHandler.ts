@@ -7,7 +7,7 @@ export const createGetImageListHandler = (site: ISite, logger: winston.Logger): 
     const { path } = req.params;
     try {
         const limit = parseInt(req.query.limit?.toString() ?? '0');
-        logger.log('info', `getting image list ${path} (${limit})`);
+        logger.debug(`getting image list ${path} (${limit})`);
         const images = await site.getGalleryImages(path, limit);
         res.json(images);
     } catch (e: unknown) {

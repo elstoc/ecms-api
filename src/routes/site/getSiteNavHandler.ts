@@ -4,7 +4,7 @@ import { RequestHandler } from '../RequestHandler';
 import { ISite } from '../../services';
 
 export const createGetSiteNavHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
-    logger.log('info', 'getting site Nav');
+    logger.debug('getting site Nav');
     try {
         const siteNavData = await site.listComponents();
         res.json(siteNavData);

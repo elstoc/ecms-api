@@ -4,8 +4,6 @@ export type Config = {
     port: number;
     uiUrl: string;
     dataDir: string;
-    jwtIssuer: string;
-    jwtAudience: string;
     jwtRefreshExpires: string;
     jwtAccessExpires: string;
     jwtRefreshSecret: string;
@@ -19,8 +17,6 @@ export const getConfig = (): Config => {
         port: parseInt(process.env.PORT ?? '3123'),
         uiUrl: process.env.UI_URL ?? '',
         dataDir: process.env.DATA_DIR ?? '',
-        jwtIssuer: process.env.JWT_ISSUER ?? '',
-        jwtAudience: process.env.JWT_AUDIENCE ?? '',
         jwtRefreshExpires: process.env.JWT_REFRESH_EXPIRES ?? '',
         jwtAccessExpires: process.env.JWT_ACCESS_EXPIRES ?? '',
         jwtRefreshSecret: process.env.JWT_REFRESH_SECRET ?? '',

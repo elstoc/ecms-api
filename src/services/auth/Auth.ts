@@ -4,8 +4,6 @@ import { JwtPayload } from 'jsonwebtoken';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
 export class Auth implements IAuth {
-    private jwtIssuer: string; //TODO: Add issuer validation
-    private jwtAudience: string; //TODO: Add audience validation
     private jwtRefreshExpires: string;
     private jwtAccessExpires: string;
     private jwtRefreshSecret: string;
@@ -19,8 +17,6 @@ export class Auth implements IAuth {
         private storage: IStorageAdapter
     ) {
         ({
-            jwtIssuer: this.jwtIssuer,
-            jwtAudience: this.jwtAudience,
             jwtRefreshExpires: this.jwtRefreshExpires,
             jwtAccessExpires: this.jwtAccessExpires,
             jwtRefreshSecret: this.jwtRefreshSecret,

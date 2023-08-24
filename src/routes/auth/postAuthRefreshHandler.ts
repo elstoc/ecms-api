@@ -8,7 +8,7 @@ export const createPostAuthRefreshHandler = (auth: IAuth, logger: winston.Logger
     try {
         const currentRefreshToken = req.cookies?.refresh_token;
         const tokens = await auth.getTokensFromRefreshToken(currentRefreshToken);
-        const { id, accessToken, accessTokenExpiry, refreshToken } = tokens;
+        const { accessToken, accessTokenExpiry, refreshToken } = tokens;
         res.cookie('refresh_token', refreshToken, { httpOnly: true });
         res.json({ accessToken, accessTokenExpiry}).status(200);
     } catch (e: unknown) {

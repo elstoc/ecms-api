@@ -2,7 +2,7 @@ import express, { Router } from 'express';
 import cookieParser from 'cookie-parser';
 import { Logger } from 'winston';
 
-import { createGetAuthTestHandler } from './getAuthTestHandler';
+import { createGetUserInfoHandler } from './getUserInfoHandler';
 import { createPostAuthChangePasswordHandler } from './postAuthChangePasswordHandler';
 import { createPostAuthLoginHandler } from './postAuthLoginHandler';
 import { createPostAuthLogoutHandler } from './postAuthLogoutHandler';
@@ -16,7 +16,7 @@ export const createAuthRouter = (auth: IAuth, logger: Logger): Router => {
     const postAuthRefreshHandler = createPostAuthRefreshHandler(auth, logger);
     const postAuthLogoutHandler = createPostAuthLogoutHandler(logger);
     const postAuthChangePasswordHandler = createPostAuthChangePasswordHandler(auth, logger);
-    const getAuthTestHandler = createGetAuthTestHandler(auth, logger);
+    const getUserInfoHandler = createGetUserInfoHandler(auth, logger);
 
     router.post(
         '/login',
@@ -42,8 +42,8 @@ export const createAuthRouter = (auth: IAuth, logger: Logger): Router => {
     );
 
     router.get(
-        '/testaccess',
-        getAuthTestHandler
+        '/get-user-info',
+        getUserInfoHandler
     );
 
     return router;

@@ -10,7 +10,7 @@ export const createPostAuthRefreshHandler = (auth: IAuth, logger: winston.Logger
         const tokens = await auth.getTokensFromRefreshToken(currentRefreshToken);
         const { id, accessToken, accessTokenExpiry, refreshToken } = tokens;
         res.cookie('refresh_token', refreshToken, { httpOnly: true });
-        res.json({ id, accessToken, accessTokenExpiry}).status(200);
+        res.json({ accessToken, accessTokenExpiry}).status(200);
     } catch (e: unknown) {
         if (e instanceof Error) {
             logger.error(e.message);

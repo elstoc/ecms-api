@@ -31,7 +31,7 @@ const start = async () => {
 
     const { port, uiUrl } = config;
     const app = express();
-    app.use(cors({ origin: [uiUrl] }));
+    app.use(cors({ origin: [uiUrl], credentials: true }));
     app.use('/', rootRouter);
 
     app.listen(port, () => {

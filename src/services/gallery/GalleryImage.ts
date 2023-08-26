@@ -3,6 +3,7 @@ import { basename } from 'path';
 import { IGalleryImage, ImageData, ImageSize } from './IGalleryImage';
 import { getExif, resizeImage, getImageDimensions, Config } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
+import { NotFoundError } from '../../errors';
 
 const RESIZE_OPTIONS = {
     thumb: { width: 100000, height: 350, quality: 60, stripExif: true, addBorder: true },
@@ -59,7 +60,7 @@ export class GalleryImage implements IGalleryImage {
 
     private throwIfNoSourceFile(): void {
         if (!this.storage.contentFileExists(this.contentPath)) {
-            throw new Error(`Source file ${this.contentPath} does not exist`);
+            throw new NotFoundError(`Source file ${this.contentPath} does not exist`);
         }
     }
 
@@ -69,7 +70,7 @@ export class GalleryImage implements IGalleryImage {
 
     public async getFile(size: ImageSize): Promise<Buffer> {
         if (!['fhd', 'thumb'].includes(size)) {
-            throw new Error('Incorrect size description');
+            throw new NotFoundError('Incorrect size description');
         }
         this.throwIfNoSourceFile();
 

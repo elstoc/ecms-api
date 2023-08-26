@@ -1,4 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
+import { NotFoundError } from '../../../src/errors';
 import { GalleryImage, IGalleryImage, ImageSize } from '../../../src/services/';
 import { getExif, resizeImage, getImageDimensions } from '../../../src/utils';
 
@@ -50,14 +51,14 @@ describe('GalleryImage', () => {
             'something'
         ])('throws an error if the size description is not valid - %s', async (size) => {
             await expect(galleryImage.getFile(size as any))
-                .rejects.toThrow('Incorrect size description');
+                .rejects.toThrow(new NotFoundError('Incorrect size description'));
         });
 
         it('throws an error if the source image does not exist', async () => {
             mockStorage.contentFileExists.mockReturnValue(false);
 
             await expect(galleryImage.getFile('thumb'))
-                .rejects.toThrow(`Source file ${imagePath} does not exist`);
+                .rejects.toThrow(new NotFoundError(`Source file ${imagePath} does not exist`));
             expect(mockStorage.contentFileExists).toBeCalledWith(imagePath);
         });
 
@@ -125,7 +126,7 @@ describe('GalleryImage', () => {
         it('throws an error if the source image does not exist', async () => {
             mockStorage.contentFileExists.mockReturnValue(false);
             await expect(galleryImage.getImageData())
-                .rejects.toThrow('Source file gallery/image.jpg does not exist');
+                .rejects.toThrow(new NotFoundError('Source file gallery/image.jpg does not exist'));
         });
 
         it('when no imageData is cached and generated files do not exist, get data from newly-resized files', async () => {

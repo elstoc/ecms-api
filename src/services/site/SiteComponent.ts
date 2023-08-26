@@ -6,6 +6,7 @@ import { Gallery, IGallery } from '../gallery';
 import { IMarkdownRecurse, MarkdownRecurse } from '../markdown';
 import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
 import { IStorageAdapter } from '../../adapters';
+import { NotFoundError } from '../../errors';
 
 export class SiteComponent implements ISiteComponent {
     private contentYamlPath: string;
@@ -31,7 +32,7 @@ export class SiteComponent implements ISiteComponent {
         const yamlFileBuf = await this.storage.getContentFile(this.contentYamlPath);
         const parsedYaml = YAML.parse(yamlFileBuf.toString('utf-8'));
         if (!['gallery', 'markdown'].includes(parsedYaml?.type)) {
-            throw new Error('Valid component type not found');
+            throw new NotFoundError('Valid component type not found');
         }
 
         const fieldList = ['type', 'apiPath', 'uiPath', 'title', 'weight', 'restrict'];
@@ -53,10 +54,10 @@ export class SiteComponent implements ISiteComponent {
 
     private throwIfNoContent(): void {
         if (!this.storage.contentDirectoryExists(this.contentDir)) {
-            throw new Error(`A content directory does not exist for the path ${this.contentDir}`);
+            throw new NotFoundError(`A content directory does not exist for the path ${this.contentDir}`);
         }
         if (!this.storage.contentFileExists(`${this.contentDir}.yaml`)) {
-            throw new Error(`A yaml file does not exist for the path ${this.contentDir}`);
+            throw new NotFoundError(`A yaml file does not exist for the path ${this.contentDir}`);
         }
     }
 
@@ -66,7 +67,7 @@ export class SiteComponent implements ISiteComponent {
             this.gallery ??= new Gallery(this.contentDir, this.config, this.storage);
             return this.gallery;
         } else {
-            throw new Error(`No gallery component found at the path ${this.contentDir}`);
+            throw new NotFoundError(`No gallery component found at the path ${this.contentDir}`);
         }
     }
 
@@ -76,7 +77,7 @@ export class SiteComponent implements ISiteComponent {
             this.markdown ??= new MarkdownRecurse(this.contentDir, this.config, this.storage, true);
             return this.markdown;
         } else {
-            throw new Error(`No markdown component found at the path ${this.contentDir}`);
+            throw new NotFoundError(`No markdown component found at the path ${this.contentDir}`);
         }
     }
 }

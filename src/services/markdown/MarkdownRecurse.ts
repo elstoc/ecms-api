@@ -5,6 +5,7 @@ import _ from 'lodash';
 import { IMarkdownRecurse, MarkdownStructure } from './IMarkdownRecurse';
 import { Config, sortByWeightAndTitle, splitFrontMatter, splitPath } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
+import { NotFoundError } from '../../errors';
 
 export class MarkdownRecurse implements IMarkdownRecurse {
     private apiPath: string;
@@ -39,7 +40,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
 
     private throwIfNoContentFile(): void {
         if (!this.contentPath.endsWith('.md') || !this.storage.contentFileExists(this.contentPath)) {
-            throw new Error(`No markdown file found matching path ${this.apiPath}`);
+            throw new NotFoundError(`No markdown file found matching path ${this.apiPath}`);
         }
     }
 

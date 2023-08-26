@@ -2,6 +2,7 @@
 import { MarkdownRecurse } from '../../../src/services/markdown/MarkdownRecurse';
 import YAML from 'yaml';
 import { splitFrontMatter } from '../../../src/utils/markdown/splitFrontMatter';
+import { NotFoundError } from '../../../src/errors';
 
 jest.mock('yaml');
 jest.mock('../../../src/utils/markdown/splitFrontMatter');
@@ -39,14 +40,14 @@ describe('MarkdownRecurse', () => {
             mockStorage.contentFileExists.mockReturnValue(false);
 
             const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
-            await expect(page.getFile('path/to/root')).rejects.toThrow();
+            await expect(page.getFile('path/to/root')).rejects.toThrow(NotFoundError);
 
             expect(mockStorage.contentFileExists).toBeCalledWith('path/to/root/index.md');
         });
 
         it('throws error for a non-root object if the object\'s api path does not end in md', async () => {
             const page = new MarkdownRecurse('path/to/file', config, mockStorage);
-            await expect(page.getFile('path/to/file')).rejects.toThrow();
+            await expect(page.getFile('path/to/file')).rejects.toThrow(NotFoundError);
 
             expect(mockStorage.contentFileExists).not.toBeCalled();
         });
@@ -55,7 +56,7 @@ describe('MarkdownRecurse', () => {
             mockStorage.contentFileExists.mockReturnValue(false);
 
             const page = new MarkdownRecurse('path/to/file.md', config, mockStorage);
-            await expect(page.getFile('path/to/file.md')).rejects.toThrow();
+            await expect(page.getFile('path/to/file.md')).rejects.toThrow(NotFoundError);
 
             expect(mockStorage.contentFileExists).toBeCalledWith('path/to/file.md');
         });
@@ -101,7 +102,7 @@ describe('MarkdownRecurse', () => {
             });
 
             const page = new MarkdownRecurse('root', config, mockStorage, true);
-            await expect(page.getFile('root/path/to/page.md')).rejects.toThrow();
+            await expect(page.getFile('root/path/to/page.md')).rejects.toThrow(NotFoundError);
 
             expect(mockStorage.contentFileExists).toBeCalledTimes(3);
             expect(mockStorage.contentFileExists.mock.calls[0][0]).toBe('root/index.md');
@@ -117,7 +118,7 @@ describe('MarkdownRecurse', () => {
             const page = new MarkdownRecurse('root', config, mockStorage, true);
 
             await expect(() => page.getMetadata())
-                .rejects.toThrow('No markdown file found matching path root');
+                .rejects.toThrow(new NotFoundError('No markdown file found matching path root'));
             expect(mockStorage.contentFileExists).toBeCalledWith('root/index.md');
         });
 
@@ -125,7 +126,7 @@ describe('MarkdownRecurse', () => {
             const page = new MarkdownRecurse('root', config, mockStorage);
 
             await expect(() => page.getMetadata())
-                .rejects.toThrow('No markdown file found matching path root');
+                .rejects.toThrow(new NotFoundError('No markdown file found matching path root'));
             expect(mockStorage.contentFileExists).not.toBeCalled();
         });
 
@@ -135,7 +136,7 @@ describe('MarkdownRecurse', () => {
             const page = new MarkdownRecurse('root/file.md', config, mockStorage);
 
             await expect(() => page.getMetadata())
-                .rejects.toThrow('No markdown file found matching path root/file.md');
+                .rejects.toThrow(new NotFoundError('No markdown file found matching path root/file.md'));
             expect(mockStorage.contentFileExists).toBeCalledWith('root/file.md');
         });
 
@@ -279,7 +280,7 @@ describe('MarkdownRecurse', () => {
             const page = new MarkdownRecurse('root', config, mockStorage, true);
 
             await expect(() => page.getMdStructure())
-                .rejects.toThrow('No markdown file found matching path root');
+                .rejects.toThrow(new NotFoundError('No markdown file found matching path root'));
             expect(mockStorage.contentFileExists).toBeCalledWith('root/index.md');
         });
 
@@ -287,7 +288,7 @@ describe('MarkdownRecurse', () => {
             const page = new MarkdownRecurse('root', config, mockStorage);
 
             await expect(() => page.getMdStructure())
-                .rejects.toThrow('No markdown file found matching path root');
+                .rejects.toThrow(new NotFoundError('No markdown file found matching path root'));
             expect(mockStorage.contentFileExists).not.toBeCalled();
         });
 
@@ -297,7 +298,7 @@ describe('MarkdownRecurse', () => {
             const page = new MarkdownRecurse('root/file.md', config, mockStorage);
 
             await expect(() => page.getMdStructure())
-                .rejects.toThrow('No markdown file found matching path root/file.md');
+                .rejects.toThrow(new NotFoundError('No markdown file found matching path root/file.md'));
             expect(mockStorage.contentFileExists).toBeCalledWith('root/file.md');
         });
 

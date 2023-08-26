@@ -1,6 +1,7 @@
 import winston from 'winston';
 import { Request, Response } from 'express';
 import { RequestHandler } from '../RequestHandler';
+import { handleError } from '../handleError';
 import { ISite } from '../../services';
 
 export const createGetImageListHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
@@ -10,10 +11,10 @@ export const createGetImageListHandler = (site: ISite, logger: winston.Logger): 
         logger.debug(`getting image list ${path} (${limit})`);
         const images = await site.getGalleryImages(path, limit);
         res.json(images);
-    } catch (e: unknown) {
-        if (e instanceof Error) {
-            logger.error(`Error getting image list ${path}: ${e.message}`);
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            logger.error(`Error getting image list ${path}: ${err.message}`);
         }
-        res.sendStatus(404);
+        handleError(req, res, err);
     }
 };

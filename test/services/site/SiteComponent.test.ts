@@ -3,6 +3,7 @@ import YAML from 'yaml';
 import { Gallery } from '../../../src/services/gallery/Gallery';
 import { MarkdownRecurse } from '../../../src/services/markdown/MarkdownRecurse';
 import { SiteComponent } from '../../../src/services';
+import { NotFoundError } from '../../../src/errors';
 
 jest.mock('yaml');
 jest.mock('../../../src/services/gallery/Gallery');
@@ -44,7 +45,7 @@ describe('SiteComponent', () => {
             mockStorage.contentDirectoryExists.mockReturnValue(true);
 
             await expect(component.getMetadata()).rejects
-                .toThrow('A yaml file does not exist for the path my-component');
+                .toThrow(new NotFoundError('A yaml file does not exist for the path my-component'));
             expect(mockStorage.contentFileExists).toBeCalledWith('my-component.yaml');
         });
 
@@ -53,7 +54,7 @@ describe('SiteComponent', () => {
             mockStorage.contentDirectoryExists.mockReturnValue(false);
 
             await expect(component.getMetadata()).rejects
-                .toThrow('A content directory does not exist for the path my-component');
+                .toThrow(new NotFoundError('A content directory does not exist for the path my-component'));
             expect(mockStorage.contentDirectoryExists).toBeCalledWith('my-component');
         });
 
@@ -68,7 +69,8 @@ describe('SiteComponent', () => {
                 type: 'not-markdown-or-gallery'
             });
 
-            await expect(component.getMetadata()).rejects.toThrow('Valid component type not found');
+            await expect(component.getMetadata()).rejects
+                .toThrow(new NotFoundError('Valid component type not found'));
         });
 
         it('gets metadata by parsing the component file on the first run', async () => {
@@ -222,7 +224,7 @@ describe('SiteComponent', () => {
             mockStorage.contentDirectoryExists.mockReturnValue(true);
 
             await expect(component.getGallery()).rejects
-                .toThrow('A yaml file does not exist for the path my-component');
+                .toThrow(new NotFoundError('A yaml file does not exist for the path my-component'));
             expect(mockStorage.contentFileExists).toBeCalledWith('my-component.yaml');
         });
 
@@ -231,7 +233,7 @@ describe('SiteComponent', () => {
             mockStorage.contentDirectoryExists.mockReturnValue(false);
 
             await expect(component.getGallery()).rejects
-                .toThrow('A content directory does not exist for the path my-component');
+                .toThrow(new NotFoundError('A content directory does not exist for the path my-component'));
             expect(mockStorage.contentDirectoryExists).toBeCalledWith('my-component');
         });
 
@@ -244,7 +246,8 @@ describe('SiteComponent', () => {
                 type: 'not-gallery-or-markdown'
             });
 
-            await expect(component.getGallery()).rejects.toThrow('Valid component type not found');
+            await expect(component.getGallery()).rejects
+                .toThrow(new NotFoundError('Valid component type not found'));
         });
 
         it('returns a Gallery object if this is a gallery component', async () => {
@@ -273,7 +276,8 @@ describe('SiteComponent', () => {
                 type: 'markdown'
             });
 
-            await expect(component.getGallery()).rejects.toThrow('No gallery component found at the path my-component');
+            await expect(component.getGallery()).rejects
+                .toThrow(new NotFoundError('No gallery component found at the path my-component'));
         });
     });
 
@@ -283,7 +287,7 @@ describe('SiteComponent', () => {
             mockStorage.contentDirectoryExists.mockReturnValue(true);
 
             await expect(component.getMarkdown()).rejects
-                .toThrow('A yaml file does not exist for the path my-component');
+                .toThrow(new NotFoundError('A yaml file does not exist for the path my-component'));
             expect(mockStorage.contentFileExists).toBeCalledWith('my-component.yaml');
         });
 
@@ -292,7 +296,7 @@ describe('SiteComponent', () => {
             mockStorage.contentDirectoryExists.mockReturnValue(false);
 
             await expect(component.getMarkdown()).rejects
-                .toThrow('A content directory does not exist for the path my-component');
+                .toThrow(new NotFoundError('A content directory does not exist for the path my-component'));
             expect(mockStorage.contentDirectoryExists).toBeCalledWith('my-component');
         });
 
@@ -305,7 +309,8 @@ describe('SiteComponent', () => {
                 type: 'not-gallery-or-markdown'
             });
 
-            await expect(component.getMarkdown()).rejects.toThrow('Valid component type not found');
+            await expect(component.getMarkdown()).rejects
+                .toThrow(new NotFoundError('Valid component type not found'));
         });
 
         it('returns a Markdown object if this is a markdown component', async () => {
@@ -334,7 +339,8 @@ describe('SiteComponent', () => {
                 type: 'gallery'
             });
 
-            await expect(component.getMarkdown()).rejects.toThrow('No markdown component found at the path my-component');
+            await expect(component.getMarkdown()).rejects
+                .toThrow(new NotFoundError('No markdown component found at the path my-component'));
         });
     });
 });

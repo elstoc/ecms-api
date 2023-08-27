@@ -6,6 +6,7 @@ import { Config, sortByWeightAndTitle } from '../../utils';
 import { GalleryImages, ImageSize } from '../gallery';
 import { MarkdownStructure } from '../markdown';
 import { IStorageAdapter } from '../../adapters';
+import { User } from '../auth';
 
 export class Site implements ISite {
     private components: { [key: string]: ISiteComponent } = {};
@@ -24,19 +25,20 @@ export class Site implements ISite {
         return this.components[apiPath];
     }
 
-    public async listComponents(): Promise<ComponentMetadata[]> {
-        const componentPromises = (await this.listComponentYamlFiles()).map((file) => (
-            this.getComponentMetadata(path.basename(file, '.yaml')))
-        );
+    public async listComponents(user?: User): Promise<ComponentMetadata[]> {
+        const componentPromises = (await this.listComponentYamlFiles()).map(async (file) => (
+            this.getComponentMetadata(path.basename(file, '.yaml'), user)
+        ));
 
-        const components = await Promise.all(componentPromises);
+        const components = (await Promise.all(componentPromises))
+            .filter(x => x);
 
-        return sortByWeightAndTitle(components);
+        return sortByWeightAndTitle(components as ComponentMetadata[]);
     }
 
-    private async getComponentMetadata(apiRootPath: string): Promise<ComponentMetadata> {
+    private async getComponentMetadata(apiRootPath: string, user?: User): Promise<ComponentMetadata | undefined> {
         const component = this.getComponent(apiRootPath);
-        return component.getMetadata();
+        return component.getMetadata(user);
     }
 
     public async getGalleryImages(apiPath: string, limit?: number): Promise<GalleryImages> {

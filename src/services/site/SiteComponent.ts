@@ -7,6 +7,7 @@ import { IMarkdownRecurse, MarkdownRecurse } from '../markdown';
 import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
 import { IStorageAdapter } from '../../adapters';
 import { NotFoundError } from '../../errors';
+import { User } from '../auth';
 
 export class SiteComponent implements ISiteComponent {
     private contentYamlPath: string;
@@ -23,11 +24,24 @@ export class SiteComponent implements ISiteComponent {
         this.contentYamlPath = contentDir + '.yaml';
     }
 
-    public async getMetadata(): Promise<ComponentMetadata> {
+    public async getMetadata(user?: User): Promise<ComponentMetadata | undefined> {
         this.throwIfNoContent();
+        await this.refreshMetadata();
+        if (!this.metadata) {
+            throw new Error('No metadata found');
+        }
+
+        const userRoles = user?.roles ?? [];
+        if (this?.metadata?.restrict && !userRoles.includes(this.metadata.restrict)) {
+            return;
+        }
+        return (this.metadata);
+    }
+
+    private async refreshMetadata(): Promise<void> {
         const sourceFileModifiedTime = this.storage.getContentFileModifiedTime(this.contentYamlPath);
         if (sourceFileModifiedTime === this.metadataFromSourceTime && this.metadata) {
-            return this.metadata;
+            return;
         }
         const yamlFileBuf = await this.storage.getContentFile(this.contentYamlPath);
         const parsedYaml = YAML.parse(yamlFileBuf.toString('utf-8'));
@@ -49,7 +63,6 @@ export class SiteComponent implements ISiteComponent {
         };
 
         this.metadataFromSourceTime = sourceFileModifiedTime;
-        return this.metadata;
     }
 
     private throwIfNoContent(): void {

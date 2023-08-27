@@ -155,6 +155,31 @@ describe('Site', () => {
             ];
             expect(actualNavData).toStrictEqual(expectedNavData);
         });
+
+        it('filters out any undefined metadata returned by the component (due to no permission)', async () => {
+            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
+                getMetadata: () => (inputFilePath.endsWith('01') ? undefined : { uiPath: inputFilePath })
+            }));
+            mockStorage.listContentChildren.mockImplementation(async (_, fileMatcher) => {
+                return [
+                    'component01.yaml',
+                    'component02.yaml',
+                    'component03.yaml',
+                    'notcomponent.txt',
+                    'notcomponent.jpg'
+                ].filter(fileMatcher);
+            });
+
+            site = new Site(config, mockStorage);
+            const actualComponentList = await site.listComponents();
+
+            const expectedComponentList = [
+                { uiPath: 'component02' },
+                { uiPath: 'component03' },
+            ];
+            expect(actualComponentList).toStrictEqual(expectedComponentList);
+        });
+
     });
 
     describe('getGalleryImages', () => {

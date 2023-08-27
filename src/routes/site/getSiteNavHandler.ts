@@ -6,7 +6,7 @@ import { handleError } from '../handleError';
 export const createGetSiteNavHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res) => {
     logger.debug('getting site Nav');
     try {
-        const siteNavData = await site.listComponents();
+        const siteNavData = await site.listComponents(req.user);
         res.json(siteNavData);
     } catch (err: unknown) {
         if (err instanceof Error) {

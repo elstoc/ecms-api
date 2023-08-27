@@ -216,6 +216,51 @@ describe('SiteComponent', () => {
             };
             expect(actualMetadata).toStrictEqual(expectedMetadata);
         });
+
+        it('returns undefined if access is restricted and no user entered', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                uiPath: 'test',
+                title: 'The Title',
+                type: 'gallery',
+                restrict: 'admin'
+            });
+
+            expect(component.getMetadata()).resolves.toBeUndefined;
+        });
+
+        it('returns undefined if access is restricted and user does not have permission', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                uiPath: 'test',
+                title: 'The Title',
+                type: 'gallery',
+                restrict: 'admin'
+            });
+
+            expect(component.getMetadata( { roles: ['role1', 'role2'] } as any)).resolves.toBeUndefined;
+        });
+
+        it('returns correct metadata if access is restricted and user has permission', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                uiPath: 'test',
+                title: 'The Title',
+                type: 'gallery',
+                restrict: 'admin'
+            });
+
+            expect(component.getMetadata( { roles: ['role1', 'role2', 'admin'] } as any)).resolves.toBeDefined;
+        });
     });
 
     describe('getGallery', () => {

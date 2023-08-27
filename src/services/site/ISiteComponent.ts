@@ -1,3 +1,4 @@
+import { User } from '../auth';
 import { IGallery } from '../gallery';
 import { IMarkdownRecurse } from '../markdown/IMarkdownRecurse';
 
@@ -16,7 +17,7 @@ export type ComponentMetadata = {
 }
 
 export interface ISiteComponent {
-    getMetadata(): Promise<ComponentMetadata>;
+    getMetadata(user?: User): Promise<ComponentMetadata | undefined>;
     getGallery(): Promise<IGallery>;
     getMarkdown(): Promise<IMarkdownRecurse>;
 }

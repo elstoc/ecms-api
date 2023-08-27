@@ -5,6 +5,7 @@ export type MarkdownStructure = {
     title?: string;
     uiPath?: string;
     weight?: number;
+    restrict?: string;
     additionalData?: AdditionalData;
     children?: MarkdownStructure[];
 }

@@ -79,7 +79,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
 
         const frontMatter = await this.parseFrontMatter();
 
-        const fieldList = ['apiPath', 'title', 'uiPath', 'weight'];
+        const fieldList = ['apiPath', 'title', 'uiPath', 'weight', 'restrict'];
         const pickedFields = _.pick(frontMatter, fieldList);
         const additionalData = _.omit(frontMatter, fieldList);
 

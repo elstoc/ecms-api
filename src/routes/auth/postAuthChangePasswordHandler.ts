@@ -1,9 +1,8 @@
-import { Request, Response } from 'express';
 import winston from 'winston';
 import { IAuth } from '../../services';
 import { RequestHandler } from '../RequestHandler';
 
-export const createPostAuthChangePasswordHandler = (auth: IAuth, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
+export const createPostAuthChangePasswordHandler = (auth: IAuth, logger: winston.Logger): RequestHandler => async (req, res) => {
     logger.info('changing password');
     try {
         const { id, newPassword, oldPassword } = req.body;

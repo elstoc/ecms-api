@@ -1,10 +1,9 @@
 import winston from 'winston';
-import { Request, Response } from 'express';
 import { RequestHandler } from '../RequestHandler';
 import { ISite } from '../../services';
 import { handleError } from '../handleError';
 
-export const createGetMarkdownFileHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
+export const createGetMarkdownFileHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res) => {
     const { mdPath } = req.params;
     logger.debug(`getting md file ${mdPath}`);
     try {

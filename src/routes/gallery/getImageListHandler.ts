@@ -1,10 +1,9 @@
 import winston from 'winston';
-import { Request, Response } from 'express';
 import { RequestHandler } from '../RequestHandler';
 import { handleError } from '../handleError';
 import { ISite } from '../../services';
 
-export const createGetImageListHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
+export const createGetImageListHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res) => {
     const { path } = req.params;
     try {
         const limit = parseInt(req.query.limit?.toString() ?? '0');

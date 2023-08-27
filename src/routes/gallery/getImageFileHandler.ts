@@ -1,10 +1,9 @@
-import { Request, Response } from 'express';
 import { RequestHandler } from '../RequestHandler';
 import { ImageSize, ISite } from '../../services';
 import winston from 'winston';
 import { handleError } from '../handleError';
 
-export const createGetImageFileHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
+export const createGetImageFileHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res) => {
     const { path } = req.params;
     const size = req.query.size ?? 'thumb';
     try {

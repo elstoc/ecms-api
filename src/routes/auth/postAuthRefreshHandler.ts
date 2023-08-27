@@ -1,9 +1,8 @@
-import { Request, Response } from 'express';
 import winston from 'winston';
 import { IAuth } from '../../services';
 import { RequestHandler } from '../RequestHandler';
 
-export const createPostAuthRefreshHandler = (auth: IAuth, logger: winston.Logger): RequestHandler => async (req: Request, res: Response) => {
+export const createPostAuthRefreshHandler = (auth: IAuth, logger: winston.Logger): RequestHandler => async (req, res) => {
     logger.info('refreshing tokens');
     try {
         const currentRefreshToken = req.cookies?.refresh_token;

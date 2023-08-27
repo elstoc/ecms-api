@@ -5,6 +5,7 @@ import { createSiteRouter } from './site';
 import { createGalleryRouter } from './gallery';
 import { createMarkdownRouter } from './markdown';
 import { createAuthRouter } from './auth';
+import { createGetUserInfoFromHeader } from './getUserInfoFromHeader';
 
 export const createRootRouter = (logger: Logger, site: ISite, auth: IAuth): Router => {
     const router = Router();
@@ -13,7 +14,9 @@ export const createRootRouter = (logger: Logger, site: ISite, auth: IAuth): Rout
     const galleryRouter = createGalleryRouter(site, logger);
     const markdownRouter = createMarkdownRouter(site, logger);
     const authRouter = createAuthRouter(auth, logger);
+    const userInfoMiddleware = createGetUserInfoFromHeader(auth);
 
+    router.use(userInfoMiddleware);
     router.use('/site', siteRouter);
     router.use('/gallery', galleryRouter);
     router.use('/markdown', markdownRouter);

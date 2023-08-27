@@ -12,6 +12,5 @@ export type MarkdownStructure = {
 
 export interface IMarkdownRecurse {
     getMdStructure(): Promise<MarkdownStructure>;
-    getMetadata(): Promise<MarkdownStructure>;
     getFile(apiPath: string): Promise<Buffer>;
 }

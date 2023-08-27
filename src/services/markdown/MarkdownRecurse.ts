@@ -68,7 +68,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         return this.children[childApiPath];
     }
 
-    public async getMetadata(): Promise<MarkdownStructure> {
+    private async getMetadata(): Promise<MarkdownStructure> {
         this.throwIfNoContentFile();
 
         const contentModifiedTime = this.storage.getContentFileModifiedTime(this.contentPath);

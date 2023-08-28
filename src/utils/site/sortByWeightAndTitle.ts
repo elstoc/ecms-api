@@ -3,8 +3,11 @@ interface HasWeightTitle {
     title?: string;
 }
 
-export const sortByWeightAndTitle = <T extends HasWeightTitle>(input: T[]): T[] => {
-    return input.sort((a, b) => {
+export const sortByWeightAndTitle = <T extends HasWeightTitle>(input: (T | undefined)[]): T[] => {
+
+    const inputFiltered = input.filter(x => x !== undefined) as T[];
+
+    return inputFiltered.sort((a, b) => {
         if (a.weight && !b.weight) return -1;
         if (b.weight && !a.weight) return 1;
         if (a.weight && b.weight) return a.weight - b.weight;

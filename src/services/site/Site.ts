@@ -30,8 +30,7 @@ export class Site implements ISite {
             this.getComponentMetadata(path.basename(file, '.yaml'), user)
         ));
 
-        const components = (await Promise.all(componentPromises))
-            .filter(x => x);
+        const components = (await Promise.all(componentPromises));
 
         return sortByWeightAndTitle(components as ComponentMetadata[]);
     }

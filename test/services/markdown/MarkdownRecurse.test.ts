@@ -116,7 +116,6 @@ describe('MarkdownRecurse', () => {
     });
 
     describe('getMdStructure', () => {
-
         beforeEach(() => {
             mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
         });
@@ -152,7 +151,7 @@ describe('MarkdownRecurse', () => {
         });
 
         describe('returns data for a single file', () => {
-            it('gets metadata from the source file where none is cached', async () => {
+            it('obtains metadata from the source file where none is cached', async () => {
                 const parsedYaml = { title: 'Some Title' };
                 mockStorage.contentFileExists.mockReturnValue(true);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);

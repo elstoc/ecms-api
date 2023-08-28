@@ -30,7 +30,6 @@ export class SiteComponent implements ISiteComponent {
         if (!this.metadata) {
             throw new Error('No metadata found');
         }
-
         if (!userHasReadAccess(user, this.metadata.restrict)) {
             return undefined;
         }

@@ -1,7 +1,7 @@
 import YAML from 'yaml';
 import _ from 'lodash';
 
-import { Config } from '../../utils';
+import { Config, userHasReadAccess } from '../../utils';
 import { Gallery, IGallery } from '../gallery';
 import { IMarkdownRecurse, MarkdownRecurse } from '../markdown';
 import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
@@ -31,9 +31,8 @@ export class SiteComponent implements ISiteComponent {
             throw new Error('No metadata found');
         }
 
-        const userRoles = user?.roles ?? [];
-        if (this?.metadata?.restrict && !userRoles.includes(this.metadata.restrict)) {
-            return;
+        if (!userHasReadAccess(user, this.metadata.restrict)) {
+            return undefined;
         }
         return (this.metadata);
     }

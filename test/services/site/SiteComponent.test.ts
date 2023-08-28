@@ -229,7 +229,9 @@ describe('SiteComponent', () => {
                 restrict: 'admin'
             });
 
-            expect(component.getMetadata()).resolves.toBeUndefined;
+            const actualMetadata = await component.getMetadata();
+
+            expect(actualMetadata).toBeUndefined();
         });
 
         it('returns undefined if access is restricted and user does not have permission', async () => {
@@ -244,7 +246,9 @@ describe('SiteComponent', () => {
                 restrict: 'admin'
             });
 
-            expect(component.getMetadata( { roles: ['role1', 'role2'] } as any)).resolves.toBeUndefined;
+            const actualMetadata = await component.getMetadata( { roles: ['role1', 'role2'] } as any);
+
+            expect(actualMetadata).toBeUndefined();
         });
 
         it('returns correct metadata if access is restricted and user has permission', async () => {
@@ -256,10 +260,29 @@ describe('SiteComponent', () => {
                 uiPath: 'test',
                 title: 'The Title',
                 type: 'gallery',
-                restrict: 'admin'
+                restrict: 'role1'
             });
 
-            expect(component.getMetadata( { roles: ['role1', 'role2', 'admin'] } as any)).resolves.toBeDefined;
+            const actualMetadata = await component.getMetadata( { roles: ['role1', 'role2'] } as any);
+
+            expect(actualMetadata).toBeDefined();
+        });
+
+        it('returns correct metadata if user has admin access, regardless of restrictions', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                uiPath: 'test',
+                title: 'The Title',
+                type: 'gallery',
+                restrict: 'role1'
+            });
+
+            const actualMetadata = await component.getMetadata( { roles: ['admin'] } as any);
+
+            expect(actualMetadata).toBeDefined();
         });
     });
 

@@ -111,163 +111,6 @@ describe('MarkdownRecurse', () => {
         });
     });
 
-    describe('getMetadata', () => {
-        it('throws an error if the content file does not exist for a root object', async () => {
-            mockStorage.contentFileExists.mockReturnValue(false);
-
-            const page = new MarkdownRecurse('root', config, mockStorage, true);
-
-            await expect(() => page.getMetadata())
-                .rejects.toThrow(new NotFoundError('No markdown file found matching path root'));
-            expect(mockStorage.contentFileExists).toBeCalledWith('root/index.md');
-        });
-
-        it('throws an error if the path does not end in md for a non-root object', async () => {
-            const page = new MarkdownRecurse('root', config, mockStorage);
-
-            await expect(() => page.getMetadata())
-                .rejects.toThrow(new NotFoundError('No markdown file found matching path root'));
-            expect(mockStorage.contentFileExists).not.toBeCalled();
-        });
-
-        it('throws an error if the content file does not exist for a non-root object', async () => {
-            mockStorage.contentFileExists.mockReturnValue(false);
-
-            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
-
-            await expect(() => page.getMetadata())
-                .rejects.toThrow(new NotFoundError('No markdown file found matching path root/file.md'));
-            expect(mockStorage.contentFileExists).toBeCalledWith('root/file.md');
-        });
-
-        it('gets metadata from the source file where none is cached', async () => {
-            const parsedYaml = { title: 'Some Title' };
-            mockStorage.contentFileExists.mockReturnValue(true);
-            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
-            mockStorage.getContentFileModifiedTime.mockReturnValue(5000);
-            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
-            mockYAMLparse.mockReturnValue(parsedYaml);
-
-            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
-            const actualMetadata = await page.getMetadata();
-
-            const expectedMetadata = {
-                apiPath: 'root/file.md',
-                title: 'Some Title',
-                additionalData: {}
-            };
-            expect(mockStorage.getContentFileModifiedTime).toBeCalledWith('root/file.md');
-            expect(mockStorage.getContentFile).toBeCalledWith('root/file.md');
-            expect(mockSplitFrontMatter).toBeCalledWith(contentFileBuf.toString('utf-8'));
-            expect(mockYAMLparse).toBeCalledWith(parsedYaml);
-
-            expect(actualMetadata).toEqual(expectedMetadata);
-        });
-
-        it('places unknown metadata into additionalData', async () => {
-            const parsedYaml = {
-                title: 'Some Title',
-                someOtherField: 'some-other-value',
-                someDifferentField: 'some-different-value'
-            };
-            mockStorage.contentFileExists.mockReturnValue(true);
-            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
-            mockStorage.getContentFileModifiedTime.mockReturnValue(5000);
-            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
-            mockYAMLparse.mockReturnValue(parsedYaml);
-
-            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
-            const actualMetadata = await page.getMetadata();
-
-            const expectedMetadata = {
-                apiPath: 'root/file.md',
-                title: 'Some Title',
-                additionalData: {
-                    someOtherField: 'some-other-value',
-                    someDifferentField: 'some-different-value'
-                }
-            };
-            expect(actualMetadata).toEqual(expectedMetadata);
-        });
-        it('returns identical metadata on the second run without re-reading the source file', async () => {
-            const parsedYaml = { title: 'Some Title' };
-            mockStorage.contentFileExists.mockReturnValue(true);
-            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
-            mockStorage.getContentFileModifiedTime.mockReturnValue(5000);
-            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
-            mockYAMLparse.mockReturnValue(parsedYaml);
-
-            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
-            const actualMetadata1 = await page.getMetadata();
-            const actualMetadata2 = await page.getMetadata();
-
-            const expectedMetadata = {
-                apiPath: 'root/file.md',
-                title: 'Some Title',
-                additionalData: {}
-            };
-            expect(mockStorage.getContentFileModifiedTime).toBeCalledTimes(2);
-            expect(mockStorage.getContentFile).toBeCalledTimes(1);
-            expect(mockSplitFrontMatter).toBeCalledTimes(1);
-            expect(mockYAMLparse).toBeCalledTimes(1);
-
-            expect(actualMetadata1).toEqual(expectedMetadata);
-            expect(actualMetadata2).toEqual(expectedMetadata);
-        });
-
-        it('re-obtains metadata from the source file if it was updated since the last call', async () => {
-            const parsedYaml = { title: 'Some Title' };
-            mockStorage.contentFileExists.mockReturnValue(true);
-            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
-            mockStorage.getContentFileModifiedTime
-                .mockReturnValueOnce(5000)
-                .mockReturnValue(6000);
-            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
-            mockYAMLparse.mockReturnValue(parsedYaml);
-
-            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
-            const actualMetadata1 = await page.getMetadata();
-            const actualMetadata2 = await page.getMetadata();
-
-            const expectedMetadata = {
-                apiPath: 'root/file.md',
-                title: 'Some Title',
-                additionalData: {}
-            };
-            expect(mockStorage.getContentFileModifiedTime).toBeCalledTimes(2);
-            expect(mockStorage.getContentFile).toBeCalledTimes(2);
-            expect(mockSplitFrontMatter).toBeCalledTimes(2);
-            expect(mockYAMLparse).toBeCalledTimes(2);
-
-            expect(actualMetadata1).toEqual(expectedMetadata);
-            expect(actualMetadata2).toEqual(expectedMetadata);
-        });
-
-        it('sets the title to the file/path name (without extension) if not present in parsed metadata', async () => {
-            const parsedYaml = { };
-            mockStorage.contentFileExists.mockReturnValue(true);
-            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
-            mockStorage.getContentFileModifiedTime.mockReturnValue(5000);
-            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
-            mockYAMLparse.mockReturnValue(parsedYaml);
-
-            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
-            const actualMetadata = await page.getMetadata();
-
-            const expectedMetadata = {
-                apiPath: 'root/file.md',
-                title: 'file',
-                additionalData: {}
-            };
-            expect(mockStorage.getContentFileModifiedTime).toBeCalledWith('root/file.md');
-            expect(mockStorage.getContentFile).toBeCalledWith('root/file.md');
-            expect(mockSplitFrontMatter).toBeCalledWith(contentFileBuf.toString('utf-8'));
-            expect(mockYAMLparse).toBeCalledWith(parsedYaml);
-
-            expect(actualMetadata).toEqual(expectedMetadata);
-        });
-    });
-
     describe('getMdStructure', () => {
 
         beforeEach(() => {
@@ -300,6 +143,135 @@ describe('MarkdownRecurse', () => {
             await expect(() => page.getMdStructure())
                 .rejects.toThrow(new NotFoundError('No markdown file found matching path root/file.md'));
             expect(mockStorage.contentFileExists).toBeCalledWith('root/file.md');
+        });
+
+        it('(for a single file) gets metadata from the source file where none is cached', async () => {
+            const parsedYaml = { title: 'Some Title' };
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.listContentChildren.mockResolvedValue([]);
+            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+            mockYAMLparse.mockReturnValue(parsedYaml);
+
+            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
+            const actualMetadata = await page.getMdStructure();
+
+            const expectedMetadata = {
+                apiPath: 'root/file.md',
+                title: 'Some Title',
+                additionalData: {}
+            };
+            expect(mockStorage.getContentFileModifiedTime).toBeCalledWith('root/file.md');
+            expect(mockStorage.getContentFile).toBeCalledWith('root/file.md');
+            expect(mockSplitFrontMatter).toBeCalledWith(contentFileBuf.toString('utf-8'));
+            expect(mockYAMLparse).toBeCalledWith(parsedYaml);
+
+            expect(actualMetadata).toEqual(expectedMetadata);
+        });
+
+        it('(for a single file) places unknown metadata into additionalData', async () => {
+            const parsedYaml = {
+                title: 'Some Title',
+                someOtherField: 'some-other-value',
+                someDifferentField: 'some-different-value'
+            };
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.listContentChildren.mockResolvedValue([]);
+            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+            mockYAMLparse.mockReturnValue(parsedYaml);
+
+            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
+            const actualMetadata = await page.getMdStructure();
+
+            const expectedMetadata = {
+                apiPath: 'root/file.md',
+                title: 'Some Title',
+                additionalData: {
+                    someOtherField: 'some-other-value',
+                    someDifferentField: 'some-different-value'
+                }
+            };
+            expect(actualMetadata).toEqual(expectedMetadata);
+        });
+
+        it('(for a single file) returns identical metadata on the second run without re-reading the source file', async () => {
+            const parsedYaml = { title: 'Some Title' };
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.listContentChildren.mockResolvedValue([]);
+            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+            mockYAMLparse.mockReturnValue(parsedYaml);
+
+            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
+            const actualMetadata1 = await page.getMdStructure();
+            const actualMetadata2 = await page.getMdStructure();
+
+            const expectedMetadata = {
+                apiPath: 'root/file.md',
+                title: 'Some Title',
+                additionalData: {}
+            };
+            expect(mockStorage.getContentFileModifiedTime).toBeCalledTimes(2);
+            expect(mockStorage.getContentFile).toBeCalledTimes(1);
+            expect(mockSplitFrontMatter).toBeCalledTimes(1);
+            expect(mockYAMLparse).toBeCalledTimes(1);
+
+            expect(actualMetadata1).toEqual(expectedMetadata);
+            expect(actualMetadata2).toEqual(expectedMetadata);
+        });
+
+        it('(for a single file) re-obtains metadata from the source file if it was updated since the last call', async () => {
+            const parsedYaml = { title: 'Some Title' };
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.getContentFileModifiedTime
+                .mockReturnValueOnce(5000)
+                .mockReturnValue(6000);
+            mockStorage.listContentChildren.mockResolvedValue([]);
+            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+            mockYAMLparse.mockReturnValue(parsedYaml);
+
+            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
+            const actualMetadata1 = await page.getMdStructure();
+            const actualMetadata2 = await page.getMdStructure();
+
+            const expectedMetadata = {
+                apiPath: 'root/file.md',
+                title: 'Some Title',
+                additionalData: {}
+            };
+            expect(mockStorage.getContentFileModifiedTime).toBeCalledTimes(2);
+            expect(mockStorage.getContentFile).toBeCalledTimes(2);
+            expect(mockSplitFrontMatter).toBeCalledTimes(2);
+            expect(mockYAMLparse).toBeCalledTimes(2);
+
+            expect(actualMetadata1).toEqual(expectedMetadata);
+            expect(actualMetadata2).toEqual(expectedMetadata);
+        });
+
+        it('(for a single file) sets the title to the file/path name (without extension) if not present in parsed metadata', async () => {
+            const parsedYaml = { };
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.listContentChildren.mockResolvedValue([]);
+            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+            mockYAMLparse.mockReturnValue(parsedYaml);
+
+            const page = new MarkdownRecurse('root/file.md', config, mockStorage);
+            const actualMetadata = await page.getMdStructure();
+
+            const expectedMetadata = {
+                apiPath: 'root/file.md',
+                title: 'file',
+                additionalData: {}
+            };
+            expect(mockStorage.getContentFileModifiedTime).toBeCalledWith('root/file.md');
+            expect(mockStorage.getContentFile).toBeCalledWith('root/file.md');
+            expect(mockSplitFrontMatter).toBeCalledWith(contentFileBuf.toString('utf-8'));
+            expect(mockYAMLparse).toBeCalledWith(parsedYaml);
+
+            expect(actualMetadata).toEqual(expectedMetadata);
         });
 
         it('root: lists root page as first child, removes index.md and non-md files from child list', async () => {

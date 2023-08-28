@@ -30,10 +30,9 @@ export class SiteComponent implements ISiteComponent {
         if (!this.metadata) {
             throw new Error('No metadata found');
         }
-        if (!userHasReadAccess(user, this.metadata.restrict)) {
-            return undefined;
-        }
-        return (this.metadata);
+        return userHasReadAccess(user, this.metadata.restrict)
+            ? this.metadata
+            : undefined;
     }
 
     private async refreshMetadata(): Promise<void> {

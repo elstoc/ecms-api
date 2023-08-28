@@ -1,10 +1,13 @@
-import { Request, Response } from 'express';
-import { NotFoundError } from '../errors';
+import { Response } from 'express';
+import { NotFoundError, NotPermittedError } from '../errors';
+import { RequestWithUser } from './RequestHandler';
 
-export const handleError = (req: Request, res: Response, error: unknown): void => {
+export const handleError = (req: RequestWithUser, res: Response, error: unknown): void => {
+    let status = 500;
     if (error instanceof NotFoundError) {
-        res.sendStatus(404);
-    } else {
-        res.sendStatus(500);
+        status = 404;
+    } else if (error instanceof NotPermittedError) {
+        status = req.user ? 403 : 401;
     }
+    res.sendStatus(status);
 };

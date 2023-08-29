@@ -3,9 +3,10 @@ import YAML from 'yaml';
 import _ from 'lodash';
 
 import { IMarkdownRecurse, MarkdownStructure } from './IMarkdownRecurse';
-import { Config, sortByWeightAndTitle, splitFrontMatter, splitPath } from '../../utils';
+import { Config, sortByWeightAndTitle, splitFrontMatter, splitPath, userHasReadAccess } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
-import { NotFoundError } from '../../errors';
+import { NotFoundError, NotPermittedError } from '../../errors';
+import { User } from '../auth';
 
 export class MarkdownRecurse implements IMarkdownRecurse {
     private apiPath: string;
@@ -28,13 +29,17 @@ export class MarkdownRecurse implements IMarkdownRecurse {
             : this.apiPath;
     }
 
-    public async getFile(targetApiPath: string): Promise<Buffer> {
+    public async getFile(targetApiPath: string, user?: User): Promise<Buffer> {
         this.throwIfNoContentFile();
+        await this.getMetadata();
+        if (!userHasReadAccess(user, this.metadata?.restrict)) {
+            throw new NotPermittedError();
+        }
         if (targetApiPath === this.apiPath) {
             return this.storage.getContentFile(this.contentPath);
         } else {
             const nextChild = this.getNextChildInTargetPath(targetApiPath);
-            return nextChild.getFile(targetApiPath);
+            return nextChild.getFile(targetApiPath, user);
         }
     }
 
@@ -69,8 +74,6 @@ export class MarkdownRecurse implements IMarkdownRecurse {
     }
 
     private async getMetadata(): Promise<MarkdownStructure> {
-        this.throwIfNoContentFile();
-
         const contentModifiedTime = this.storage.getContentFileModifiedTime(this.contentPath);
 
         if (this.metadata && contentModifiedTime === this.metadataFromSourceFileTime) {
@@ -100,23 +103,26 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         return YAML.parse(yaml);
     }
     
-    public async getMdStructure(): Promise<MarkdownStructure> {
+    public async getMdStructure(user?: User): Promise<MarkdownStructure | undefined> {
         this.throwIfNoContentFile();
         const metadata = await this.getMetadata();
+        if (!userHasReadAccess(user, this.metadata?.restrict)) {
+            return undefined;
+        }
         const childObjects = await this.getChildren();
-        const childStructPromises = childObjects.map((child) => child.getMdStructure());
-        let children = await Promise.all(childStructPromises);
-        children = sortByWeightAndTitle(children);
+        const childStructPromises = childObjects.map((child) => child.getMdStructure(user));
+        const children = await Promise.all(childStructPromises);
+        const sortedChildren = sortByWeightAndTitle<MarkdownStructure>(children);
 
         if (this.isRoot) {
             // metadata for the root instance is added to the top of the list
-            children.unshift({ ...metadata });
-            return { children };
+            sortedChildren.unshift({ ...metadata });
+            return { children: sortedChildren };
         } else if (children.length === 0) {
             return { ...metadata };
         }
 
-        return { ...metadata, children };
+        return { ...metadata, children: sortedChildren };
     }
 
     private async getChildren(): Promise<IMarkdownRecurse[]> {

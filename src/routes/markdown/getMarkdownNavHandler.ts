@@ -7,12 +7,9 @@ export const createGetMarkdownNavHandler = (site: ISite, logger: winston.Logger)
     const { rootPath } = req.params;
     logger.debug(`getting md nav contents ${rootPath}`);
     try {
-        const mdNavContents = await site.getMarkdownStructure(rootPath);
+        const mdNavContents = await site.getMarkdownStructure(rootPath, req.user);
         res.json(mdNavContents);
     } catch (err: unknown) {
-        if (err instanceof Error) {
-            logger.error(`Error getting markdown nav ${rootPath}: ${err.message}`);
-        }
         handleError(req, res, err);
     }
 };

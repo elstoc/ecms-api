@@ -7,6 +7,6 @@ export interface ISite {
     listComponents(user?: User): Promise<ComponentMetadata[]>;
     getGalleryImage(apiPath: string, size: string): Promise<Buffer>;
     getGalleryImages(apiPath: string, limit?: number): Promise<GalleryImages>;
-    getMarkdownFile(apiPath: string): Promise<Buffer>;
-    getMarkdownStructure(apiPath: string): Promise<MarkdownStructure>;
+    getMarkdownFile(apiPath: string, user?: User): Promise<Buffer>;
+    getMarkdownStructure(apiPath: string, user?: User): Promise<MarkdownStructure | undefined>;
 }

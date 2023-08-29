@@ -2,7 +2,7 @@
 import { MarkdownRecurse } from '../../../src/services/markdown/MarkdownRecurse';
 import YAML from 'yaml';
 import { splitFrontMatter } from '../../../src/utils/markdown/splitFrontMatter';
-import { NotFoundError } from '../../../src/errors';
+import { NotFoundError, NotPermittedError } from '../../../src/errors';
 
 jest.mock('yaml');
 jest.mock('../../../src/utils/markdown/splitFrontMatter');
@@ -34,6 +34,11 @@ describe('MarkdownRecurse', () => {
     describe('getFile', () => {
         beforeEach(() => {
             mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.listContentChildren.mockResolvedValue([]);
+            const parsedYaml = { title: 'Some Title' };
+            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+            mockYAMLparse.mockReturnValue(parsedYaml);
         });
 
         describe('throws error', () => {
@@ -78,10 +83,13 @@ describe('MarkdownRecurse', () => {
         });
 
         describe('returns a file', () => {
-            it('returns the index.md content file for a root object where the targetPath matches the first object', async () => {
+            beforeEach(() => {
                 mockStorage.contentFileExists.mockReturnValue(true);
+            });
 
+            it('returns the index.md content file for a root object where the targetPath matches the first object', async () => {
                 const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
+
                 const actualFileBuf = await page.getFile('path/to/root');
 
                 expect(mockStorage.getContentFile).toBeCalledWith('path/to/root/index.md');
@@ -89,9 +97,8 @@ describe('MarkdownRecurse', () => {
             });
 
             it('returns the requested content file for a non-root object where the targetPath matches the first object', async () => {
-                mockStorage.contentFileExists.mockReturnValue(true);
-
                 const page = new MarkdownRecurse('path/to/file.md', config, mockStorage);
+
                 const actualFileBuf = await page.getFile('path/to/file.md');
 
                 expect(mockStorage.getContentFile).toBeCalledWith('path/to/file.md');
@@ -99,9 +106,8 @@ describe('MarkdownRecurse', () => {
             });
 
             it('recurses through objects for a long path and returns the file from the last object', async () => {
-                mockStorage.contentFileExists.mockReturnValue(true);
-
                 const page = new MarkdownRecurse('root', config, mockStorage, true);
+
                 const actualFileBuf = await page.getFile('root/path/to/page.md');
 
                 expect(mockStorage.contentFileExists).toBeCalledTimes(4);
@@ -111,6 +117,42 @@ describe('MarkdownRecurse', () => {
                 expect(mockStorage.contentFileExists.mock.calls[3][0]).toBe('root/path/to/page.md');
                 expect(mockStorage.getContentFile).toBeCalledWith('root/path/to/page.md');
                 expect(actualFileBuf).toBe(contentFileBuf);
+            });
+        });
+
+        describe('restricts access', () => {
+            beforeEach(() => {
+                mockStorage.contentFileExists.mockReturnValue(true);
+                const parsedYaml = { title: 'Some Title', restrict: 'role1' };
+                mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+                mockYAMLparse.mockReturnValue(parsedYaml);
+            });
+
+            it('throws if access is restricted and no user is entered', async () => {
+                const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
+
+                await expect(page.getFile('path/to/root')).rejects.toThrow(NotPermittedError);
+            });
+
+            it('throws if access is restricted and no user does not have permission', async () => {
+                const user = { id: 'some-user', roles: ['role2', 'role3'] };
+                const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
+
+                await expect(page.getFile('path/to/root', user)).rejects.toThrow(NotPermittedError);
+            });
+
+            it('does not throw if access is restricted and user has permission', async () => {
+                const user = { id: 'some-user', roles: ['role1', 'role2', 'role3'] };
+                const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
+
+                await expect(page.getFile('path/to/root', user)).resolves.toBeDefined();
+            });
+
+            it('does not throw if access is restricted but user has admin rights', async () => {
+                const user = { id: 'some-user', roles: ['admin'] };
+                const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
+
+                await expect(page.getFile('path/to/root', user)).resolves.toBeDefined();
             });
         });
     });
@@ -486,6 +528,46 @@ describe('MarkdownRecurse', () => {
                     ]
                 };
                 expect(actualStructure).toEqual(expectedStructure);
+            });
+        });
+
+        describe('restricts access', () => {
+            beforeEach(() => {
+                const parsedYaml = {
+                    restrict: 'role1'
+                };
+                mockStorage.contentFileExists.mockReturnValue(true);
+                mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+                mockStorage.listContentChildren.mockResolvedValue([]);
+                mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+                mockYAMLparse.mockReturnValue(parsedYaml);
+            });
+
+            it('returns undefined if access is restricted and no user is entered', async () => {
+                const page = new MarkdownRecurse('rootDir', config, mockStorage, true);
+
+                await expect(page.getMdStructure()).resolves.toBeUndefined();
+            });
+
+            it('returns undefined if access is restricted and no user does not have permission', async () => {
+                const page = new MarkdownRecurse('rootDir', config, mockStorage, true);
+                const user = { id: 'some-user', roles: ['role2', 'role3'] };
+
+                await expect(page.getMdStructure(user)).resolves.toBeUndefined();
+            });
+
+            it('returns value if access is restricted and user has permission', async () => {
+                const page = new MarkdownRecurse('rootDir', config, mockStorage, true);
+                const user = { id: 'some-user', roles: ['role1', 'role3'] };
+
+                await expect(page.getMdStructure(user)).resolves.toBeDefined();
+            });
+
+            it('returns value if access is restricted but user has admin rights', async () => {
+                const page = new MarkdownRecurse('rootDir', config, mockStorage, true);
+                const user = { id: 'some-user', roles: ['admin'] };
+
+                await expect(page.getMdStructure(user)).resolves.toBeDefined();
             });
         });
     });

@@ -1,5 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { Site, SiteComponent } from '../../../src/services';
+import { NotPermittedError } from '../../../src/errors';
+import { Site, SiteComponent, User } from '../../../src/services';
 
 jest.mock('../../../src/services/site/SiteComponent');
 
@@ -213,14 +214,24 @@ describe('Site', () => {
     describe('getMarkdownStructure', () => {
         it('runs getMdStructure on the appropriate markdown object', async () => {
             mockSiteComponent.mockImplementation((_, inputFilePath) => ({
-                getMarkdown: () => ({ getMdStructure: () => `${inputFilePath}-struct` })
+                getMarkdown: () => ({ getMdStructure: (user: User) => `${inputFilePath}-${user.id}` })
+            }));
+            const user = { id: 'some-user' };
+
+            const site = new Site(config, mockStorage);
+            const actualMarkdownStructure = await site.getMarkdownStructure('component02', user);
+
+            const expectedMarkdownStructure = 'component02-some-user';
+            expect(actualMarkdownStructure).toBe(expectedMarkdownStructure);
+        });
+
+        it('throws NotPermittedError if returned structure is undefined', async () => {
+            mockSiteComponent.mockImplementation(() => ({
+                getMarkdown: () => ({ getMdStructure: () => undefined })
             }));
 
             const site = new Site(config, mockStorage);
-            const actualMarkdownStructure = await site.getMarkdownStructure('component02');
-
-            const expectedMarkdownStructure = 'component02-struct';
-            expect(actualMarkdownStructure).toBe(expectedMarkdownStructure);
+            await expect(site.getMarkdownStructure('component02')).rejects.toThrow(NotPermittedError);
         });
     });
 
@@ -230,11 +241,12 @@ describe('Site', () => {
             mockSiteComponent.mockImplementation(() => ({
                 getMarkdown: () => ({ getFile })
             }));
+            const user = { id: 'some-user' };
 
             const site = new Site(config, mockStorage);
-            await site.getMarkdownFile('component02/path/to/file');
+            await site.getMarkdownFile('component02/path/to/file', user);
 
-            expect(getFile).toBeCalledWith('component02/path/to/file');
+            expect(getFile).toBeCalledWith('component02/path/to/file', user);
         });
     });
 });

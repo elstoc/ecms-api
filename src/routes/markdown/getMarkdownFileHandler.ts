@@ -7,12 +7,9 @@ export const createGetMarkdownFileHandler = (site: ISite, logger: winston.Logger
     const { mdPath } = req.params;
     logger.debug(`getting md file ${mdPath}`);
     try {
-        const mdFileBuf = await site.getMarkdownFile(mdPath);
+        const mdFileBuf = await site.getMarkdownFile(mdPath, req.user);
         res.send(mdFileBuf);
     } catch (err: unknown) {
-        if (err instanceof Error) {
-            logger.error(`Error getting markdown file ${mdPath}: ${err.message}`);
-        }
         handleError(req, res, err);
     }
 };

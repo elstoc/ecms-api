@@ -7,6 +7,7 @@ import { GalleryImages, ImageSize } from '../gallery';
 import { MarkdownStructure } from '../markdown';
 import { IStorageAdapter } from '../../adapters';
 import { User } from '../auth';
+import { NotPermittedError } from '../../errors';
 
 export class Site implements ISite {
     private components: { [key: string]: ISiteComponent } = {};
@@ -50,14 +51,18 @@ export class Site implements ISite {
         return gallery.getImageFile(apiPath, size as ImageSize);
     }
 
-    public async getMarkdownStructure(apiPath: string): Promise<MarkdownStructure> {
+    public async getMarkdownStructure(apiPath: string, user?: User): Promise<MarkdownStructure | undefined> {
         const markdown = await this.getRootComponent(apiPath).getMarkdown();
-        return markdown.getMdStructure();
+        const structure = await markdown.getMdStructure(user);
+        if (!structure) {
+            throw new NotPermittedError();
+        }
+        return structure;
     }
 
-    public async getMarkdownFile(apiPath: string): Promise<Buffer> {
+    public async getMarkdownFile(apiPath: string, user?: User): Promise<Buffer> {
         const markdown = await this.getRootComponent(apiPath).getMarkdown();
-        return markdown.getFile(apiPath);
+        return markdown.getFile(apiPath, user);
     }
 
     private getRootComponent(apiPath: string): ISiteComponent {

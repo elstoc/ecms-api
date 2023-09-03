@@ -1,4 +1,8 @@
-export type ImageSize = 'thumb' | 'fhd' | 'forExif';
+export enum ImageSize {
+    thumb = 'thumb',
+    fhd = 'fhd',
+    forExif = 'forExif'
+}
 
 export type Dimensions = {
     width: number | undefined;

@@ -32,8 +32,8 @@ export class GalleryImage implements IGalleryImage {
         }
         
         const [thumbFileBuf, exifFileBuf] = await Promise.all([
-            this.getResizedImageBuf('thumb'),
-            this.getResizedImageBuf('forExif')
+            this.getResizedImageBuf(ImageSize.thumb),
+            this.getResizedImageBuf(ImageSize.forExif)
         ]);
 
         const exif = getExif(exifFileBuf);
@@ -51,8 +51,8 @@ export class GalleryImage implements IGalleryImage {
             description,
             exif,
             thumbDimensions: getImageDimensions(thumbFileBuf),
-            thumbSrcUrl: this.getSourceUrl('thumb'),
-            fhdSrcUrl: this.getSourceUrl('fhd')
+            thumbSrcUrl: this.getSourceUrl(ImageSize.thumb),
+            fhdSrcUrl: this.getSourceUrl(ImageSize.fhd)
         };
 
         return this.imageData;
@@ -69,7 +69,7 @@ export class GalleryImage implements IGalleryImage {
     }
 
     public async getFile(size: ImageSize): Promise<Buffer> {
-        if (!['fhd', 'thumb'].includes(size)) {
+        if (![ImageSize.fhd, ImageSize.thumb].includes(size)) {
             throw new NotFoundError('Incorrect size description');
         }
         this.throwIfNoSourceFile();

@@ -1,5 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { Gallery, GalleryImage } from '../../../src/services';
+import { Gallery, GalleryImage, ImageSize } from '../../../src/services';
 
 const mockStorage = {
     listContentChildren: jest.fn() as jest.Mock,
@@ -13,6 +13,7 @@ const mockStorage = {
     getAdminFile: jest.fn() as jest.Mock,
     storeAdminFile: jest.fn() as jest.Mock,
     getAdminFileModifiedTime: jest.fn() as jest.Mock,
+    storeContentFile: jest.fn() as jest.Mock,
 };
 
 jest.mock('../../../src/services/gallery/GalleryImage');
@@ -113,7 +114,7 @@ describe('Gallery', () => {
                 getFile
             }));
     
-            await gallery.getImageFile('gallery/image1.jpg', 'thumb');
+            await gallery.getImageFile('gallery/image1.jpg', ImageSize.thumb);
     
             expect(GalleryImageMock).toBeCalledTimes(1);
             expect(getFile).toBeCalledWith('thumb');
@@ -125,8 +126,8 @@ describe('Gallery', () => {
                 getFile
             }));
     
-            await gallery.getImageFile('gallery/image1.jpg', 'thumb');
-            await gallery.getImageFile('gallery/image1.jpg', 'fhd');
+            await gallery.getImageFile('gallery/image1.jpg', ImageSize.thumb);
+            await gallery.getImageFile('gallery/image1.jpg', ImageSize.fhd);
     
             expect(GalleryImageMock).toBeCalledTimes(1);
             expect(getFile).toBeCalledTimes(2);

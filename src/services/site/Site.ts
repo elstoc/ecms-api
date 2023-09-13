@@ -65,6 +65,11 @@ export class Site implements ISite {
         return markdown.getFile(apiPath, user);
     }
 
+    public async writeMarkdownFile(apiPath: string, content: string, user?: User): Promise<void> {
+        const markdown = await this.getRootComponent(apiPath).getMarkdown();
+        return markdown.writeFile(apiPath, content, user);
+    }
+
     private getRootComponent(apiPath: string): ISiteComponent {
         const rootPath = apiPath.replace(/^\//, '').split('/')[0];
         return this.getComponent(rootPath);

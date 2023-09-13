@@ -3,7 +3,7 @@ import YAML from 'yaml';
 import _ from 'lodash';
 
 import { IMarkdownRecurse, MarkdownStructure } from './IMarkdownRecurse';
-import { Config, sortByWeightAndTitle, splitFrontMatter, splitPath, userHasReadAccess } from '../../utils';
+import { Config, sortByWeightAndTitle, splitFrontMatter, splitPath, userHasReadAccess, userHasWriteAccess } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';
 import { User } from '../auth';
@@ -40,6 +40,20 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         } else {
             const nextChild = this.getNextChildInTargetPath(targetApiPath);
             return nextChild.getFile(targetApiPath, user);
+        }
+    }
+
+    public async writeFile(targetApiPath: string, fileContent: string, user?: User): Promise<void> {
+        this.throwIfNoContentFile();
+        await this.getMetadata();
+        if (!userHasWriteAccess(user, this.metadata?.allowWrite)) {
+            throw new NotPermittedError();
+        }
+        if (targetApiPath === this.apiPath) {
+            return this.storage.storeContentFile(this.contentPath, Buffer.from(fileContent));
+        } else {
+            const nextChild = this.getNextChildInTargetPath(targetApiPath);
+            return nextChild.writeFile(targetApiPath, fileContent, user);
         }
     }
 
@@ -82,7 +96,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
 
         const frontMatter = await this.parseFrontMatter();
 
-        const fieldList = ['apiPath', 'title', 'uiPath', 'weight', 'restrict'];
+        const fieldList = ['apiPath', 'title', 'uiPath', 'weight', 'restrict', 'allowWrite'];
         const pickedFields = _.pick(frontMatter, fieldList);
         const additionalData = _.omit(frontMatter, fieldList);
 

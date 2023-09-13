@@ -23,6 +23,7 @@ const mockStorage = {
     getAdminFile: jest.fn() as jest.Mock,
     storeAdminFile: jest.fn() as jest.Mock,
     getAdminFileModifiedTime: jest.fn() as jest.Mock,
+    storeContentFile: jest.fn() as jest.Mock,
 };
 
 const mockYAMLparse = YAML.parse as jest.Mock;
@@ -33,7 +34,6 @@ describe('MarkdownRecurse', () => {
 
     describe('getFile', () => {
         beforeEach(() => {
-            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
             mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
             mockStorage.listContentChildren.mockResolvedValue([]);
             const parsedYaml = { title: 'Some Title' };
@@ -153,6 +153,135 @@ describe('MarkdownRecurse', () => {
                 const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
 
                 await expect(page.getFile('path/to/root', user)).resolves.toBeDefined();
+            });
+        });
+    });
+
+    describe('writeFile', () => {
+        const writeContent = 'some-content';
+        const writeContentBuf = Buffer.from('some-content');
+
+        beforeEach(() => {
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            mockStorage.listContentChildren.mockResolvedValue([]);
+            const parsedYaml = { title: 'Some Title', allowWrite: 'role1' };
+            mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+            mockYAMLparse.mockReturnValue(parsedYaml);
+        });
+
+        describe('throws error', () => {
+            const user = { id: 'some-user', roles: ['role1'] };
+
+            it('for a root object if the object\'s root/index.md file does not exist', async () => {
+                mockStorage.contentFileExists.mockReturnValue(false);
+    
+                const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
+                await expect(page.writeFile('path/to/root', writeContent, user)).rejects.toThrow(NotFoundError);
+    
+                expect(mockStorage.contentFileExists).toBeCalledWith('path/to/root/index.md');
+            });
+    
+            it('for a non-root object if the object\'s api path does not end in md', async () => {
+                const page = new MarkdownRecurse('path/to/file', config, mockStorage);
+                await expect(page.writeFile('path/to/file', writeContent, user)).rejects.toThrow(NotFoundError);
+    
+                expect(mockStorage.contentFileExists).not.toBeCalled();
+            });
+    
+            it('for a non-root object if the object\'s content file does not exist', async () => {
+                mockStorage.contentFileExists.mockReturnValue(false);
+    
+                const page = new MarkdownRecurse('path/to/file.md', config, mockStorage);
+                await expect(page.writeFile('path/to/file.md', writeContent, user)).rejects.toThrow(NotFoundError);
+    
+                expect(mockStorage.contentFileExists).toBeCalledWith('path/to/file.md');
+            });
+
+            it('if any object in the path does not have a markdown file associated with it', async () => {
+                mockStorage.contentFileExists.mockImplementation((file) => {
+                    return !file.endsWith('to.md');
+                });
+
+                const page = new MarkdownRecurse('root', config, mockStorage, true);
+                await expect(page.writeFile('root/path/to/page.md', writeContent, user)).rejects.toThrow(NotFoundError);
+
+                expect(mockStorage.contentFileExists).toBeCalledTimes(3);
+                expect(mockStorage.contentFileExists.mock.calls[0][0]).toBe('root/index.md');
+                expect(mockStorage.contentFileExists.mock.calls[1][0]).toBe('root/path.md');
+                expect(mockStorage.contentFileExists.mock.calls[2][0]).toBe('root/path/to.md');
+            });
+        });
+
+        describe('writes the content file where the user is authorised', () => {
+            const user = { id: 'some-user', roles: ['role1'] };
+
+            beforeEach(() => {
+                mockStorage.contentFileExists.mockReturnValue(true);
+            });
+
+            it('writes to the index.md content file for a root object where the targetPath matches the first object', async () => {
+                const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
+
+                await page.writeFile('path/to/root', writeContent, user);
+
+                expect(mockStorage.storeContentFile).toBeCalledWith('path/to/root/index.md', writeContentBuf);
+            });
+
+            it('writes to the requested content file for a non-root object where the targetPath matches the first object', async () => {
+                const page = new MarkdownRecurse('path/to/file.md', config, mockStorage);
+
+                await page.writeFile('path/to/file.md', writeContent, user);
+
+                expect(mockStorage.storeContentFile).toBeCalledWith('path/to/file.md', writeContentBuf);
+            });
+
+            it('recurses through objects for a long path and writes to the file from the last object', async () => {
+                const page = new MarkdownRecurse('root', config, mockStorage, true);
+
+                await page.writeFile('root/path/to/page.md', writeContent, user);
+
+                expect(mockStorage.contentFileExists).toBeCalledTimes(4);
+                expect(mockStorage.contentFileExists.mock.calls[0][0]).toBe('root/index.md');
+                expect(mockStorage.contentFileExists.mock.calls[1][0]).toBe('root/path.md');
+                expect(mockStorage.contentFileExists.mock.calls[2][0]).toBe('root/path/to.md');
+                expect(mockStorage.contentFileExists.mock.calls[3][0]).toBe('root/path/to/page.md');
+                expect(mockStorage.storeContentFile).toBeCalledWith('root/path/to/page.md', writeContentBuf);
+            });
+        });
+
+        describe('restricts write access', () => {
+            beforeEach(() => {
+                mockStorage.contentFileExists.mockReturnValue(true);
+                const parsedYaml = { title: 'Some Title', allowWrite: 'role1' };
+                mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+                mockYAMLparse.mockReturnValue(parsedYaml);
+            });
+
+            it('throws if no user is entered', async () => {
+                const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
+
+                await expect(page.writeFile('path/to/root', writeContent)).rejects.toThrow(NotPermittedError);
+            });
+
+            it('throws if user is not admin and does not have explicit write permission', async () => {
+                const user = { id: 'some-user', roles: ['role2', 'role3'] };
+                const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
+
+                await expect(page.writeFile('path/to/root', writeContent, user)).rejects.toThrow(NotPermittedError);
+            });
+
+            it('does not throw if user has explicit write permission', async () => {
+                const user = { id: 'some-user', roles: ['role1', 'role2', 'role3'] };
+                const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
+
+                await expect(page.writeFile('path/to/root', writeContent, user)).resolves.toBeUndefined();
+            });
+
+            it('does not throw if user has admin rights', async () => {
+                const user = { id: 'some-user', roles: ['admin'] };
+                const page = new MarkdownRecurse('path/to/root', config, mockStorage, true);
+
+                await expect(page.writeFile('path/to/root', writeContent, user)).resolves.toBeUndefined();
             });
         });
     });

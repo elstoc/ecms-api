@@ -25,6 +25,7 @@ const mockStorage = {
     getAdminFile: jest.fn() as jest.Mock,
     storeAdminFile: jest.fn() as jest.Mock,
     getAdminFileModifiedTime: jest.fn() as jest.Mock,
+    storeContentFile: jest.fn() as jest.Mock,
 };
 
 const mockGallery = Gallery as jest.Mock;

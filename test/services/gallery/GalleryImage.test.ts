@@ -25,6 +25,7 @@ const mockStorage = {
     getAdminFile: jest.fn() as jest.Mock,
     storeAdminFile: jest.fn() as jest.Mock,
     getAdminFileModifiedTime: jest.fn() as jest.Mock,
+    storeContentFile: jest.fn() as jest.Mock,
 };
 
 const getExifMock = getExif as jest.Mock;
@@ -57,7 +58,7 @@ describe('GalleryImage', () => {
         it('throws an error if the source image does not exist', async () => {
             mockStorage.contentFileExists.mockReturnValue(false);
 
-            await expect(galleryImage.getFile('thumb'))
+            await expect(galleryImage.getFile(ImageSize.thumb))
                 .rejects.toThrow(new NotFoundError(`Source file ${imagePath} does not exist`));
             expect(mockStorage.contentFileExists).toBeCalledWith(imagePath);
         });

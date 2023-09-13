@@ -8,5 +8,6 @@ export interface ISite {
     getGalleryImage(apiPath: string, size: string): Promise<Buffer>;
     getGalleryImages(apiPath: string, limit?: number): Promise<GalleryImages>;
     getMarkdownFile(apiPath: string, user?: User): Promise<Buffer>;
+    writeMarkdownFile(apiPath: string, content: string, user?: User): Promise<void>;
     getMarkdownStructure(apiPath: string, user?: User): Promise<MarkdownStructure | undefined>;
 }

@@ -20,6 +20,7 @@ const mockStorage = {
     getAdminFile: jest.fn() as jest.Mock,
     storeAdminFile: jest.fn() as jest.Mock,
     getAdminFileModifiedTime: jest.fn() as jest.Mock,
+    storeContentFile: jest.fn() as jest.Mock,
 };
 const mockSiteComponent = SiteComponent as jest.Mock;
 
@@ -235,8 +236,8 @@ describe('Site', () => {
         });
     });
 
-    describe('sendMarkdownFile', () => {
-        it('runs sendFile on the appropriate markdown object', async () => {
+    describe('getMarkdownFile', () => {
+        it('runs getFile on the appropriate markdown object', async () => {
             const getFile = jest.fn();
             mockSiteComponent.mockImplementation(() => ({
                 getMarkdown: () => ({ getFile })
@@ -247,6 +248,21 @@ describe('Site', () => {
             await site.getMarkdownFile('component02/path/to/file', user);
 
             expect(getFile).toBeCalledWith('component02/path/to/file', user);
+        });
+    });
+
+    describe('writeMarkdownFile', () => {
+        it('runs writeFile on the appropriate markdown object', async () => {
+            const writeFile = jest.fn();
+            mockSiteComponent.mockImplementation(() => ({
+                getMarkdown: () => ({ writeFile })
+            }));
+            const user = { id: 'some-user' };
+
+            const site = new Site(config, mockStorage);
+            await site.writeMarkdownFile('component02/path/to/file', 'some-content', user);
+
+            expect(writeFile).toBeCalledWith('component02/path/to/file', 'some-content', user);
         });
     });
 });

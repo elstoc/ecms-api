@@ -251,6 +251,26 @@ describe('LocalFileStorageAdapter', () => {
         });
     });
 
+    describe('storeContentFile', () => {
+        it('creates directories if they do not exist', async () => {
+            existsSyncMock.mockReturnValue(false);
+            await storage.storeContentFile('dir/file', Buffer.from('file-contents'));
+            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/content/dir`, { recursive: true });
+        });
+
+        it('does not create directories if they do exist', async () => {
+            existsSyncMock.mockReturnValue(true);
+            await storage.storeContentFile('dir/file', Buffer.from('file-contents'));
+            expect(mkdirSyncMock).not.toBeCalled();
+        });
+
+        it('attempts to store the file with the correct parameters', async () => {
+            existsSyncMock.mockReturnValue(true);
+            await storage.storeContentFile('dir/file', Buffer.from('file-contents'));
+            expect(promiseWriteFileMock).toBeCalledWith(`${dataDir}/content/dir/file`, Buffer.from('file-contents'));
+        });
+    });
+
     describe('storeGeneratedFile', () => {
         it('creates directories if they do not exist', async () => {
             existsSyncMock.mockReturnValue(false);

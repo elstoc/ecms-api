@@ -5,6 +5,7 @@ export interface IStorageAdapter {
     getContentFile(apiPath: string): Promise<Buffer>;
     getAdminFile(adminPath: string): Promise<Buffer>;
     getGeneratedFile(apiPath: string, tag: string): Promise<Buffer>;
+    storeContentFile(apiPath: string, fileBuffer: Buffer): Promise<void>;
     storeGeneratedFile(apiPath: string, tag: string, fileBuffer: Buffer): Promise<void>;
     storeAdminFile(adminPath: string, fileBuffer: Buffer): Promise<void>;
     generatedFileIsOlder(apiPath: string, tag: string): boolean;

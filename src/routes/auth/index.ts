@@ -7,7 +7,6 @@ import { createPostAuthChangePasswordHandler } from './postAuthChangePasswordHan
 import { createPostAuthLoginHandler } from './postAuthLoginHandler';
 import { createPostAuthLogoutHandler } from './postAuthLogoutHandler';
 import { createPostAuthRefreshHandler } from './postAuthRefreshHandler';
-import { createGetUserInfoFromHeader } from '../getUserInfoFromHeader';
 import { IAuth } from '../../services';
 
 export const createAuthRouter = (auth: IAuth, logger: Logger): Router => {

@@ -9,11 +9,12 @@ export const createPutMarkdownFileHandler = (site: ISite, logger: winston.Logger
     logger.debug(`storing md file ${mdPath}`);
     try {
         if (!req.user || req.user.id === 'guest') {
-            throw NotPermittedError;
+            throw new NotPermittedError('User must be logged in to update markdown files');
         }
         const { fileContents } = req.body;
         await site.writeMarkdownFile(mdPath, fileContents, req.user);
+        res.sendStatus(200);
     } catch (err: unknown) {
-        handleError(req, res, err);
+        handleError(req, res, err, logger);
     }
 };

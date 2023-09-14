@@ -14,6 +14,6 @@ export const createGetImageListHandler = (site: ISite, logger: winston.Logger): 
         if (err instanceof Error) {
             logger.error(`Error getting image list ${path}: ${err.message}`);
         }
-        handleError(req, res, err);
+        handleError(req, res, err, logger);
     }
 };

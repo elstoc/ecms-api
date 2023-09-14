@@ -12,6 +12,6 @@ export const createGetSiteNavHandler = (site: ISite, logger: winston.Logger): Re
         if (err instanceof Error) {
             logger.error(`Error getting site nav: ${err.message}`);
         }
-        handleError(req, res, err);
+        handleError(req, res, err, logger);
     }
 };

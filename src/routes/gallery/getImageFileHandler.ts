@@ -13,6 +13,6 @@ export const createGetImageFileHandler = (site: ISite, logger: winston.Logger): 
         if (err instanceof Error) {
             logger.error(`Error getting image ${path} ${size}: ${err.message}`);
         }
-        handleError(req, res, err);
+        handleError(req, res, err, logger);
     }
 };

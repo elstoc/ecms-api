@@ -10,6 +10,6 @@ export const createGetMarkdownFileHandler = (site: ISite, logger: winston.Logger
         const mdFileBuf = await site.getMarkdownFile(mdPath, req.user);
         res.send(mdFileBuf);
     } catch (err: unknown) {
-        handleError(req, res, err);
+        handleError(req, res, err, logger);
     }
 };

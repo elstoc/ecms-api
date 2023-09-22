@@ -13,7 +13,7 @@ export type MarkdownTree = {
 }
 
 export interface IMarkdown {
-    getMdStructure(user?: User): Promise<MarkdownTree | undefined>;
+    getTree(user?: User): Promise<MarkdownTree | undefined>;
     getFile(apiPath: string, user?: User): Promise<Buffer>;
     writeFile(apiPath: string, content: string, user?: User): Promise<void>;
 }

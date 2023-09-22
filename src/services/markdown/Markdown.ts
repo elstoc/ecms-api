@@ -117,14 +117,14 @@ export class Markdown implements IMarkdown {
         return YAML.parse(yaml);
     }
     
-    public async getMdStructure(user?: User): Promise<MarkdownTree | undefined> {
+    public async getTree(user?: User): Promise<MarkdownTree | undefined> {
         this.throwIfNoContentFile();
         const metadata = await this.getMetadata();
         if (!userHasReadAccess(user, this.metadata?.restrict)) {
             return undefined;
         }
         const childObjects = await this.getChildren();
-        const childStructPromises = childObjects.map((child) => child.getMdStructure(user));
+        const childStructPromises = childObjects.map((child) => child.getTree(user));
         const children = await Promise.all(childStructPromises);
         const sortedChildren = sortByWeightAndTitle<MarkdownTree>(children);
 

@@ -213,22 +213,22 @@ describe('Site', () => {
     });
 
     describe('getMarkdownTree', () => {
-        it('runs getMdStructure on the appropriate markdown object', async () => {
+        it('runs getTree on the appropriate markdown object', async () => {
             mockSiteComponent.mockImplementation((_, inputFilePath) => ({
-                getMarkdown: () => ({ getMdStructure: (user: User) => `${inputFilePath}-${user.id}` })
+                getMarkdown: () => ({ getTree: (user: User) => `${inputFilePath}-${user.id}` })
             }));
             const user = { id: 'some-user' };
 
             const site = new Site(config, mockStorage);
-            const actualMarkdownStructure = await site.getMarkdownTree('component02', user);
+            const actualMarkdownTree = await site.getMarkdownTree('component02', user);
 
-            const expectedMarkdownStructure = 'component02-some-user';
-            expect(actualMarkdownStructure).toBe(expectedMarkdownStructure);
+            const expectedMarkdownTree = 'component02-some-user';
+            expect(actualMarkdownTree).toBe(expectedMarkdownTree);
         });
 
         it('throws NotPermittedError if returned structure is undefined', async () => {
             mockSiteComponent.mockImplementation(() => ({
-                getMarkdown: () => ({ getMdStructure: () => undefined })
+                getMarkdown: () => ({ getTree: () => undefined })
             }));
 
             const site = new Site(config, mockStorage);

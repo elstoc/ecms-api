@@ -53,7 +53,7 @@ export class Site implements ISite {
 
     public async getMarkdownTree(apiPath: string, user?: User): Promise<MarkdownTree | undefined> {
         const markdown = await this.getRootComponent(apiPath).getMarkdown();
-        const structure = await markdown.getMdStructure(user);
+        const structure = await markdown.getTree(user);
         if (!structure) {
             throw new NotPermittedError();
         }

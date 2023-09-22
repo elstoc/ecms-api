@@ -185,9 +185,9 @@ describe('Site', () => {
     });
 
     describe('getGalleryContents', () => {
-        it('runs getImages on the appropriate gallery object', async () => {
+        it('runs getContents on the appropriate gallery object', async () => {
             mockSiteComponent.mockImplementation((_, inputFilePath) => ({
-                getGallery: () => ({ getImages: (limit: number) => `${inputFilePath}-${limit}-metadata` })
+                getGallery: () => ({ getContents: (limit: number) => `${inputFilePath}-${limit}-metadata` })
             }));
 
             const site = new Site(config, mockStorage);

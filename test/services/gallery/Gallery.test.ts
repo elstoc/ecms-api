@@ -40,7 +40,7 @@ const GalleryImageMock = GalleryImage as jest.Mock;
 describe('Gallery', () => {
     let gallery: Gallery;
     
-    describe('getImages', () => {
+    describe('getContents', () => {
         beforeEach(() => {
             gallery = new Gallery('gallery', config, mockStorage);
             mockStorage.listContentChildren.mockImplementation(async (_, fileMatcher) => {
@@ -49,12 +49,12 @@ describe('Gallery', () => {
         });
     
         it('only creates GalleryImage instances for files it has not seen before', async () => {
-            await gallery.getImages(3);
-            await gallery.getImages(3);
+            await gallery.getContents(3);
+            await gallery.getContents(3);
             expect(GalleryImageMock).toBeCalledTimes(3);
-            await gallery.getImages(6);
+            await gallery.getContents(6);
             expect(GalleryImageMock).toBeCalledTimes(6);
-            await gallery.getImages(9);
+            await gallery.getContents(9);
             expect(GalleryImageMock).toBeCalledTimes(9);
         });
     
@@ -71,7 +71,7 @@ describe('Gallery', () => {
                     { filePath: 'gallery/image10.jpg' },
                 ]
             };
-            const returnData = await gallery.getImages(3);
+            const returnData = await gallery.getContents(3);
             expect(returnData).toStrictEqual(expectedReturnData);
         });
     
@@ -97,7 +97,7 @@ describe('Gallery', () => {
                     { filePath: 'gallery/image01.jpg' },
                 ]
             };
-            const returnData = await gallery.getImages();
+            const returnData = await gallery.getContents();
             expect(returnData).toStrictEqual(expectedReturnData);
         });
     

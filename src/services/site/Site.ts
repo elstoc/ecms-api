@@ -43,7 +43,7 @@ export class Site implements ISite {
 
     public async getGalleryContents(apiPath: string, limit?: number): Promise<GalleryContents> {
         const gallery = await this.getRootComponent(apiPath).getGallery();
-        return gallery.getImages(limit);
+        return gallery.getContents(limit);
     }
 
     public async getGalleryImageFile(apiPath: string, size: string): Promise<Buffer> {

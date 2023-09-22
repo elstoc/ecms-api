@@ -16,7 +16,7 @@ export class Gallery implements IGallery {
         this.apiPath = apiPath.replace(/^\//, '');
     }
 
-    public async getImages(limit?: number): Promise<GalleryContents> {
+    public async getContents(limit?: number): Promise<GalleryContents> {
         const imageFileNames = (await this.getJpegFileNames()).sort().reverse();
         const imageCount = imageFileNames.length;
 

@@ -3,7 +3,7 @@ import { RequestHandler } from '../RequestHandler';
 import { handleError } from '../handleError';
 import { ISite } from '../../services';
 
-export const createGetImageListHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res) => {
+export const createGetGalleryContentsHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res) => {
     const { path } = req.params;
     try {
         const limit = parseInt(req.query.limit?.toString() ?? '0');

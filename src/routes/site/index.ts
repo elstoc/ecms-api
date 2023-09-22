@@ -2,16 +2,16 @@ import { Router } from 'express';
 import { Logger } from 'winston';
 
 import { ISite } from '../../services';
-import { createGetSiteNavHandler } from './getSiteNavHandler';
+import { createGetSiteComponentsHandler } from './getSiteComponentsHandler';
 
 export const createSiteRouter = (site: ISite, logger: Logger): Router => {
     const router = Router();
 
-    const getSiteNavHandler = createGetSiteNavHandler(site, logger);
+    const getSiteComponentsHandler = createGetSiteComponentsHandler(site, logger);
 
     router.get(
-        '/nav',
-        getSiteNavHandler
+        '/components',
+        getSiteComponentsHandler
     );
 
     return router;

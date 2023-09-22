@@ -1,2 +1,2 @@
-export { MarkdownTreeComponent } from './MarkdownTreeComponent';
-export { MarkdownTree, IMarkdownTreeComponent } from './IMarkdownTreeComponent';
+export { Markdown } from './Markdown';
+export { MarkdownTree, IMarkdown } from './IMarkdown';

@@ -184,21 +184,21 @@ describe('Site', () => {
 
     });
 
-    describe('getGalleryImages', () => {
+    describe('getGalleryContents', () => {
         it('runs getImages on the appropriate gallery object', async () => {
             mockSiteComponent.mockImplementation((_, inputFilePath) => ({
                 getGallery: () => ({ getImages: (limit: number) => `${inputFilePath}-${limit}-metadata` })
             }));
 
             const site = new Site(config, mockStorage);
-            const actualGallerydata = await site.getGalleryImages('component01', 30);
+            const actualGallerydata = await site.getGalleryContents('component01', 30);
 
             const expectedGallerydata = 'component01-30-metadata';
             expect(actualGallerydata).toBe(expectedGallerydata);
         });
     });
 
-    describe('getGalleryImage', () => {
+    describe('getGalleryImageFile', () => {
         it('calls getImageFile on the appropriate gallery object', async () => {
             const getImageFile = jest.fn();
             mockSiteComponent.mockImplementation(() => ({
@@ -206,13 +206,13 @@ describe('Site', () => {
             }));
 
             const site = new Site(config, mockStorage);
-            await site.getGalleryImage('component01/image1.jpg', 'thumb');
+            await site.getGalleryImageFile('component01/image1.jpg', 'thumb');
 
             expect(getImageFile).toBeCalledWith('component01/image1.jpg', 'thumb');
         });
     });
 
-    describe('getMarkdownStructure', () => {
+    describe('getMarkdownTree', () => {
         it('runs getMdStructure on the appropriate markdown object', async () => {
             mockSiteComponent.mockImplementation((_, inputFilePath) => ({
                 getMarkdown: () => ({ getMdStructure: (user: User) => `${inputFilePath}-${user.id}` })
@@ -220,7 +220,7 @@ describe('Site', () => {
             const user = { id: 'some-user' };
 
             const site = new Site(config, mockStorage);
-            const actualMarkdownStructure = await site.getMarkdownStructure('component02', user);
+            const actualMarkdownStructure = await site.getMarkdownTree('component02', user);
 
             const expectedMarkdownStructure = 'component02-some-user';
             expect(actualMarkdownStructure).toBe(expectedMarkdownStructure);
@@ -232,7 +232,7 @@ describe('Site', () => {
             }));
 
             const site = new Site(config, mockStorage);
-            await expect(site.getMarkdownStructure('component02')).rejects.toThrow(NotPermittedError);
+            await expect(site.getMarkdownTree('component02')).rejects.toThrow(NotPermittedError);
         });
     });
 

@@ -12,7 +12,7 @@ export type MarkdownTree = {
     children?: MarkdownTree[];
 }
 
-export interface IMarkdownTreeComponent {
+export interface IMarkdown {
     getMdStructure(user?: User): Promise<MarkdownTree | undefined>;
     getFile(apiPath: string, user?: User): Promise<Buffer>;
     writeFile(apiPath: string, content: string, user?: User): Promise<void>;

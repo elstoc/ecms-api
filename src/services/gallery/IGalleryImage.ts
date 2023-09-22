@@ -9,7 +9,7 @@ export type Dimensions = {
     height: number | undefined;
 };
 
-export type ImageData = {
+export type ImageMetadata = {
     fileName: string;
     description?: string;
     exif: { [key: string]: string | undefined };
@@ -19,6 +19,6 @@ export type ImageData = {
 }
 
 export interface IGalleryImage {
-    getImageData(): Promise<ImageData>;
+    getImageMetadata(): Promise<ImageMetadata>;
     getFile(size: ImageSize): Promise<Buffer>;
 }

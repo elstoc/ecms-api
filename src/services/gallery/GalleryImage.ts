@@ -1,6 +1,6 @@
 import { basename } from 'path';
 
-import { IGalleryImage, ImageData, ImageSize } from './IGalleryImage';
+import { IGalleryImage, ImageMetadata, ImageSize } from './IGalleryImage';
 import { getExif, resizeImage, getImageDimensions, Config } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { NotFoundError } from '../../errors';
@@ -14,7 +14,7 @@ const RESIZE_OPTIONS = {
 export class GalleryImage implements IGalleryImage {
     private imageDataFromSourceFileTime = -1;
 
-    private imageData?: ImageData;
+    private imageMetadata?: ImageMetadata;
 
     public constructor(
         private config: Config,
@@ -22,13 +22,13 @@ export class GalleryImage implements IGalleryImage {
         private storage: IStorageAdapter
     ) { }
     
-    public async getImageData(): Promise<ImageData> {
+    public async getImageMetadata(): Promise<ImageMetadata> {
         this.throwIfNoSourceFile();
 
         const sourceModifiedTime = this.storage.getContentFileModifiedTime(this.contentPath);
 
-        if (this.imageData && sourceModifiedTime <= this.imageDataFromSourceFileTime) {
-            return this.imageData;
+        if (this.imageMetadata && sourceModifiedTime <= this.imageDataFromSourceFileTime) {
+            return this.imageMetadata;
         }
         
         const [thumbFileBuf, exifFileBuf] = await Promise.all([
@@ -46,7 +46,7 @@ export class GalleryImage implements IGalleryImage {
 
         this.imageDataFromSourceFileTime = sourceModifiedTime;
 
-        this.imageData =  {
+        this.imageMetadata =  {
             fileName: basename(this.contentPath),
             description,
             exif,
@@ -55,7 +55,7 @@ export class GalleryImage implements IGalleryImage {
             fhdSrcUrl: this.getSourceUrl(ImageSize.fhd)
         };
 
-        return this.imageData;
+        return this.imageMetadata;
     }
 
     private throwIfNoSourceFile(): void {

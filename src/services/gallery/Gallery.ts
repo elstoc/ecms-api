@@ -1,6 +1,6 @@
-import { IGallery, GalleryImages } from './IGallery';
+import { IGallery, GalleryContents } from './IGallery';
 import { GalleryImage } from './GalleryImage';
-import { ImageData, ImageSize } from './IGalleryImage';
+import { ImageMetadata, ImageSize } from './IGalleryImage';
 import { Config } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
@@ -16,7 +16,7 @@ export class Gallery implements IGallery {
         this.apiPath = apiPath.replace(/^\//, '');
     }
 
-    public async getImages(limit?: number): Promise<GalleryImages> {
+    public async getImages(limit?: number): Promise<GalleryContents> {
         const imageFileNames = (await this.getJpegFileNames()).sort().reverse();
         const imageCount = imageFileNames.length;
 
@@ -29,9 +29,9 @@ export class Gallery implements IGallery {
         return { imageCount, images };
     }
 
-    private async getImageMetadata(apiPath: string): Promise<ImageData> {
+    private async getImageMetadata(apiPath: string): Promise<ImageMetadata> {
         const image = this.getGalleryImage(apiPath);
-        return await image.getImageData();
+        return await image.getImageMetadata();
     }
 
     public async getImageFile(apiPath: string, size: ImageSize): Promise<Buffer> {

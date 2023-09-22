@@ -1,5 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { MarkdownTreeComponent } from '../../../src/services/markdown/MarkdownTreeComponent';
+import { Markdown } from '../../../src/services/markdown/Markdown';
 import YAML from 'yaml';
 import { splitFrontMatter } from '../../../src/utils/markdown/splitFrontMatter';
 import { NotFoundError, NotPermittedError } from '../../../src/errors';
@@ -29,7 +29,7 @@ const mockStorage = {
 const mockYAMLparse = YAML.parse as jest.Mock;
 const mockSplitFrontMatter = splitFrontMatter as jest.Mock;
 
-describe('MarkdownTreeComponent', () => {
+describe('Markdown', () => {
     const contentFileBuf = Buffer.from('content-file');
 
     describe('getFile', () => {
@@ -45,14 +45,14 @@ describe('MarkdownTreeComponent', () => {
             it('for a root object if the object\'s root/index.md file does not exist', async () => {
                 mockStorage.contentFileExists.mockReturnValue(false);
     
-                const page = new MarkdownTreeComponent('path/to/root', config, mockStorage, true);
+                const page = new Markdown('path/to/root', config, mockStorage, true);
                 await expect(page.getFile('path/to/root')).rejects.toThrow(NotFoundError);
     
                 expect(mockStorage.contentFileExists).toBeCalledWith('path/to/root/index.md');
             });
     
             it('for a non-root object if the object\'s api path does not end in md', async () => {
-                const page = new MarkdownTreeComponent('path/to/file', config, mockStorage);
+                const page = new Markdown('path/to/file', config, mockStorage);
                 await expect(page.getFile('path/to/file')).rejects.toThrow(NotFoundError);
     
                 expect(mockStorage.contentFileExists).not.toBeCalled();
@@ -61,7 +61,7 @@ describe('MarkdownTreeComponent', () => {
             it('for a non-root object if the object\'s content file does not exist', async () => {
                 mockStorage.contentFileExists.mockReturnValue(false);
     
-                const page = new MarkdownTreeComponent('path/to/file.md', config, mockStorage);
+                const page = new Markdown('path/to/file.md', config, mockStorage);
                 await expect(page.getFile('path/to/file.md')).rejects.toThrow(NotFoundError);
     
                 expect(mockStorage.contentFileExists).toBeCalledWith('path/to/file.md');
@@ -72,7 +72,7 @@ describe('MarkdownTreeComponent', () => {
                     return !file.endsWith('to.md');
                 });
 
-                const page = new MarkdownTreeComponent('root', config, mockStorage, true);
+                const page = new Markdown('root', config, mockStorage, true);
                 await expect(page.getFile('root/path/to/page.md')).rejects.toThrow(NotFoundError);
 
                 expect(mockStorage.contentFileExists).toBeCalledTimes(3);
@@ -88,7 +88,7 @@ describe('MarkdownTreeComponent', () => {
             });
 
             it('returns the index.md content file for a root object where the targetPath matches the first object', async () => {
-                const page = new MarkdownTreeComponent('path/to/root', config, mockStorage, true);
+                const page = new Markdown('path/to/root', config, mockStorage, true);
 
                 const actualFileBuf = await page.getFile('path/to/root');
 
@@ -97,7 +97,7 @@ describe('MarkdownTreeComponent', () => {
             });
 
             it('returns the requested content file for a non-root object where the targetPath matches the first object', async () => {
-                const page = new MarkdownTreeComponent('path/to/file.md', config, mockStorage);
+                const page = new Markdown('path/to/file.md', config, mockStorage);
 
                 const actualFileBuf = await page.getFile('path/to/file.md');
 
@@ -106,7 +106,7 @@ describe('MarkdownTreeComponent', () => {
             });
 
             it('recurses through objects for a long path and returns the file from the last object', async () => {
-                const page = new MarkdownTreeComponent('root', config, mockStorage, true);
+                const page = new Markdown('root', config, mockStorage, true);
 
                 const actualFileBuf = await page.getFile('root/path/to/page.md');
 
@@ -129,28 +129,28 @@ describe('MarkdownTreeComponent', () => {
             });
 
             it('throws if access is restricted and no user is entered', async () => {
-                const page = new MarkdownTreeComponent('path/to/root', config, mockStorage, true);
+                const page = new Markdown('path/to/root', config, mockStorage, true);
 
                 await expect(page.getFile('path/to/root')).rejects.toThrow(NotPermittedError);
             });
 
             it('throws if access is restricted and no user does not have permission', async () => {
                 const user = { id: 'some-user', roles: ['role2', 'role3'] };
-                const page = new MarkdownTreeComponent('path/to/root', config, mockStorage, true);
+                const page = new Markdown('path/to/root', config, mockStorage, true);
 
                 await expect(page.getFile('path/to/root', user)).rejects.toThrow(NotPermittedError);
             });
 
             it('does not throw if access is restricted and user has permission', async () => {
                 const user = { id: 'some-user', roles: ['role1', 'role2', 'role3'] };
-                const page = new MarkdownTreeComponent('path/to/root', config, mockStorage, true);
+                const page = new Markdown('path/to/root', config, mockStorage, true);
 
                 await expect(page.getFile('path/to/root', user)).resolves.toBeDefined();
             });
 
             it('does not throw if access is restricted but user has admin rights', async () => {
                 const user = { id: 'some-user', roles: ['admin'] };
-                const page = new MarkdownTreeComponent('path/to/root', config, mockStorage, true);
+                const page = new Markdown('path/to/root', config, mockStorage, true);
 
                 await expect(page.getFile('path/to/root', user)).resolves.toBeDefined();
             });
@@ -175,14 +175,14 @@ describe('MarkdownTreeComponent', () => {
             it('for a root object if the object\'s root/index.md file does not exist', async () => {
                 mockStorage.contentFileExists.mockReturnValue(false);
     
-                const page = new MarkdownTreeComponent('path/to/root', config, mockStorage, true);
+                const page = new Markdown('path/to/root', config, mockStorage, true);
                 await expect(page.writeFile('path/to/root', writeContent, user)).rejects.toThrow(NotFoundError);
     
                 expect(mockStorage.contentFileExists).toBeCalledWith('path/to/root/index.md');
             });
     
             it('for a non-root object if the object\'s api path does not end in md', async () => {
-                const page = new MarkdownTreeComponent('path/to/file', config, mockStorage);
+                const page = new Markdown('path/to/file', config, mockStorage);
                 await expect(page.writeFile('path/to/file', writeContent, user)).rejects.toThrow(NotFoundError);
     
                 expect(mockStorage.contentFileExists).not.toBeCalled();
@@ -191,7 +191,7 @@ describe('MarkdownTreeComponent', () => {
             it('for a non-root object if the object\'s content file does not exist', async () => {
                 mockStorage.contentFileExists.mockReturnValue(false);
     
-                const page = new MarkdownTreeComponent('path/to/file.md', config, mockStorage);
+                const page = new Markdown('path/to/file.md', config, mockStorage);
                 await expect(page.writeFile('path/to/file.md', writeContent, user)).rejects.toThrow(NotFoundError);
     
                 expect(mockStorage.contentFileExists).toBeCalledWith('path/to/file.md');
@@ -202,7 +202,7 @@ describe('MarkdownTreeComponent', () => {
                     return !file.endsWith('to.md');
                 });
 
-                const page = new MarkdownTreeComponent('root', config, mockStorage, true);
+                const page = new Markdown('root', config, mockStorage, true);
                 await expect(page.writeFile('root/path/to/page.md', writeContent, user)).rejects.toThrow(NotFoundError);
 
                 expect(mockStorage.contentFileExists).toBeCalledTimes(3);
@@ -220,7 +220,7 @@ describe('MarkdownTreeComponent', () => {
             });
 
             it('writes to the index.md content file for a root object where the targetPath matches the first object', async () => {
-                const page = new MarkdownTreeComponent('path/to/root', config, mockStorage, true);
+                const page = new Markdown('path/to/root', config, mockStorage, true);
 
                 await page.writeFile('path/to/root', writeContent, user);
 
@@ -228,7 +228,7 @@ describe('MarkdownTreeComponent', () => {
             });
 
             it('writes to the requested content file for a non-root object where the targetPath matches the first object', async () => {
-                const page = new MarkdownTreeComponent('path/to/file.md', config, mockStorage);
+                const page = new Markdown('path/to/file.md', config, mockStorage);
 
                 await page.writeFile('path/to/file.md', writeContent, user);
 
@@ -236,7 +236,7 @@ describe('MarkdownTreeComponent', () => {
             });
 
             it('recurses through objects for a long path and writes to the file from the last object', async () => {
-                const page = new MarkdownTreeComponent('root', config, mockStorage, true);
+                const page = new Markdown('root', config, mockStorage, true);
 
                 await page.writeFile('root/path/to/page.md', writeContent, user);
 
@@ -258,28 +258,28 @@ describe('MarkdownTreeComponent', () => {
             });
 
             it('throws if no user is entered', async () => {
-                const page = new MarkdownTreeComponent('path/to/root', config, mockStorage, true);
+                const page = new Markdown('path/to/root', config, mockStorage, true);
 
                 await expect(page.writeFile('path/to/root', writeContent)).rejects.toThrow(NotPermittedError);
             });
 
             it('throws if user is not admin and does not have explicit write permission', async () => {
                 const user = { id: 'some-user', roles: ['role2', 'role3'] };
-                const page = new MarkdownTreeComponent('path/to/root', config, mockStorage, true);
+                const page = new Markdown('path/to/root', config, mockStorage, true);
 
                 await expect(page.writeFile('path/to/root', writeContent, user)).rejects.toThrow(NotPermittedError);
             });
 
             it('does not throw if user has explicit write permission', async () => {
                 const user = { id: 'some-user', roles: ['role1', 'role2', 'role3'] };
-                const page = new MarkdownTreeComponent('path/to/root', config, mockStorage, true);
+                const page = new Markdown('path/to/root', config, mockStorage, true);
 
                 await expect(page.writeFile('path/to/root', writeContent, user)).resolves.toBeUndefined();
             });
 
             it('does not throw if user has admin rights', async () => {
                 const user = { id: 'some-user', roles: ['admin'] };
-                const page = new MarkdownTreeComponent('path/to/root', config, mockStorage, true);
+                const page = new Markdown('path/to/root', config, mockStorage, true);
 
                 await expect(page.writeFile('path/to/root', writeContent, user)).resolves.toBeUndefined();
             });
@@ -295,7 +295,7 @@ describe('MarkdownTreeComponent', () => {
             it('if the content file does not exist for a root object', async () => {
                 mockStorage.contentFileExists.mockReturnValue(false);
     
-                const page = new MarkdownTreeComponent('root', config, mockStorage, true);
+                const page = new Markdown('root', config, mockStorage, true);
     
                 await expect(() => page.getMdStructure())
                     .rejects.toThrow(new NotFoundError('No markdown file found matching path root'));
@@ -303,7 +303,7 @@ describe('MarkdownTreeComponent', () => {
             });
     
             it('if the path does not end in md for a non-root object', async () => {
-                const page = new MarkdownTreeComponent('root', config, mockStorage);
+                const page = new Markdown('root', config, mockStorage);
     
                 await expect(() => page.getMdStructure())
                     .rejects.toThrow(new NotFoundError('No markdown file found matching path root'));
@@ -313,7 +313,7 @@ describe('MarkdownTreeComponent', () => {
             it('if the content file does not exist for a non-root object', async () => {
                 mockStorage.contentFileExists.mockReturnValue(false);
     
-                const page = new MarkdownTreeComponent('root/file.md', config, mockStorage);
+                const page = new Markdown('root/file.md', config, mockStorage);
     
                 await expect(() => page.getMdStructure())
                     .rejects.toThrow(new NotFoundError('No markdown file found matching path root/file.md'));
@@ -330,7 +330,7 @@ describe('MarkdownTreeComponent', () => {
                 mockSplitFrontMatter.mockReturnValue([parsedYaml]);
                 mockYAMLparse.mockReturnValue(parsedYaml);
     
-                const page = new MarkdownTreeComponent('root/file.md', config, mockStorage);
+                const page = new Markdown('root/file.md', config, mockStorage);
                 const actualMetadata = await page.getMdStructure();
     
                 const expectedMetadata = {
@@ -358,7 +358,7 @@ describe('MarkdownTreeComponent', () => {
                 mockSplitFrontMatter.mockReturnValue([parsedYaml]);
                 mockYAMLparse.mockReturnValue(parsedYaml);
     
-                const page = new MarkdownTreeComponent('root/file.md', config, mockStorage);
+                const page = new Markdown('root/file.md', config, mockStorage);
                 const actualMetadata = await page.getMdStructure();
     
                 const expectedMetadata = {
@@ -380,7 +380,7 @@ describe('MarkdownTreeComponent', () => {
                 mockSplitFrontMatter.mockReturnValue([parsedYaml]);
                 mockYAMLparse.mockReturnValue(parsedYaml);
     
-                const page = new MarkdownTreeComponent('root/file.md', config, mockStorage);
+                const page = new Markdown('root/file.md', config, mockStorage);
                 const actualMetadata1 = await page.getMdStructure();
                 const actualMetadata2 = await page.getMdStructure();
     
@@ -409,7 +409,7 @@ describe('MarkdownTreeComponent', () => {
                 mockSplitFrontMatter.mockReturnValue([parsedYaml]);
                 mockYAMLparse.mockReturnValue(parsedYaml);
     
-                const page = new MarkdownTreeComponent('root/file.md', config, mockStorage);
+                const page = new Markdown('root/file.md', config, mockStorage);
                 const actualMetadata1 = await page.getMdStructure();
                 const actualMetadata2 = await page.getMdStructure();
     
@@ -435,7 +435,7 @@ describe('MarkdownTreeComponent', () => {
                 mockSplitFrontMatter.mockReturnValue([parsedYaml]);
                 mockYAMLparse.mockReturnValue(parsedYaml);
     
-                const page = new MarkdownTreeComponent('root/file.md', config, mockStorage);
+                const page = new Markdown('root/file.md', config, mockStorage);
                 const actualMetadata = await page.getMdStructure();
     
                 const expectedMetadata = {
@@ -466,7 +466,7 @@ describe('MarkdownTreeComponent', () => {
                 mockSplitFrontMatter.mockReturnValue(['']);
                 mockYAMLparse.mockReturnValue({});
     
-                const page = new MarkdownTreeComponent('rootDir', config, mockStorage, true);
+                const page = new Markdown('rootDir', config, mockStorage, true);
     
                 const expectedStructure = {
                     children: [
@@ -492,7 +492,7 @@ describe('MarkdownTreeComponent', () => {
                 mockSplitFrontMatter.mockReturnValue(['']);
                 mockYAMLparse.mockReturnValue({});
     
-                const page = new MarkdownTreeComponent('rootDir.md', config, mockStorage, false);
+                const page = new Markdown('rootDir.md', config, mockStorage, false);
     
                 const expectedStructure = {
                     title: 'rootDir', apiPath: 'rootDir.md', additionalData: {},
@@ -512,7 +512,7 @@ describe('MarkdownTreeComponent', () => {
                 mockSplitFrontMatter.mockReturnValue(['']);
                 mockYAMLparse.mockReturnValue({});
     
-                const page = new MarkdownTreeComponent('rootDir', config, mockStorage, true);
+                const page = new Markdown('rootDir', config, mockStorage, true);
     
                 const expectedStructure = {
                     children: [{ title: 'rootDir', apiPath: 'rootDir', additionalData: {} } ]
@@ -528,7 +528,7 @@ describe('MarkdownTreeComponent', () => {
                 mockSplitFrontMatter.mockReturnValue(['']);
                 mockYAMLparse.mockReturnValue({});
     
-                const page = new MarkdownTreeComponent('rootDir/page.md', config, mockStorage);
+                const page = new Markdown('rootDir/page.md', config, mockStorage);
     
                 const expectedStructure = { title: 'page', apiPath: 'rootDir/page.md', additionalData: {} };
                 const structure = await page.getMdStructure();
@@ -551,7 +551,7 @@ describe('MarkdownTreeComponent', () => {
                     return {};
                 });
     
-                const page = new MarkdownTreeComponent('rootDir.md', config, mockStorage);
+                const page = new Markdown('rootDir.md', config, mockStorage);
                 const actualStructure = await page.getMdStructure();
     
                 const expectedStructure = {
@@ -584,7 +584,7 @@ describe('MarkdownTreeComponent', () => {
                     return {};
                 });
     
-                const page = new MarkdownTreeComponent('rootDir', config, mockStorage, true);
+                const page = new Markdown('rootDir', config, mockStorage, true);
                 const actualStructure = await page.getMdStructure();
     
                 const expectedStructure = {
@@ -624,7 +624,7 @@ describe('MarkdownTreeComponent', () => {
                     return {};
                 });
     
-                const page = new MarkdownTreeComponent('rootDir', config, mockStorage, true);
+                const page = new Markdown('rootDir', config, mockStorage, true);
                 const actualStructure = await page.getMdStructure();
     
                 const expectedStructure = {
@@ -673,27 +673,27 @@ describe('MarkdownTreeComponent', () => {
             });
 
             it('returns undefined if access is restricted and no user is entered', async () => {
-                const page = new MarkdownTreeComponent('rootDir', config, mockStorage, true);
+                const page = new Markdown('rootDir', config, mockStorage, true);
 
                 await expect(page.getMdStructure()).resolves.toBeUndefined();
             });
 
             it('returns undefined if access is restricted and no user does not have permission', async () => {
-                const page = new MarkdownTreeComponent('rootDir', config, mockStorage, true);
+                const page = new Markdown('rootDir', config, mockStorage, true);
                 const user = { id: 'some-user', roles: ['role2', 'role3'] };
 
                 await expect(page.getMdStructure(user)).resolves.toBeUndefined();
             });
 
             it('returns value if access is restricted and user has permission', async () => {
-                const page = new MarkdownTreeComponent('rootDir', config, mockStorage, true);
+                const page = new Markdown('rootDir', config, mockStorage, true);
                 const user = { id: 'some-user', roles: ['role1', 'role3'] };
 
                 await expect(page.getMdStructure(user)).resolves.toBeDefined();
             });
 
             it('returns value if access is restricted but user has admin rights', async () => {
-                const page = new MarkdownTreeComponent('rootDir', config, mockStorage, true);
+                const page = new Markdown('rootDir', config, mockStorage, true);
                 const user = { id: 'some-user', roles: ['admin'] };
 
                 await expect(page.getMdStructure(user)).resolves.toBeDefined();

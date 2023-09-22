@@ -3,7 +3,7 @@ import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
 import { ISite } from './ISite';
 import { SiteComponent } from './SiteComponent';
 import { Config, sortByWeightAndTitle } from '../../utils';
-import { GalleryImages, ImageSize } from '../gallery';
+import { GalleryContents, ImageSize } from '../gallery';
 import { MarkdownTree } from '../markdown';
 import { IStorageAdapter } from '../../adapters';
 import { User } from '../auth';
@@ -41,17 +41,17 @@ export class Site implements ISite {
         return component.getMetadata(user);
     }
 
-    public async getGalleryImages(apiPath: string, limit?: number): Promise<GalleryImages> {
+    public async getGalleryContents(apiPath: string, limit?: number): Promise<GalleryContents> {
         const gallery = await this.getRootComponent(apiPath).getGallery();
         return gallery.getImages(limit);
     }
 
-    public async getGalleryImage(apiPath: string, size: string): Promise<Buffer> {
+    public async getGalleryImageFile(apiPath: string, size: string): Promise<Buffer> {
         const gallery = await this.getRootComponent(apiPath).getGallery();
         return gallery.getImageFile(apiPath, size as ImageSize);
     }
 
-    public async getMarkdownStructure(apiPath: string, user?: User): Promise<MarkdownTree | undefined> {
+    public async getMarkdownTree(apiPath: string, user?: User): Promise<MarkdownTree | undefined> {
         const markdown = await this.getRootComponent(apiPath).getMarkdown();
         const structure = await markdown.getMdStructure(user);
         if (!structure) {

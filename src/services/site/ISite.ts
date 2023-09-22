@@ -1,13 +1,13 @@
 import { User } from '../auth';
-import { GalleryImages } from '../gallery/IGallery';
-import { MarkdownTree } from '../markdown/IMarkdownTreeComponent';
+import { GalleryContents } from '../gallery/IGallery';
+import { MarkdownTree } from '../markdown/IMarkdown';
 import { ComponentMetadata } from './ISiteComponent';
 
 export interface ISite {
     listComponents(user?: User): Promise<ComponentMetadata[]>;
-    getGalleryImage(apiPath: string, size: string): Promise<Buffer>;
-    getGalleryImages(apiPath: string, limit?: number): Promise<GalleryImages>;
+    getGalleryImageFile(apiPath: string, size: string): Promise<Buffer>;
+    getGalleryContents(apiPath: string, limit?: number): Promise<GalleryContents>;
     getMarkdownFile(apiPath: string, user?: User): Promise<Buffer>;
     writeMarkdownFile(apiPath: string, content: string, user?: User): Promise<void>;
-    getMarkdownStructure(apiPath: string, user?: User): Promise<MarkdownTree | undefined>;
+    getMarkdownTree(apiPath: string, user?: User): Promise<MarkdownTree | undefined>;
 }

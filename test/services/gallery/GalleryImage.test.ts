@@ -102,7 +102,7 @@ describe('GalleryImage', () => {
         });
     });
 
-    describe('getImageData', () => {
+    describe('getImageMetadata', () => {
         const originalFileBuf = Buffer.from('original-file');
         const thumbFileBuf = Buffer.from('thumb-file');
         const exifFileBuf = Buffer.from('exif-file');
@@ -126,7 +126,7 @@ describe('GalleryImage', () => {
 
         it('throws an error if the source image does not exist', async () => {
             mockStorage.contentFileExists.mockReturnValue(false);
-            await expect(galleryImage.getImageData())
+            await expect(galleryImage.getImageMetadata())
                 .rejects.toThrow(new NotFoundError('Source file gallery/image.jpg does not exist'));
         });
 
@@ -139,7 +139,7 @@ describe('GalleryImage', () => {
                 opts.stripExif ? thumbFileBuf : exifFileBuf
             ));
 
-            const actualMetadata = await galleryImage.getImageData();
+            const actualMetadata = await galleryImage.getImageMetadata();
 
             expect(actualMetadata).toStrictEqual(expectedMetadata);
             expect(getExif).toBeCalledTimes(1);
@@ -163,13 +163,13 @@ describe('GalleryImage', () => {
                 opts.stripExif ? thumbFileBuf : exifFileBuf
             ));
 
-            const actualMetadata1 = await galleryImage.getImageData();
-            const actualMetadata2 = await galleryImage.getImageData();
+            const actualMetadata1 = await galleryImage.getImageMetadata();
+            const actualMetadata2 = await galleryImage.getImageMetadata();
 
             expect(actualMetadata1).toStrictEqual(expectedMetadata);
             expect(actualMetadata2).toStrictEqual(actualMetadata1);
 
-            //the following function calls are from the first call to getImageData
+            //the following function calls are from the first call to getImageMetadata
             expect(getExif).toBeCalledTimes(1);
             expect(resizeImage).toBeCalledTimes(2);
             expect(getImageDimensions).toBeCalledTimes(1);
@@ -192,8 +192,8 @@ describe('GalleryImage', () => {
                 opts.stripExif ? thumbFileBuf : exifFileBuf
             ));
 
-            const actualMetadata1 = await galleryImage.getImageData();
-            const actualMetadata2 = await galleryImage.getImageData();
+            const actualMetadata1 = await galleryImage.getImageMetadata();
+            const actualMetadata2 = await galleryImage.getImageMetadata();
 
             expect(actualMetadata1).toStrictEqual(expectedMetadata);
             expect(actualMetadata2).toStrictEqual(expectedMetadata2);
@@ -222,7 +222,7 @@ describe('GalleryImage', () => {
                 }
             };
 
-            const actualMetadata = await galleryImage.getImageData();
+            const actualMetadata = await galleryImage.getImageMetadata();
             expect(actualMetadata).toStrictEqual(expectedMetadataWithDate);
         });
     });

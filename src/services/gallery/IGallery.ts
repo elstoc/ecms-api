@@ -1,11 +1,11 @@
-import { ImageData, ImageSize } from './IGalleryImage';
+import { ImageMetadata, ImageSize } from './IGalleryImage';
 
-export type GalleryImages = {
+export type GalleryContents = {
     imageCount: number;
-    images: ImageData[];
+    images: ImageMetadata[];
 }
 
 export interface IGallery {
-    getImages(limit?: number): Promise<GalleryImages>;
+    getImages(limit?: number): Promise<GalleryContents>;
     getImageFile(apiPath: string, size: ImageSize): Promise<Buffer>;
 }

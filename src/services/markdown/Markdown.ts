@@ -2,18 +2,18 @@ import path from 'path';
 import YAML from 'yaml';
 import _ from 'lodash';
 
-import { IMarkdownTreeComponent, MarkdownTree } from './IMarkdownTreeComponent';
+import { IMarkdown, MarkdownTree } from './IMarkdown';
 import { Config, sortByWeightAndTitle, splitFrontMatter, splitPath, userHasReadAccess, userHasWriteAccess } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';
 import { User } from '../auth';
 
-export class MarkdownTreeComponent implements IMarkdownTreeComponent {
+export class Markdown implements IMarkdown {
     private apiPath: string;
     private contentPath: string;
     private childrenContentDir: string;
     private metadata?: MarkdownTree;
-    private children: { [key: string]: IMarkdownTreeComponent } = {};
+    private children: { [key: string]: IMarkdown } = {};
     private metadataFromSourceFileTime = 0;
 
     constructor(
@@ -63,7 +63,7 @@ export class MarkdownTreeComponent implements IMarkdownTreeComponent {
         }
     }
 
-    private getNextChildInTargetPath(targetApiPath: string): IMarkdownTreeComponent {
+    private getNextChildInTargetPath(targetApiPath: string): IMarkdown {
         /* split the "target path" and "directory containing this instance's children"
            into path segment arrays */
         const targetApiPathSplit = splitPath(targetApiPath);
@@ -82,8 +82,8 @@ export class MarkdownTreeComponent implements IMarkdownTreeComponent {
         return this.getChild(nextChildApiPath);
     }
 
-    private getChild(childApiPath: string): IMarkdownTreeComponent {
-        this.children[childApiPath] ??= new MarkdownTreeComponent(childApiPath, this.config, this.storage);
+    private getChild(childApiPath: string): IMarkdown {
+        this.children[childApiPath] ??= new Markdown(childApiPath, this.config, this.storage);
         return this.children[childApiPath];
     }
 
@@ -139,7 +139,7 @@ export class MarkdownTreeComponent implements IMarkdownTreeComponent {
         return { ...metadata, children: sortedChildren };
     }
 
-    private async getChildren(): Promise<IMarkdownTreeComponent[]> {
+    private async getChildren(): Promise<IMarkdown[]> {
         const childMdFiles = await this.storage.listContentChildren(
             this.childrenContentDir,
             (childFile) => (

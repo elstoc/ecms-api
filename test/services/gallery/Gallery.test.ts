@@ -60,7 +60,7 @@ describe('Gallery', () => {
     
         it('returns metadata for each file in reverse order (within defined limit), plus total count', async () => {
             GalleryImageMock.mockImplementation((_, inputFilePath) => ({
-                getImageData: () => ({ filePath: inputFilePath })
+                getImageMetadata: () => ({ filePath: inputFilePath })
             }));
     
             const expectedReturnData = {
@@ -77,7 +77,7 @@ describe('Gallery', () => {
     
         it('returns metadata for each file in reverse order (with no limit), plus total count', async () => {
             GalleryImageMock.mockImplementation((_, inputFilePath) => ({
-                getImageData: () => ({ filePath: inputFilePath })
+                getImageMetadata: () => ({ filePath: inputFilePath })
             }));
     
             const expectedReturnData = {

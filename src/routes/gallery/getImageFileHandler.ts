@@ -7,7 +7,7 @@ export const createGetImageFileHandler = (site: ISite, logger: winston.Logger): 
     const { path } = req.params;
     const size = req.query.size ?? 'thumb';
     try {
-        const imageFileBuf = await site.getGalleryImage(path, size as ImageSize,);
+        const imageFileBuf = await site.getGalleryImageFile(path, size as ImageSize,);
         res.send(imageFileBuf);
     } catch (err: unknown) {
         if (err instanceof Error) {

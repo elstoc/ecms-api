@@ -3,7 +3,7 @@ import _ from 'lodash';
 
 import { Config, userHasReadAccess } from '../../utils';
 import { Gallery, IGallery } from '../gallery';
-import { IMarkdownRecurse, MarkdownRecurse } from '../markdown';
+import { IMarkdownTreeComponent, MarkdownTreeComponent } from '../markdown';
 import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
 import { IStorageAdapter } from '../../adapters';
 import { NotFoundError } from '../../errors';
@@ -12,7 +12,7 @@ import { User } from '../auth';
 export class SiteComponent implements ISiteComponent {
     private contentYamlPath: string;
     private gallery?: IGallery;
-    private markdown?: IMarkdownRecurse;
+    private markdown?: IMarkdownTreeComponent;
     private metadataFromSourceTime = -1;
     private metadata?: ComponentMetadata;
 
@@ -81,10 +81,10 @@ export class SiteComponent implements ISiteComponent {
         }
     }
 
-    public async getMarkdown(): Promise<IMarkdownRecurse> {
+    public async getMarkdown(): Promise<IMarkdownTreeComponent> {
         await this.getMetadata();
         if (this.metadata?.type === 'markdown') {
-            this.markdown ??= new MarkdownRecurse(this.contentDir, this.config, this.storage, true);
+            this.markdown ??= new MarkdownTreeComponent(this.contentDir, this.config, this.storage, true);
             return this.markdown;
         } else {
             throw new NotFoundError(`No markdown component found at the path ${this.contentDir}`);

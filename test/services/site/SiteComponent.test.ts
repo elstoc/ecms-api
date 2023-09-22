@@ -1,13 +1,13 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import YAML from 'yaml';
 import { Gallery } from '../../../src/services/gallery/Gallery';
-import { MarkdownRecurse } from '../../../src/services/markdown/MarkdownRecurse';
+import { MarkdownTreeComponent } from '../../../src/services/markdown/MarkdownTreeComponent';
 import { SiteComponent } from '../../../src/services';
 import { NotFoundError } from '../../../src/errors';
 
 jest.mock('yaml');
 jest.mock('../../../src/services/gallery/Gallery');
-jest.mock('../../../src/services/markdown/MarkdownRecurse');
+jest.mock('../../../src/services/markdown/MarkdownTreeComponent');
 
 const config = {
     dataDir: '/path/to/data',
@@ -29,7 +29,7 @@ const mockStorage = {
 };
 
 const mockGallery = Gallery as jest.Mock;
-const mockMarkdown = MarkdownRecurse as jest.Mock;
+const mockMarkdown = MarkdownTreeComponent as jest.Mock;
 const contentFileBuf = Buffer.from('content-file');
 const yamlParseMock = YAML.parse as jest.Mock;
 

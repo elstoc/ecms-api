@@ -1,6 +1,6 @@
 import { User } from '../auth';
 import { IGallery } from '../gallery';
-import { IMarkdownRecurse } from '../markdown/IMarkdownRecurse';
+import { IMarkdownTreeComponent } from '../markdown/IMarkdownTreeComponent';
 
 export type AdditionalData = {
     [key: string]: boolean | number | string | undefined; 
@@ -19,5 +19,5 @@ export type ComponentMetadata = {
 export interface ISiteComponent {
     getMetadata(user?: User): Promise<ComponentMetadata | undefined>;
     getGallery(): Promise<IGallery>;
-    getMarkdown(): Promise<IMarkdownRecurse>;
+    getMarkdown(): Promise<IMarkdownTreeComponent>;
 }

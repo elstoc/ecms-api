@@ -1,6 +1,6 @@
 import { User } from '../auth';
 import { GalleryImages } from '../gallery/IGallery';
-import { MarkdownStructure } from '../markdown/IMarkdownRecurse';
+import { MarkdownTree } from '../markdown/IMarkdownTreeComponent';
 import { ComponentMetadata } from './ISiteComponent';
 
 export interface ISite {
@@ -9,5 +9,5 @@ export interface ISite {
     getGalleryImages(apiPath: string, limit?: number): Promise<GalleryImages>;
     getMarkdownFile(apiPath: string, user?: User): Promise<Buffer>;
     writeMarkdownFile(apiPath: string, content: string, user?: User): Promise<void>;
-    getMarkdownStructure(apiPath: string, user?: User): Promise<MarkdownStructure | undefined>;
+    getMarkdownStructure(apiPath: string, user?: User): Promise<MarkdownTree | undefined>;
 }

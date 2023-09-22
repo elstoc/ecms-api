@@ -1,7 +1,7 @@
 import { User } from '../auth';
 import { AdditionalData } from '../site';
 
-export type MarkdownStructure = {
+export type MarkdownTree = {
     apiPath?: string;
     title?: string;
     uiPath?: string;
@@ -9,11 +9,11 @@ export type MarkdownStructure = {
     restrict?: string;
     allowWrite?: string;
     additionalData?: AdditionalData;
-    children?: MarkdownStructure[];
+    children?: MarkdownTree[];
 }
 
-export interface IMarkdownRecurse {
-    getMdStructure(user?: User): Promise<MarkdownStructure | undefined>;
+export interface IMarkdownTreeComponent {
+    getMdStructure(user?: User): Promise<MarkdownTree | undefined>;
     getFile(apiPath: string, user?: User): Promise<Buffer>;
     writeFile(apiPath: string, content: string, user?: User): Promise<void>;
 }

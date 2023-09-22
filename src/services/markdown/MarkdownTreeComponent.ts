@@ -2,18 +2,18 @@ import path from 'path';
 import YAML from 'yaml';
 import _ from 'lodash';
 
-import { IMarkdownRecurse, MarkdownStructure } from './IMarkdownRecurse';
+import { IMarkdownTreeComponent, MarkdownTree } from './IMarkdownTreeComponent';
 import { Config, sortByWeightAndTitle, splitFrontMatter, splitPath, userHasReadAccess, userHasWriteAccess } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';
 import { User } from '../auth';
 
-export class MarkdownRecurse implements IMarkdownRecurse {
+export class MarkdownTreeComponent implements IMarkdownTreeComponent {
     private apiPath: string;
     private contentPath: string;
     private childrenContentDir: string;
-    private metadata?: MarkdownStructure;
-    private children: { [key: string]: IMarkdownRecurse } = {};
+    private metadata?: MarkdownTree;
+    private children: { [key: string]: IMarkdownTreeComponent } = {};
     private metadataFromSourceFileTime = 0;
 
     constructor(
@@ -63,7 +63,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         }
     }
 
-    private getNextChildInTargetPath(targetApiPath: string): IMarkdownRecurse {
+    private getNextChildInTargetPath(targetApiPath: string): IMarkdownTreeComponent {
         /* split the "target path" and "directory containing this instance's children"
            into path segment arrays */
         const targetApiPathSplit = splitPath(targetApiPath);
@@ -82,12 +82,12 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         return this.getChild(nextChildApiPath);
     }
 
-    private getChild(childApiPath: string): IMarkdownRecurse {
-        this.children[childApiPath] ??= new MarkdownRecurse(childApiPath, this.config, this.storage);
+    private getChild(childApiPath: string): IMarkdownTreeComponent {
+        this.children[childApiPath] ??= new MarkdownTreeComponent(childApiPath, this.config, this.storage);
         return this.children[childApiPath];
     }
 
-    private async getMetadata(): Promise<MarkdownStructure> {
+    private async getMetadata(): Promise<MarkdownTree> {
         const contentModifiedTime = this.storage.getContentFileModifiedTime(this.contentPath);
 
         if (this.metadata && contentModifiedTime === this.metadataFromSourceFileTime) {
@@ -117,7 +117,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         return YAML.parse(yaml);
     }
     
-    public async getMdStructure(user?: User): Promise<MarkdownStructure | undefined> {
+    public async getMdStructure(user?: User): Promise<MarkdownTree | undefined> {
         this.throwIfNoContentFile();
         const metadata = await this.getMetadata();
         if (!userHasReadAccess(user, this.metadata?.restrict)) {
@@ -126,7 +126,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         const childObjects = await this.getChildren();
         const childStructPromises = childObjects.map((child) => child.getMdStructure(user));
         const children = await Promise.all(childStructPromises);
-        const sortedChildren = sortByWeightAndTitle<MarkdownStructure>(children);
+        const sortedChildren = sortByWeightAndTitle<MarkdownTree>(children);
 
         if (this.isRoot) {
             // metadata for the root instance is added to the top of the list
@@ -139,7 +139,7 @@ export class MarkdownRecurse implements IMarkdownRecurse {
         return { ...metadata, children: sortedChildren };
     }
 
-    private async getChildren(): Promise<IMarkdownRecurse[]> {
+    private async getChildren(): Promise<IMarkdownTreeComponent[]> {
         const childMdFiles = await this.storage.listContentChildren(
             this.childrenContentDir,
             (childFile) => (

@@ -4,7 +4,7 @@ import { ISite } from './ISite';
 import { SiteComponent } from './SiteComponent';
 import { Config, sortByWeightAndTitle } from '../../utils';
 import { GalleryImages, ImageSize } from '../gallery';
-import { MarkdownStructure } from '../markdown';
+import { MarkdownTree } from '../markdown';
 import { IStorageAdapter } from '../../adapters';
 import { User } from '../auth';
 import { NotPermittedError } from '../../errors';
@@ -51,7 +51,7 @@ export class Site implements ISite {
         return gallery.getImageFile(apiPath, size as ImageSize);
     }
 
-    public async getMarkdownStructure(apiPath: string, user?: User): Promise<MarkdownStructure | undefined> {
+    public async getMarkdownStructure(apiPath: string, user?: User): Promise<MarkdownTree | undefined> {
         const markdown = await this.getRootComponent(apiPath).getMarkdown();
         const structure = await markdown.getMdStructure(user);
         if (!structure) {

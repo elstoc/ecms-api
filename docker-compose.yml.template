@@ -7,12 +7,8 @@ services:
     env_file:
       - .env
     ports:
-      - "${PORT}:${PORT}"
+      - "${API_PORT}:${API_PORT}"
     volumes:
-      - ${CACHE_DIR}:/app/data/cache
-      - ${CONTENT_DIR}:/app/data/content
-      - ${ADMIN_DIR}:/app/data/admin
+      - ${DATA_DIR}:/app/data/
     environment:
-      - CACHE_DIR=/app/data/cache
-      - CONTENT_DIR=/app/data/content
-      - ADMIN_DIR=/app/data/admin
+      - DATA_DIR=/app/data/

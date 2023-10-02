@@ -29,13 +29,13 @@ const start = async () => {
 
     const rootRouter = createRootRouter(logger, site, auth);
 
-    const { port, uiUrl } = config;
+    const { apiPort, uiUrl } = config;
     const app = express();
     app.use(cors({ origin: [uiUrl], credentials: true }));
     app.use('/', rootRouter);
 
-    app.listen(port, () => {
-        console.log(`app started, listening on port ${port}`);
+    app.listen(apiPort, () => {
+        console.log(`app started, listening on port ${apiPort}`);
     });
 };
 

@@ -17,8 +17,8 @@ const getIntConfig = (key: string): number => {
 
 export type Config = {
     logLevel: string;
-    url: string;
-    port: number;
+    apiUrl: string;
+    apiPort: number;
     uiUrl: string;
     dataDir: string;
     jwtRefreshExpires: string;
@@ -30,9 +30,9 @@ export type Config = {
 export const getConfig = (): Config => {
     return {
         logLevel: getStringConfig('LOG_LEVEL'),
-        url: getStringConfig('URL'),
-        port: getIntConfig('PORT'),
-        uiUrl: getStringConfig('URL'),
+        apiUrl: getStringConfig('API_URL'),
+        apiPort: getIntConfig('API_PORT'),
+        uiUrl: getStringConfig('UI_URL'),
         dataDir: getStringConfig('DATA_DIR'),
         jwtRefreshExpires: getStringConfig('JWT_REFRESH_EXPIRES'),
         jwtAccessExpires: getStringConfig('JWT_ACCESS_EXPIRES'),

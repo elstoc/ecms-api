@@ -65,7 +65,7 @@ export class GalleryImage implements IGalleryImage {
     }
 
     private getSourceUrl(size: ImageSize) {
-        return `${this.config.url}/gallery/image/${this.contentPath}?id=${this.imageDataFromSourceFileTime}&size=${size}`;
+        return `${this.config.apiUrl}/gallery/image/${this.contentPath}?id=${this.imageDataFromSourceFileTime}&size=${size}`;
     }
 
     public async getFile(size: ImageSize): Promise<Buffer> {

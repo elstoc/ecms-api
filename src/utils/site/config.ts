@@ -1,3 +1,20 @@
+const getStringConfig = (key: string): string => {
+    const value = process.env[key];
+    if (!value) {
+        throw new Error(`Environment variable ${key} not found`);
+    }
+    return value;
+};
+
+const getIntConfig = (key: string): number => {
+    const value = getStringConfig(key);
+    const numericValue = parseInt(value);
+    if (!Number.isInteger(numericValue)) {
+        throw new Error(`Environment variable ${key} is not a number`);
+    }
+    return numericValue;
+};
+
 export type Config = {
     logLevel: string;
     url: string;
@@ -12,14 +29,14 @@ export type Config = {
 
 export const getConfig = (): Config => {
     return {
-        logLevel: process.env.LOG_LEVEL ?? 'debug',
-        url: process.env.URL ?? 'http://localhost:3123',
-        port: parseInt(process.env.PORT ?? '3123'),
-        uiUrl: process.env.UI_URL ?? '',
-        dataDir: process.env.DATA_DIR ?? '',
-        jwtRefreshExpires: process.env.JWT_REFRESH_EXPIRES ?? '',
-        jwtAccessExpires: process.env.JWT_ACCESS_EXPIRES ?? '',
-        jwtRefreshSecret: process.env.JWT_REFRESH_SECRET ?? '',
-        jwtAccessSecret: process.env.JWT_ACCESS_SECRET ?? '',
+        logLevel: getStringConfig('LOG_LEVEL'),
+        url: getStringConfig('URL'),
+        port: getIntConfig('PORT'),
+        uiUrl: getStringConfig('URL'),
+        dataDir: getStringConfig('DATA_DIR'),
+        jwtRefreshExpires: getStringConfig('JWT_REFRESH_EXPIRES'),
+        jwtAccessExpires: getStringConfig('JWT_ACCESS_EXPIRES'),
+        jwtRefreshSecret: getStringConfig('JWT_REFRESH_SECRET'),
+        jwtAccessSecret: getStringConfig('JWT_ACCESS_SECRET'),
     };
 };

@@ -21,6 +21,7 @@ const config = {
     jwtAccessExpires: '10m',
     jwtRefreshSecret: 'refreshSecret',
     jwtAccessSecret: 'accessSecret',
+    enableAuthentication: true
 } as any;
 
 const mockStorage = {
@@ -47,6 +48,44 @@ describe('Auth', () => {
         mockJwtDecode.mockReturnValue({ exp: 123 });
         mockHashPassword.mockImplementation(async (password) => `${password}-hashed`);
         mockVerifyPasswordWithHash.mockImplementation(async (password, hashedPassword) => `${password}-hashed` === hashedPassword);
+    });
+
+    describe('constructor', () => {
+        describe('with authentication enabled', () => {
+            it('throws an error if jwtAccessExpires is undefined', () => {
+                const newConfig = { ...config, jwtAccessExpires: undefined };
+                expect(() => new Auth(newConfig, mockStorage)).toThrow('All jwt configuration must be defined');
+            });
+
+            it('throws an error if jwtRefreshExpires is undefined', () => {
+                const newConfig = { ...config, jwtRefreshExpires: undefined };
+                expect(() => new Auth(newConfig, mockStorage)).toThrow('All jwt configuration must be defined');
+            });
+
+            it('throws an error if jwtAccessSecret is undefined', () => {
+                const newConfig = { ...config, jwtAccessSecret: undefined };
+                expect(() => new Auth(newConfig, mockStorage)).toThrow('All jwt configuration must be defined');
+            });
+
+            it('throws an error if jwtRefreshSecret is undefined', () => {
+                const newConfig = { ...config, jwtRefreshSecret: undefined };
+                expect(() => new Auth(newConfig, mockStorage)).toThrow('All jwt configuration must be defined');
+            });
+        });
+
+        describe('with authentication disabled', () => {
+            it('does not throw an error if all jwt config is undefined', () => {
+                const newConfig = {
+                    ...config,
+                    enableAuthentication: false,
+                    jwtAccessExpires: undefined,
+                    jwtRefreshExpires: undefined,
+                    jwtAccessSecret: undefined,
+                    jwtRefreshSecret: undefined,
+                };
+                expect(() => new Auth(newConfig, mockStorage)).not.toThrow();
+            });
+        });
     });
 
     describe('createUser', () => {
@@ -330,7 +369,7 @@ describe('Auth', () => {
         });
     });
 
-    describe('getUserInfoFromAccessToken', () => {
+    describe('getUserInfoFromAuthHeader', () => {
         const initialUserFileContent = {
             chris: {
                 id: 'chris',
@@ -340,8 +379,12 @@ describe('Auth', () => {
             }
         };
 
-        beforeEach( async () => {
+        beforeEach(() => {
             mockJwtVerify.mockImplementation(async (payload) => JSON.parse(payload));
+        });
+
+        afterEach(() => {
+            jest.resetAllMocks();
         });
 
         it('throws an error if jwtVerify throws (e.g. expired/incorrectly-signed token)', async () => {
@@ -372,6 +415,17 @@ describe('Auth', () => {
 
             const accessPayload = await auth.getUserInfoFromAuthHeader('some string');
 
+            expect(accessPayload).toStrictEqual(expectedAccessPayload);
+        });
+
+        it('returns guest user data when called with an incorrect bearer token but authentication is disabled', async () => {
+            const newConfig = { ...config, enableAuthentication: false };
+            auth = new Auth(newConfig, mockStorage);
+            mockJwtVerify.mockRejectedValue(new Error('jwt expired'));
+
+            const accessPayload = await auth.getUserInfoFromAuthHeader('Bearer some-bearer-token');
+
+            const expectedAccessPayload = { id: 'guest', fullName: 'Guest', roles: [] };
             expect(accessPayload).toStrictEqual(expectedAccessPayload);
         });
     });

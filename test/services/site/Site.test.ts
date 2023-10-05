@@ -6,6 +6,7 @@ jest.mock('../../../src/services/site/SiteComponent');
 
 const config = {
     dataDir: '/path/to/data',
+    enableAuthentication: true
 } as any;
 
 const mockStorage = {
@@ -263,6 +264,24 @@ describe('Site', () => {
             await site.writeMarkdownFile('component02/path/to/file', 'some-content', user);
 
             expect(writeFile).toBeCalledWith('component02/path/to/file', 'some-content', user);
+        });
+    });
+
+    describe('getConfig', () => {
+        it('returns true if enableAuthentication is true', () => {
+            const newConfig = { ...config, enableAuthentication: true };
+
+            const site = new Site(newConfig, mockStorage);
+
+            expect(site.getConfig()).toStrictEqual({ authEnabled: true });
+        });
+
+        it('returns false if enableAuthentication is false', () => {
+            const newConfig = { ...config, enableAuthentication: false };
+
+            const site = new Site(newConfig, mockStorage);
+
+            expect(site.getConfig()).toStrictEqual({ authEnabled: false });
         });
     });
 });

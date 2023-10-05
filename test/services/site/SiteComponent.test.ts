@@ -11,6 +11,7 @@ jest.mock('../../../src/services/markdown/Markdown');
 
 const config = {
     dataDir: '/path/to/data',
+    enableAuthentication: true
 } as any;
 
 const mockStorage = {
@@ -255,6 +256,25 @@ describe('SiteComponent', () => {
                 const actualMetadata = await component.getMetadata({ roles: ['role1', 'role2'] } as any);
     
                 expect(actualMetadata).toBeUndefined();
+            });
+    
+            it('returns correct metadata if access is restricted, user does not have permission but authentication is disabled', async () => {
+                mockStorage.contentFileExists.mockReturnValue(true);
+                mockStorage.contentDirectoryExists.mockReturnValue(true);
+                mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+                mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+                yamlParseMock.mockReturnValue({
+                    uiPath: 'test',
+                    title: 'The Title',
+                    type: 'gallery',
+                    restrict: 'admin'
+                });
+                const newConfig = { ...config, enableAuthentication: false };
+    
+                component = new SiteComponent(newConfig, 'my-component', mockStorage);
+                const actualMetadata = await component.getMetadata({ roles: ['role1', 'role2'] } as any);
+    
+                expect(actualMetadata).toBeDefined();
             });
     
             it('returns correct metadata if access is restricted and user has permission', async () => {

@@ -9,6 +9,7 @@ jest.mock('../../../src/utils/markdown/splitFrontMatter');
 
 const config = {
     dataDir: '/path/to/data',
+    enableAuthentication: true
 } as any;
 
 const mockStorage = {
@@ -134,11 +135,19 @@ describe('Markdown', () => {
                 await expect(page.getFile('path/to/root')).rejects.toThrow(NotPermittedError);
             });
 
-            it('throws if access is restricted and no user does not have permission', async () => {
+            it('throws if access is restricted and user does not have permission', async () => {
                 const user = { id: 'some-user', roles: ['role2', 'role3'] };
                 const page = new Markdown('path/to/root', config, mockStorage, true);
 
                 await expect(page.getFile('path/to/root', user)).rejects.toThrow(NotPermittedError);
+            });
+
+            it('does not throw if access is restricted, user does not have permission, but authentication is disabled', async () => {
+                const newConfig = { ...config, enableAuthentication: false };
+                const user = { id: 'some-user', roles: ['role2', 'role3'] };
+                const page = new Markdown('path/to/root', newConfig, mockStorage, true);
+
+                await expect(page.getFile('path/to/root', user)).resolves.toBeDefined();
             });
 
             it('does not throw if access is restricted and user has permission', async () => {
@@ -268,6 +277,14 @@ describe('Markdown', () => {
                 const page = new Markdown('path/to/root', config, mockStorage, true);
 
                 await expect(page.writeFile('path/to/root', writeContent, user)).rejects.toThrow(NotPermittedError);
+            });
+
+            it('does not throw if user has no permission, but authentication is disabled', async () => {
+                const newConfig = { ...config, enableAuthentication: false };
+                const user = { id: 'some-user', roles: ['role2', 'role3'] };
+                const page = new Markdown('path/to/root', newConfig, mockStorage, true);
+
+                await expect(page.writeFile('path/to/root', writeContent, user)).resolves.toBeUndefined();
             });
 
             it('does not throw if user has explicit write permission', async () => {

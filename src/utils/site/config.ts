@@ -6,6 +6,15 @@ const getStringConfig = (key: string): string => {
     return value;
 };
 
+const getOptionalStringConfig = (key: string, defaultValue: string): string=> {
+    return process.env[key] ?? defaultValue;
+};
+
+const getBooleanConfig = (key: string): boolean => {
+    const stringConfig = getStringConfig(key);
+    return stringConfig.toLowerCase() === 'true';
+};
+
 const getIntConfig = (key: string): number => {
     const value = getStringConfig(key);
     const numericValue = parseInt(value);
@@ -21,6 +30,7 @@ export type Config = {
     apiPort: number;
     uiUrl: string;
     dataDir: string;
+    enableAuthentication: boolean;
     jwtRefreshExpires: string;
     jwtAccessExpires: string;
     jwtRefreshSecret: string;
@@ -34,9 +44,10 @@ export const getConfig = (): Config => {
         apiPort: getIntConfig('API_PORT'),
         uiUrl: getStringConfig('UI_URL'),
         dataDir: getStringConfig('DATA_DIR'),
-        jwtRefreshExpires: getStringConfig('JWT_REFRESH_EXPIRES'),
-        jwtAccessExpires: getStringConfig('JWT_ACCESS_EXPIRES'),
-        jwtRefreshSecret: getStringConfig('JWT_REFRESH_SECRET'),
-        jwtAccessSecret: getStringConfig('JWT_ACCESS_SECRET'),
+        enableAuthentication: getBooleanConfig('ENABLE_AUTHENTICATION'),
+        jwtRefreshExpires: getOptionalStringConfig('JWT_REFRESH_EXPIRES', ''),
+        jwtAccessExpires: getOptionalStringConfig('JWT_ACCESS_EXPIRES', ''),
+        jwtRefreshSecret: getOptionalStringConfig('JWT_REFRESH_SECRET', ''),
+        jwtAccessSecret: getOptionalStringConfig('JWT_ACCESS_SECRET', ''),
     };
 };

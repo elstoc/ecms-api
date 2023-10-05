@@ -1,6 +1,6 @@
 import path from 'path';
 import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
-import { ISite } from './ISite';
+import { ISite, SiteConfig } from './ISite';
 import { SiteComponent } from './SiteComponent';
 import { Config, sortByWeightAndTitle } from '../../utils';
 import { GalleryContents, ImageSize } from '../gallery';
@@ -73,5 +73,11 @@ export class Site implements ISite {
     private getRootComponent(apiPath: string): ISiteComponent {
         const rootPath = apiPath.replace(/^\//, '').split('/')[0];
         return this.getComponent(rootPath);
+    }
+
+    public getConfig(): SiteConfig {
+        return {
+            authEnabled: this.config.enableAuthentication,
+        };
     }
 }

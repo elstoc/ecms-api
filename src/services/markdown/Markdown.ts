@@ -32,7 +32,7 @@ export class Markdown implements IMarkdown {
     public async getFile(targetApiPath: string, user?: User): Promise<Buffer> {
         this.throwIfNoContentFile();
         await this.getMetadata();
-        if (!userHasReadAccess(user, this.metadata?.restrict)) {
+        if (this.config.enableAuthentication && !userHasReadAccess(user, this.metadata?.restrict)) {
             throw new NotPermittedError();
         }
         if (targetApiPath === this.apiPath) {
@@ -46,7 +46,7 @@ export class Markdown implements IMarkdown {
     public async writeFile(targetApiPath: string, fileContent: string, user?: User): Promise<void> {
         this.throwIfNoContentFile();
         await this.getMetadata();
-        if (!userHasWriteAccess(user, this.metadata?.allowWrite)) {
+        if (this.config.enableAuthentication && !userHasWriteAccess(user, this.metadata?.allowWrite)) {
             throw new NotPermittedError();
         }
         if (targetApiPath === this.apiPath) {
@@ -120,7 +120,7 @@ export class Markdown implements IMarkdown {
     public async getTree(user?: User): Promise<MarkdownTree | undefined> {
         this.throwIfNoContentFile();
         const metadata = await this.getMetadata();
-        if (!userHasReadAccess(user, this.metadata?.restrict)) {
+        if (this.config.enableAuthentication && !userHasReadAccess(user, this.metadata?.restrict)) {
             return undefined;
         }
         const childObjects = await this.getChildren();

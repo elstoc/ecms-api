@@ -10,7 +10,7 @@ const imagePath = 'gallery/image.jpg';
 
 const config = {
     dataDir,
-    url: 'site-url'
+    apiUrl: 'site-url'
 } as any;
 
 const mockStorage = {

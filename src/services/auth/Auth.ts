@@ -4,10 +4,10 @@ import { JwtPayload } from 'jsonwebtoken';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 
 export class Auth implements IAuth {
-    private jwtRefreshExpires: string;
-    private jwtAccessExpires: string;
-    private jwtRefreshSecret: string;
-    private jwtAccessSecret: string;
+    private jwtRefreshExpires = '';
+    private jwtAccessExpires = '';
+    private jwtRefreshSecret = '';
+    private jwtAccessSecret = '';
     private usersfromFileTime = -1;
     private users: { [key: string]: User } = {};
     private usersFile = 'users.json';
@@ -16,14 +16,17 @@ export class Auth implements IAuth {
         private config: Config,
         private storage: IStorageAdapter
     ) {
-        ({
-            jwtRefreshExpires: this.jwtRefreshExpires,
-            jwtAccessExpires: this.jwtAccessExpires,
-            jwtRefreshSecret: this.jwtRefreshSecret,
-            jwtAccessSecret: this.jwtAccessSecret
-        } = config);
+        if (!this.config.enableAuthentication)
+            return;
+        
+        if (!config.jwtAccessExpires || !config.jwtRefreshExpires || !config.jwtAccessSecret || !config.jwtRefreshSecret) {
+            throw new Error('All jwt configuration must be defined');
+        }
 
-        this.config = config;
+        this.jwtAccessExpires = config.jwtAccessExpires;
+        this.jwtRefreshExpires = config.jwtRefreshExpires;
+        this.jwtAccessSecret = config.jwtAccessSecret;
+        this.jwtRefreshSecret = config.jwtRefreshSecret;
     }
 
     public async createUser(id: string, fullName?: string, roles?: string[]): Promise<void> {
@@ -128,7 +131,7 @@ export class Auth implements IAuth {
 
     public async getUserInfoFromAuthHeader(authHeader: string | undefined): Promise<User> {
         let user: User;
-        if (authHeader?.startsWith('Bearer ')) {
+        if (this.config.enableAuthentication && authHeader?.startsWith('Bearer ')) {
             const bearerToken = authHeader?.substring(7);
             const payload = await jwtVerify(bearerToken, this.jwtAccessSecret);
             const { id, fullName, roles } = payload as User;

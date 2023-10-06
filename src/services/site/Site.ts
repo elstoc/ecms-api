@@ -78,6 +78,7 @@ export class Site implements ISite {
     public getConfig(): SiteConfig {
         return {
             authEnabled: this.config.enableAuthentication,
+            footerText: this.config.footerText
         };
     }
 }

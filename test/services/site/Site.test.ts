@@ -268,20 +268,20 @@ describe('Site', () => {
     });
 
     describe('getConfig', () => {
-        it('returns true if enableAuthentication is true', () => {
-            const newConfig = { ...config, enableAuthentication: true };
+        it('returns true & footer text if enableAuthentication is true', () => {
+            const newConfig = { ...config, enableAuthentication: true, footerText: 'some-footer-text' };
 
             const site = new Site(newConfig, mockStorage);
 
-            expect(site.getConfig()).toStrictEqual({ authEnabled: true });
+            expect(site.getConfig()).toStrictEqual({ authEnabled: true, footerText: 'some-footer-text' });
         });
 
-        it('returns false if enableAuthentication is false', () => {
-            const newConfig = { ...config, enableAuthentication: false };
+        it('returns false & footer text if enableAuthentication is false', () => {
+            const newConfig = { ...config, enableAuthentication: false, footerText: 'some-other-footer-text' };
 
             const site = new Site(newConfig, mockStorage);
 
-            expect(site.getConfig()).toStrictEqual({ authEnabled: false });
+            expect(site.getConfig()).toStrictEqual({ authEnabled: false, footerText: 'some-other-footer-text' });
         });
     });
 });

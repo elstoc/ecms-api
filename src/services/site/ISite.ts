@@ -5,6 +5,7 @@ import { ComponentMetadata } from './ISiteComponent';
 
 export type SiteConfig = {
     authEnabled: boolean;
+    footerText: string;
 };
 
 export interface ISite {

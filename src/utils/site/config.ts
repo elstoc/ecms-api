@@ -35,6 +35,7 @@ export type Config = {
     jwtAccessExpires: string;
     jwtRefreshSecret: string;
     jwtAccessSecret: string;
+    footerText: string;
 };
 
 export const getConfig = (): Config => {
@@ -49,5 +50,6 @@ export const getConfig = (): Config => {
         jwtAccessExpires: getOptionalStringConfig('JWT_ACCESS_EXPIRES', ''),
         jwtRefreshSecret: getOptionalStringConfig('JWT_REFRESH_SECRET', ''),
         jwtAccessSecret: getOptionalStringConfig('JWT_ACCESS_SECRET', ''),
+        footerText: getOptionalStringConfig('FOOTER_TEXT', ''),
     };
 };

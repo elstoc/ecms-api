@@ -2,7 +2,7 @@ import path from 'path';
 import YAML from 'yaml';
 import _ from 'lodash';
 
-import { IMarkdown, MarkdownTree } from './IMarkdown';
+import { IMarkdown, MarkdownPage, MarkdownTree } from './IMarkdown';
 import { Config, sortByWeightAndTitle, splitFrontMatter, splitPath, userHasReadAccess, userHasWriteAccess } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';
@@ -29,31 +29,28 @@ export class Markdown implements IMarkdown {
             : this.apiPath;
     }
 
-    public async getFile(targetApiPath: string, user?: User): Promise<Buffer> {
+    public async getPage(targetApiPath: string, user?: User): Promise<MarkdownPage> {
         this.throwIfNoContentFile();
         await this.getMetadata();
-        if (this.config.enableAuthentication && !userHasReadAccess(user, this.metadata?.restrict)) {
-            throw new NotPermittedError();
-        }
+        this.throwIfNoReadAccess(user);
+        const content = (await this.storage.getContentFile(this.contentPath)).toString('utf-8');
         if (targetApiPath === this.apiPath) {
-            return this.storage.getContentFile(this.contentPath);
+            return { content };
         } else {
             const nextChild = this.getNextChildInTargetPath(targetApiPath);
-            return nextChild.getFile(targetApiPath, user);
+            return nextChild.getPage(targetApiPath, user);
         }
     }
 
-    public async writeFile(targetApiPath: string, fileContent: string, user?: User): Promise<void> {
+    public async writePage(targetApiPath: string, fileContent: string, user?: User): Promise<void> {
         this.throwIfNoContentFile();
         await this.getMetadata();
-        if (this.config.enableAuthentication && !userHasWriteAccess(user, this.metadata?.allowWrite)) {
-            throw new NotPermittedError();
-        }
+        this.throwIfNoWriteAccess(user);
         if (targetApiPath === this.apiPath) {
             return this.storage.storeContentFile(this.contentPath, Buffer.from(fileContent));
         } else {
             const nextChild = this.getNextChildInTargetPath(targetApiPath);
-            return nextChild.writeFile(targetApiPath, fileContent, user);
+            return nextChild.writePage(targetApiPath, fileContent, user);
         }
     }
 
@@ -61,6 +58,22 @@ export class Markdown implements IMarkdown {
         if (!this.contentPath.endsWith('.md') || !this.storage.contentFileExists(this.contentPath)) {
             throw new NotFoundError(`No markdown file found matching path ${this.apiPath}`);
         }
+    }
+
+    private throwIfNoReadAccess(user?: User): void {
+        if (!this.userHasReadAccess(user)) throw new NotPermittedError();
+    }
+
+    private throwIfNoWriteAccess(user?: User): void {
+        if (!this.userHasWriteAccess(user)) throw new NotPermittedError();
+    }
+
+    private userHasReadAccess(user?: User): boolean {
+        return !this.config.enableAuthentication || userHasReadAccess(user, this.metadata?.restrict);
+    }
+
+    private userHasWriteAccess(user?: User): boolean {
+        return !this.config.enableAuthentication || userHasWriteAccess(user, this.metadata?.allowWrite);
     }
 
     private getNextChildInTargetPath(targetApiPath: string): IMarkdown {

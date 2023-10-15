@@ -1,27 +1,27 @@
 import express, { Router } from 'express';
 import { Logger } from 'winston';
 
-import { createGetMarkdownFileHandler } from './getMarkdownFileHandler';
-import { createPutMarkdownFileHandler } from './putMarkdownFileHandler';
+import { createGetMarkdownPageHandler } from './getMarkdownPageHandler';
+import { createPutMarkdownPageHandler } from './putMarkdownPageHandler';
 import { createGetMarkdownTreeHandler } from './getMarkdownTreeHandler';
 import { ISite } from '../../services';
 
 export const createMarkdownRouter = (site: ISite, logger: Logger): Router => {
     const router = Router();
 
-    const getMarkdownFileHandler = createGetMarkdownFileHandler(site, logger);
+    const getMarkdownPageHandler = createGetMarkdownPageHandler(site, logger);
     const getMarkdownTreeHandler = createGetMarkdownTreeHandler(site, logger);
-    const putMarkdownFileHandler = createPutMarkdownFileHandler(site, logger);
+    const putMarkdownPageHandler = createPutMarkdownPageHandler(site, logger);
 
     router.get(
-        '/file/:mdPath(*)',
-        getMarkdownFileHandler
+        '/page/:mdPath(*)',
+        getMarkdownPageHandler
     );
 
     router.put(
-        '/file/:mdPath(*)',
+        '/page/:mdPath(*)',
         express.json(),
-        putMarkdownFileHandler
+        putMarkdownPageHandler
     );
 
     router.get(

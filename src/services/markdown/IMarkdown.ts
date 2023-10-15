@@ -12,8 +12,12 @@ export type MarkdownTree = {
     children?: MarkdownTree[];
 }
 
+export type MarkdownPage = {
+    content?: string
+}
+
 export interface IMarkdown {
     getTree(user?: User): Promise<MarkdownTree | undefined>;
-    getFile(apiPath: string, user?: User): Promise<Buffer>;
-    writeFile(apiPath: string, content: string, user?: User): Promise<void>;
+    getPage(apiPath: string, user?: User): Promise<MarkdownPage>;
+    writePage(apiPath: string, content: string, user?: User): Promise<void>;
 }

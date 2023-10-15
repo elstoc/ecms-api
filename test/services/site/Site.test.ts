@@ -237,33 +237,33 @@ describe('Site', () => {
         });
     });
 
-    describe('getMarkdownFile', () => {
-        it('runs getFile on the appropriate markdown object', async () => {
-            const getFile = jest.fn();
+    describe('getMarkdownPage', () => {
+        it('runs getPage on the appropriate markdown object', async () => {
+            const getPage = jest.fn();
             mockSiteComponent.mockImplementation(() => ({
-                getMarkdown: () => ({ getFile })
+                getMarkdown: () => ({ getPage })
             }));
             const user = { id: 'some-user' };
 
             const site = new Site(config, mockStorage);
-            await site.getMarkdownFile('component02/path/to/file', user);
+            await site.getMarkdownPage('component02/path/to/file', user);
 
-            expect(getFile).toBeCalledWith('component02/path/to/file', user);
+            expect(getPage).toBeCalledWith('component02/path/to/file', user);
         });
     });
 
-    describe('writeMarkdownFile', () => {
+    describe('writeMarkdownPage', () => {
         it('runs writeFile on the appropriate markdown object', async () => {
-            const writeFile = jest.fn();
+            const writePage = jest.fn();
             mockSiteComponent.mockImplementation(() => ({
-                getMarkdown: () => ({ writeFile })
+                getMarkdown: () => ({ writePage })
             }));
             const user = { id: 'some-user' };
 
             const site = new Site(config, mockStorage);
-            await site.writeMarkdownFile('component02/path/to/file', 'some-content', user);
+            await site.writeMarkdownPage('component02/path/to/file', 'some-content', user);
 
-            expect(writeFile).toBeCalledWith('component02/path/to/file', 'some-content', user);
+            expect(writePage).toBeCalledWith('component02/path/to/file', 'some-content', user);
         });
     });
 

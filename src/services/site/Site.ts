@@ -8,6 +8,7 @@ import { MarkdownTree } from '../markdown';
 import { IStorageAdapter } from '../../adapters';
 import { User } from '../auth';
 import { NotPermittedError } from '../../errors';
+import { MarkdownPage } from '../markdown/IMarkdown';
 
 export class Site implements ISite {
     private components: { [key: string]: ISiteComponent } = {};
@@ -60,14 +61,14 @@ export class Site implements ISite {
         return structure;
     }
 
-    public async getMarkdownFile(apiPath: string, user?: User): Promise<Buffer> {
+    public async getMarkdownPage(apiPath: string, user?: User): Promise<MarkdownPage> {
         const markdown = await this.getRootComponent(apiPath).getMarkdown();
-        return markdown.getFile(apiPath, user);
+        return markdown.getPage(apiPath, user);
     }
 
-    public async writeMarkdownFile(apiPath: string, content: string, user?: User): Promise<void> {
+    public async writeMarkdownPage(apiPath: string, content: string, user?: User): Promise<void> {
         const markdown = await this.getRootComponent(apiPath).getMarkdown();
-        return markdown.writeFile(apiPath, content, user);
+        return markdown.writePage(apiPath, content, user);
     }
 
     private getRootComponent(apiPath: string): ISiteComponent {

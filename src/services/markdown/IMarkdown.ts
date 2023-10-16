@@ -13,7 +13,8 @@ export type MarkdownTree = {
 }
 
 export type MarkdownPage = {
-    content?: string
+    content: string;
+    pageExists: boolean;
 }
 
 export interface IMarkdown {

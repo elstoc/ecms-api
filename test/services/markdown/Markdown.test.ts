@@ -85,7 +85,10 @@ describe('Markdown', () => {
         });
 
         describe('returns a file', () => {
-            const expectedPage = { content: contentFile };
+            const expectedPage = {
+                content: contentFile,
+                pageExists: true
+            };
             beforeEach(() => {
                 mockStorage.contentFileExists.mockReturnValue(true);
             });

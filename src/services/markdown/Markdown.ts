@@ -35,7 +35,10 @@ export class Markdown implements IMarkdown {
         this.throwIfNoReadAccess(user);
         const content = (await this.storage.getContentFile(this.contentPath)).toString('utf-8');
         if (targetApiPath === this.apiPath) {
-            return { content };
+            return {
+                content,
+                pageExists: true
+            };
         } else {
             const nextChild = this.getNextChildInTargetPath(targetApiPath);
             return nextChild.getPage(targetApiPath, user);

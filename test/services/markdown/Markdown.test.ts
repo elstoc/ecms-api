@@ -181,7 +181,7 @@ describe('Markdown', () => {
                 expect(actualPage.canWrite).toBe(true);
             });
 
-            it.skip('true if user has admin rights', async () => {
+            it('true if user has admin rights', async () => {
                 const user = { id: 'some-user', roles: ['admin'] };
 
                 const actualPage = await page.getPage('path/to/root', user);

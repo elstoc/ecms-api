@@ -37,7 +37,8 @@ export class Markdown implements IMarkdown {
         if (targetApiPath === this.apiPath) {
             return {
                 content,
-                pageExists: true
+                pageExists: true,
+                canWrite: this.userHasWriteAccess(user)
             };
         } else {
             const nextChild = this.getNextChildInTargetPath(targetApiPath);

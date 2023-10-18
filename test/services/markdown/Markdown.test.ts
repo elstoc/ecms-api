@@ -3,6 +3,7 @@ import { Markdown } from '../../../src/services/markdown/Markdown';
 import YAML from 'yaml';
 import { splitFrontMatter } from '../../../src/utils/markdown/splitFrontMatter';
 import { NotFoundError, NotPermittedError } from '../../../src/errors';
+import { IMarkdown } from '../../../src/services';
 
 jest.mock('yaml');
 jest.mock('../../../src/utils/markdown/splitFrontMatter');
@@ -84,11 +85,7 @@ describe('Markdown', () => {
             });
         });
 
-        describe('returns a file', () => {
-            const expectedPage = {
-                content: contentFile,
-                pageExists: true
-            };
+        describe('returns page content', () => {
             beforeEach(() => {
                 mockStorage.contentFileExists.mockReturnValue(true);
             });
@@ -99,7 +96,7 @@ describe('Markdown', () => {
                 const actualPage = await page.getPage('path/to/root');
 
                 expect(mockStorage.getContentFile).toBeCalledWith('path/to/root/index.md');
-                expect(actualPage).toStrictEqual(expectedPage);
+                expect(actualPage.content).toStrictEqual(contentFile);
             });
 
             it('returns the requested content file for a non-root object where the targetPath matches the first object', async () => {
@@ -108,7 +105,7 @@ describe('Markdown', () => {
                 const actualPage = await page.getPage('path/to/file.md');
 
                 expect(mockStorage.getContentFile).toBeCalledWith('path/to/file.md');
-                expect(actualPage).toStrictEqual(expectedPage);
+                expect(actualPage.content).toStrictEqual(contentFile);
             });
 
             it('recurses through objects for a long path and returns the file from the last object', async () => {
@@ -122,7 +119,74 @@ describe('Markdown', () => {
                 expect(mockStorage.contentFileExists.mock.calls[2][0]).toBe('root/path/to.md');
                 expect(mockStorage.contentFileExists.mock.calls[3][0]).toBe('root/path/to/page.md');
                 expect(mockStorage.getContentFile).toBeCalledWith('root/path/to/page.md');
-                expect(actualPage).toStrictEqual(expectedPage);
+                expect(actualPage.content).toStrictEqual(contentFile);
+            });
+        });
+
+        describe('returns pageExists', () => {
+            beforeEach(() => {
+                mockStorage.contentFileExists.mockReturnValue(true);
+            });
+
+            it('always true', async () => {
+                const page = new Markdown('path/to/root', config, mockStorage, true);
+
+                const actualPage = await page.getPage('path/to/root');
+
+                expect(actualPage.pageExists).toBe(true);
+            });
+        });
+
+        describe('returns canWrite', () => {
+            let page: IMarkdown;
+
+            beforeEach(() => {
+                mockStorage.contentFileExists.mockReturnValue(true);
+                const parsedYaml = { title: 'Some Title', allowWrite: 'role1' };
+                mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+                mockYAMLparse.mockReturnValue(parsedYaml);
+
+                page = new Markdown('path/to/root', config, mockStorage, true);
+            });
+
+            it('false if no user is entered', async () => {
+                const actualPage = await page.getPage('path/to/root');
+
+                expect(actualPage.canWrite).toBe(false);
+            });
+
+            it('false if user is not admin and does not have explicit write permission', async () => {
+                const user = { id: 'some-user', roles: ['role2', 'role3'] };
+
+                const actualPage = await page.getPage('path/to/root', user);
+
+                expect(actualPage.canWrite).toBe(false);
+            });
+
+            it('true if user has no permission, but authentication is disabled', async () => {
+                const newConfig = { ...config, enableAuthentication: false };
+                const user = { id: 'some-user', roles: ['role2', 'role3'] };
+                page = new Markdown('path/to/root', newConfig, mockStorage, true);
+
+                const actualPage = await page.getPage('path/to/root', user);
+
+                expect(actualPage.canWrite).toBe(true);
+            });
+
+            it('true if user has explicit write permission', async () => {
+                const user = { id: 'some-user', roles: ['role1', 'role2', 'role3'] };
+
+                const actualPage = await page.getPage('path/to/root', user);
+
+                expect(actualPage.canWrite).toBe(true);
+            });
+
+            it.skip('true if user has admin rights', async () => {
+                const user = { id: 'some-user', roles: ['admin'] };
+
+                const actualPage = await page.getPage('path/to/root', user);
+
+                expect(actualPage.canWrite).toBe(true);
             });
         });
 
@@ -264,22 +328,23 @@ describe('Markdown', () => {
         });
 
         describe('restricts write access', () => {
+            let page: IMarkdown;
+
             beforeEach(() => {
                 mockStorage.contentFileExists.mockReturnValue(true);
                 const parsedYaml = { title: 'Some Title', allowWrite: 'role1' };
                 mockSplitFrontMatter.mockReturnValue([parsedYaml]);
                 mockYAMLparse.mockReturnValue(parsedYaml);
+
+                page = new Markdown('path/to/root', config, mockStorage, true);
             });
 
             it('throws if no user is entered', async () => {
-                const page = new Markdown('path/to/root', config, mockStorage, true);
-
                 await expect(page.writePage('path/to/root', writeContent)).rejects.toThrow(NotPermittedError);
             });
 
             it('throws if user is not admin and does not have explicit write permission', async () => {
                 const user = { id: 'some-user', roles: ['role2', 'role3'] };
-                const page = new Markdown('path/to/root', config, mockStorage, true);
 
                 await expect(page.writePage('path/to/root', writeContent, user)).rejects.toThrow(NotPermittedError);
             });
@@ -287,21 +352,19 @@ describe('Markdown', () => {
             it('does not throw if user has no permission, but authentication is disabled', async () => {
                 const newConfig = { ...config, enableAuthentication: false };
                 const user = { id: 'some-user', roles: ['role2', 'role3'] };
-                const page = new Markdown('path/to/root', newConfig, mockStorage, true);
+                page = new Markdown('path/to/root', newConfig, mockStorage, true);
 
                 await expect(page.writePage('path/to/root', writeContent, user)).resolves.toBeUndefined();
             });
 
             it('does not throw if user has explicit write permission', async () => {
                 const user = { id: 'some-user', roles: ['role1', 'role2', 'role3'] };
-                const page = new Markdown('path/to/root', config, mockStorage, true);
 
                 await expect(page.writePage('path/to/root', writeContent, user)).resolves.toBeUndefined();
             });
 
             it('does not throw if user has admin rights', async () => {
                 const user = { id: 'some-user', roles: ['admin'] };
-                const page = new Markdown('path/to/root', config, mockStorage, true);
 
                 await expect(page.writePage('path/to/root', writeContent, user)).resolves.toBeUndefined();
             });

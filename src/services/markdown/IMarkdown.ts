@@ -16,6 +16,7 @@ export type MarkdownPage = {
     content: string;
     pageExists: boolean;
     canWrite: boolean;
+    pathValid: boolean;
 }
 
 export interface IMarkdown {

@@ -3,7 +3,7 @@ import YAML from 'yaml';
 import _ from 'lodash';
 
 import { IMarkdown, MarkdownPage, MarkdownTree } from './IMarkdown';
-import { Config, sortByWeightAndTitle, splitFrontMatter, splitPath, userHasReadAccess, userHasWriteAccess } from '../../utils';
+import { Config, sortByWeightAndTitle, splitFrontMatter, splitPath, userHasReadAccess, userHasWriteAccess, userIsAdmin } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';
 import { User } from '../auth';
@@ -33,17 +33,59 @@ export class Markdown implements IMarkdown {
         this.throwIfNoContentFile();
         await this.getMetadata();
         this.throwIfNoReadAccess(user);
-        const content = (await this.storage.getContentFile(this.contentPath)).toString('utf-8');
+
         if (targetApiPath === this.apiPath) {
+            const content = await this.getContentFile();
             return {
                 content,
                 pageExists: true,
+                pathValid: true,
                 canWrite: this.userHasWriteAccess(user)
             };
-        } else {
-            const nextChild = this.getNextChildInTargetPath(targetApiPath);
-            return nextChild.getPage(targetApiPath, user);
         }
+
+        try {
+            const nextChild = this.getNextChildInTargetPath(targetApiPath);
+            return await nextChild.getPage(targetApiPath, user);
+        } catch (e: unknown) {
+            if (e instanceof NotFoundError && userIsAdmin(user)) {
+                const mdTemplate = '---\ntitle: xxx\n---\n\n';
+                const pathValid = this.apiPathIsValid(targetApiPath);
+                return {
+                    content: pathValid ? mdTemplate : '',
+                    pageExists: false,
+                    pathValid,
+                    canWrite: pathValid
+                };
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private async getContentFile(): Promise<string> {
+        return (await this.storage.getContentFile(this.contentPath)).toString('utf-8');
+    }
+
+    private apiPathIsValid(apiPath: string): boolean {
+        if (apiPath === this.apiPath) {
+            return true;
+        } else if (!apiPath.endsWith('.md')) {
+            return false;
+        }
+
+        const apiPathWithoutMd = apiPath.substring(0, apiPath.lastIndexOf('.'));
+        const pathSegments = splitPath(apiPathWithoutMd);
+        const onlyValidCharacters = /^[A-Za-z0-9_-]+$/;
+
+        let pathValid = true;
+        pathSegments.forEach((segment) => {
+            if (!onlyValidCharacters.test(segment)) {
+                pathValid = false;
+            }
+        });
+
+        return pathValid;
     }
 
     public async writePage(targetApiPath: string, fileContent: string, user?: User): Promise<void> {
@@ -129,8 +171,8 @@ export class Markdown implements IMarkdown {
     }
 
     private async parseFrontMatter(): Promise<{ [key: string]: string }> {
-        const file = await this.storage.getContentFile(this.contentPath);
-        const [yaml] = splitFrontMatter(file.toString('utf-8'));
+        const file = await this.getContentFile();
+        const [yaml] = splitFrontMatter(file);
         return YAML.parse(yaml);
     }
     

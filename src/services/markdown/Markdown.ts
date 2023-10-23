@@ -76,15 +76,14 @@ export class Markdown implements IMarkdown {
 
         const apiPathWithoutMd = apiPath.substring(0, apiPath.lastIndexOf('.'));
         const pathSegments = splitPath(apiPathWithoutMd);
-        const onlyValidCharacters = /^[A-Za-z0-9_-]+$/;
+        const onlyHasValidCharacters = /^[A-Za-z0-9_-]+$/;
 
         let pathValid = true;
         pathSegments.forEach((segment) => {
-            if (!onlyValidCharacters.test(segment)) {
+            if (!onlyHasValidCharacters.test(segment)) {
                 pathValid = false;
             }
         });
-
         return pathValid;
     }
 
@@ -92,6 +91,7 @@ export class Markdown implements IMarkdown {
         this.throwIfNoContentFile();
         await this.getMetadata();
         this.throwIfNoReadAccess(user);
+
         if (targetApiPath === this.apiPath) {
             this.throwIfNoWriteAccess(user);
             await this.storage.storeContentFile(this.contentPath, Buffer.from(fileContent));

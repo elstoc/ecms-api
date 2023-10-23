@@ -91,13 +91,27 @@ export class Markdown implements IMarkdown {
     public async writePage(targetApiPath: string, fileContent: string, user?: User): Promise<void> {
         this.throwIfNoContentFile();
         await this.getMetadata();
-        this.throwIfNoWriteAccess(user);
+        this.throwIfNoReadAccess(user);
         if (targetApiPath === this.apiPath) {
-            return this.storage.storeContentFile(this.contentPath, Buffer.from(fileContent));
+            this.throwIfNoWriteAccess(user);
+            await this.storage.storeContentFile(this.contentPath, Buffer.from(fileContent));
         } else {
             const nextChild = this.getNextChildInTargetPath(targetApiPath);
-            return nextChild.writePage(targetApiPath, fileContent, user);
+            try {
+                await nextChild.writePage(targetApiPath, fileContent, user);
+            } catch (e: unknown) {
+                if (e instanceof NotFoundError && userIsAdmin(user) && this.apiPathIsValid(targetApiPath)) {
+                    await nextChild.createContentFile();
+                    await nextChild.writePage(targetApiPath, fileContent, user);
+                } else {
+                    throw e;
+                }
+            }
         }
+    }
+
+    public async createContentFile(): Promise<void> {
+        return this.storage.storeContentFile(this.apiPath, Buffer.from(''));
     }
 
     private throwIfNoContentFile(): void {

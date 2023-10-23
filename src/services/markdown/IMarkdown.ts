@@ -23,4 +23,5 @@ export interface IMarkdown {
     getTree(user?: User): Promise<MarkdownTree | undefined>;
     getPage(apiPath: string, user?: User): Promise<MarkdownPage>;
     writePage(apiPath: string, content: string, user?: User): Promise<void>;
+    createContentFile(): Promise<void>;
 }

@@ -4,6 +4,7 @@ import YAML from 'yaml';
 import { splitFrontMatter } from '../../../src/utils/markdown/splitFrontMatter';
 import { NotFoundError, NotPermittedError } from '../../../src/errors';
 import { IMarkdown } from '../../../src/services';
+import path from 'path';
 
 jest.mock('yaml');
 jest.mock('../../../src/utils/markdown/splitFrontMatter');
@@ -229,7 +230,6 @@ describe('Markdown', () => {
             describe('when the user is admin', () => {
                 let rootPage: IMarkdown;
                 const nonExistentPage = 'rootPath/existingPage/nonExistentPage';
-                const expectedMarkdownTemplate = '---\ntitle: xxx\n---\n\n';
 
                 beforeEach(() => {
                     rootPage = new Markdown('rootPath', config, mockStorage, true);
@@ -261,16 +261,16 @@ describe('Markdown', () => {
                     'abcdef/ghijklmno/pqrstuvwxyz.md',
                     'ABCDEF/GHIJKLMNO/PQRSTUVWXYZ.md',
                     '01-234/5/67_890.md',
-                ])('and the target path is valid, the returned object reflects this, and contains a markdown template (%s)', async (path: string) => {
+                ])('and the target path is valid, the returned object reflects this, and contains a markdown template (%s)', async (inPath: string) => {
                     const expectedPage = {
-                        content: expectedMarkdownTemplate,
+                        content: `---\ntitle: ${path.basename(inPath, '.md')}\n---\n\n`,
                         pageExists: false,
                         pathValid: true,
                         canWrite: true
                     };
                     const user = { id: 'some-user', roles: ['admin'] };
 
-                    const actualPage = await rootPage.getPage(`${nonExistentPage}/${path}`, user);
+                    const actualPage = await rootPage.getPage(`${nonExistentPage}/${inPath}`, user);
                     expect(actualPage).toStrictEqual(expectedPage);
                 });
             });

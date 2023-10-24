@@ -49,10 +49,9 @@ export class Markdown implements IMarkdown {
             return await nextChild.getPage(targetApiPath, user);
         } catch (e: unknown) {
             if (e instanceof NotFoundError && userIsAdmin(user)) {
-                const mdTemplate = '---\ntitle: xxx\n---\n\n';
                 const pathValid = this.apiPathIsValid(targetApiPath);
                 return {
-                    content: pathValid ? mdTemplate : '',
+                    content: pathValid ? this.getMdTemplate(targetApiPath) : '',
                     pageExists: false,
                     pathValid,
                     canWrite: pathValid
@@ -61,6 +60,10 @@ export class Markdown implements IMarkdown {
                 throw e;
             }
         }
+    }
+
+    private getMdTemplate(filePath: string): string {
+        return `---\ntitle: ${path.basename(filePath, '.md')}\n---\n\n`;
     }
 
     private async getContentFile(): Promise<string> {

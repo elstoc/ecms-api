@@ -36,9 +36,11 @@ export class Markdown implements IMarkdown {
 
         if (targetApiPath === this.apiPath) {
             const content = await this.getContentFile();
+            const canDelete = userIsAdmin(user) && (await this.getChildFiles()).length === 0;
             return {
                 content,
                 pageExists: true,
+                canDelete,
                 pathValid: true,
                 canWrite: this.userHasWriteAccess(user)
             };
@@ -53,6 +55,7 @@ export class Markdown implements IMarkdown {
                 return {
                     content: pathValid ? this.getMdTemplate(targetApiPath) : '',
                     pageExists: false,
+                    canDelete: false,
                     pathValid,
                     canWrite: pathValid
                 };
@@ -216,17 +219,20 @@ export class Markdown implements IMarkdown {
     }
 
     private async getChildren(): Promise<IMarkdown[]> {
-        const childMdFiles = await this.storage.listContentChildren(
-            this.childrenContentDir,
-            (childFile) => (
-                childFile.endsWith('.md') && !(childFile.endsWith('index.md'))
-            )
-        );
-
+        const childMdFiles = await this.getChildFiles();
         return childMdFiles
             .map((childFileName) => {
                 const childApiPath = path.join(this.childrenContentDir, childFileName);
                 return this.getChild(childApiPath);
             });
+    }
+
+    private async getChildFiles(): Promise<string[]> {
+        return this.storage.listContentChildren(
+            this.childrenContentDir,
+            (childFile) => (
+                childFile.endsWith('.md') && !(childFile.endsWith('index.md'))
+            )
+        );
     }
 }

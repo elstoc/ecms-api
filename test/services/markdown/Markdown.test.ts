@@ -183,6 +183,46 @@ describe('Markdown', () => {
                     expect(actualPage.canWrite).toBe(true);
                 });
             });
+
+            describe('returns canDelete', () => {
+                let page: IMarkdown;
+
+                beforeEach(() => {
+                    mockStorage.contentFileExists.mockReturnValue(true);
+                    const parsedYaml = { title: 'Some Title', allowWrite: 'role1' };
+                    mockSplitFrontMatter.mockReturnValue([parsedYaml]);
+                    mockYAMLparse.mockReturnValue(parsedYaml);
+
+                    page = new Markdown('path/to/root', config, mockStorage, true);
+                });
+
+                it('false if the user is admin and the page has children', async () => {
+                    mockStorage.listContentChildren.mockResolvedValue(['file1.md', 'file2.md']);
+                    const user = { id: 'some-user', roles: ['admin'] };
+
+                    const actualPage = await page.getPage('path/to/root', user);
+
+                    expect(actualPage.canDelete).toBe(false);
+                });
+
+                it('false if the user is not admin and the page has no children', async () => {
+                    mockStorage.listContentChildren.mockResolvedValue([]);
+                    const user = { id: 'some-user', roles: ['role1'] };
+
+                    const actualPage = await page.getPage('path/to/root', user);
+
+                    expect(actualPage.canDelete).toBe(false);
+                });
+
+                it('true if the user is admin and the page has no children', async () => {
+                    mockStorage.listContentChildren.mockResolvedValue([]);
+                    const user = { id: 'some-user', roles: ['admin'] };
+
+                    const actualPage = await page.getPage('path/to/root', user);
+
+                    expect(actualPage.canDelete).toBe(true);
+                });
+            });
         });
 
         describe('when called for a non-extant file', () => {
@@ -249,7 +289,8 @@ describe('Markdown', () => {
                         content: '',
                         pageExists: false,
                         pathValid: false,
-                        canWrite: false
+                        canWrite: false,
+                        canDelete: false
                     };
                     const user = { id: 'some-user', roles: ['admin'] };
 
@@ -266,7 +307,8 @@ describe('Markdown', () => {
                         content: `---\ntitle: ${path.basename(inPath, '.md')}\n---\n\n`,
                         pageExists: false,
                         pathValid: true,
-                        canWrite: true
+                        canWrite: true,
+                        canDelete: false
                     };
                     const user = { id: 'some-user', roles: ['admin'] };
 

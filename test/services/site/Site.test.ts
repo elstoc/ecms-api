@@ -254,7 +254,7 @@ describe('Site', () => {
     });
 
     describe('writeMarkdownPage', () => {
-        it('runs writeFile on the appropriate markdown object', async () => {
+        it('runs writePage on the appropriate markdown object', async () => {
             const writePage = jest.fn();
             mockSiteComponent.mockImplementation(() => ({
                 getMarkdown: () => ({ writePage })
@@ -265,6 +265,21 @@ describe('Site', () => {
             await site.writeMarkdownPage('component02/path/to/file', 'some-content', user);
 
             expect(writePage).toBeCalledWith('component02/path/to/file', 'some-content', user);
+        });
+    });
+
+    describe('deleteMarkdownPage', () => {
+        it('runs deletePage on the appropriate markdown object', async () => {
+            const deletePage = jest.fn();
+            mockSiteComponent.mockImplementation(() => ({
+                getMarkdown: () => ({ deletePage })
+            }));
+            const user = { id: 'some-user' };
+
+            const site = new Site(config, mockStorage);
+            await site.deleteMarkdownPage('component02/path/to/file', user);
+
+            expect(deletePage).toBeCalledWith('component02/path/to/file', user);
         });
     });
 

@@ -14,6 +14,7 @@ export interface ISite {
     getGalleryContents(apiPath: string, limit?: number): Promise<GalleryContents>;
     getMarkdownPage(apiPath: string, user?: User): Promise<MarkdownPage>;
     writeMarkdownPage(apiPath: string, content: string, user?: User): Promise<void>;
+    deleteMarkdownPage(apiPath: string, user?: User): Promise<void>;
     getMarkdownTree(apiPath: string, user?: User): Promise<MarkdownTree | undefined>;
     getConfig(): SiteConfig;
 }

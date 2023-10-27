@@ -556,6 +556,55 @@ describe('Markdown', () => {
         });
     });
 
+    describe('deletePage', () => {
+        it('throws an error if the user does not have admin access', async () => {
+            const user = { id: 'some-user', roles: ['role1'] };
+            const page = new Markdown('path/to/root', config, mockStorage, true);
+
+            await expect(page.deletePage('path/to/root/page.md', user)).rejects.toThrow(NotPermittedError);
+        });
+
+        it('throws an error if the content file does not exist', async () => {
+            const user = { id: 'some-user', roles: ['admin'] };
+            mockStorage.contentFileExists.mockReturnValue(false);
+            const page = new Markdown('path/to/root', config, mockStorage, true);
+
+            await expect(page.deletePage('path/to/root/page.md', user)).rejects.toThrow(NotFoundError);
+        });
+
+        it('throws an error if the file to be deleted has children', async () => {
+            const user = { id: 'some-user', roles: ['admin'] };
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.listContentChildren.mockResolvedValue(['page.md', 'index.md']);
+            const page = new Markdown('path/to/root', config, mockStorage, true);
+
+            await expect(page.deletePage('path/to/root/page.md', user)).rejects.toThrow(new NotPermittedError('cannot delete markdown files which have children'));
+        });
+
+        it('deletes the content file for the current object instance if there are no children and the api paths match', async() => {
+            const user = { id: 'some-user', roles: ['admin'] };
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.listContentChildren.mockResolvedValue([]);
+            const page = new Markdown('path/to/root', config, mockStorage, true);
+
+            await expect(page.deletePage('path/to/root/page.md', user)).resolves.toBeUndefined();
+
+            expect(mockStorage.deleteContentFile).toBeCalledWith('path/to/root/page.md');
+        });
+
+        it('recurses through objects if the file to be deleted is deeper in the tree', async () => {
+            const user = { id: 'some-user', roles: ['admin'] };
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.listContentChildren.mockResolvedValue([]);
+            const page = new Markdown('path/to/root', config, mockStorage, true);
+
+            await expect(page.deletePage('path/to/root/path/to/page.md', user)).resolves.toBeUndefined();
+
+            expect(mockStorage.contentFileExists).toBeCalledTimes(4);
+            expect(mockStorage.deleteContentFile).toBeCalledWith('path/to/root/path/to/page.md');
+        });
+    });
+
     describe('getTree', () => {
         beforeEach(() => {
             mockStorage.getContentFileModifiedTime.mockReturnValue(1234);

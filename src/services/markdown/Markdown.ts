@@ -130,6 +130,26 @@ export class Markdown implements IMarkdown {
         if (!this.userHasReadAccess(user)) throw new NotPermittedError();
     }
 
+    public async deletePage(targetApiPath: string, user?: User | undefined): Promise<void> {
+        this.throwIfNotAdmin(user);
+        this.throwIfNoContentFile();
+
+        if (targetApiPath === this.apiPath) {
+            const children = await this.getChildFiles();
+            if (children.length > 0) {
+                throw new NotPermittedError('cannot delete markdown files which have children');
+            }
+            this.storage.deleteContentFile(this.apiPath);
+        } else {
+            const nextChild = this.getNextChildInTargetPath(targetApiPath);
+            return await nextChild.deletePage(targetApiPath, user);
+        }
+    }
+
+    private throwIfNotAdmin(user?: User): void {
+        if (!userIsAdmin(user)) throw new NotPermittedError();
+    }
+
     private throwIfNoWriteAccess(user?: User): void {
         if (!this.userHasWriteAccess(user)) throw new NotPermittedError();
     }

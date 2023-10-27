@@ -75,6 +75,17 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
         await fs.promises.writeFile(fullPath, fileBuffer);
     }
 
+    public async deleteContentFile(contentPath: string): Promise<void> {
+        await this.deleteFile(this.getContentFullPath(contentPath));
+    }
+
+    private async deleteFile(fullPath: string): Promise<void> {
+        if (!this.isExtantFile(fullPath)) {
+            throw new Error(`${fullPath} is not an extant file`);
+        }
+        await fs.promises.rm(fullPath);
+    }
+
     public generatedFileIsOlder(contentPath: string, tag: string): boolean {
         return this.pathModifiedTime(this.getGeneratedFileFullPath(contentPath, tag))
             < this.pathModifiedTime(this.getContentFullPath(contentPath));

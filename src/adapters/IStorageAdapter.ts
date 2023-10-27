@@ -8,6 +8,7 @@ export interface IStorageAdapter {
     storeContentFile(apiPath: string, fileBuffer: Buffer): Promise<void>;
     storeGeneratedFile(apiPath: string, tag: string, fileBuffer: Buffer): Promise<void>;
     storeAdminFile(adminPath: string, fileBuffer: Buffer): Promise<void>;
+    deleteContentFile(apiPath: string): Promise<void>;
     generatedFileIsOlder(apiPath: string, tag: string): boolean;
     getContentFileModifiedTime(apiPath: string): number;
     getAdminFileModifiedTime(adminPath: string): number;

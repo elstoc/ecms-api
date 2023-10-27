@@ -9,7 +9,8 @@ jest.mock('fs', () => ({
     promises: {
         readFile: jest.fn(),
         writeFile: jest.fn(),
-        readdir: jest.fn()
+        readdir: jest.fn(),
+        rm: jest.fn()
     }
 }));
 
@@ -19,6 +20,7 @@ const mkdirSyncMock = fs.mkdirSync as jest.Mock;
 const promiseReadFileMock = fs.promises.readFile as jest.Mock;
 const promiseWriteFileMock = fs.promises.writeFile as jest.Mock;
 const promiseReaddirMock = fs.promises.readdir as jest.Mock;
+const promiseRmMock = fs.promises.rm as jest.Mock;
 
 const dataDir = '/path/to/data';
 
@@ -332,6 +334,7 @@ describe('LocalFileStorageAdapter', () => {
             expect(mTime).toBe(100);
         });
     });
+
     describe('generatedFileIsOlder', () => {
         it('returns true if the generated file is older', () => {
             existsSyncMock.mockReturnValue(true);
@@ -367,6 +370,27 @@ describe('LocalFileStorageAdapter', () => {
             expect(statsyncMock).toBeCalledWith(`${dataDir}/cache/path/to/tag/file`);
             expect(statsyncMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
             expect(isOlder).toBeFalsy();
+        });
+    });
+
+    describe('deleteContentFile', () => {
+        it('attempts to remove the file if it exists', async () => {
+            existsSyncMock.mockReturnValue(true);
+            statsyncMock.mockReturnValueOnce({ isFile: () => true });
+
+            await storage.deleteContentFile('path/to/file');
+
+            expect(existsSyncMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
+            expect(promiseRmMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
+        });
+
+        it('throws an error if the file does not exist', async () => {
+            existsSyncMock.mockReturnValue(false);
+            statsyncMock.mockReturnValueOnce({ isFile: () => false });
+
+            await expect(storage.deleteContentFile('path/to/file')).rejects.toThrowError();
+
+            expect(existsSyncMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
         });
     });
 });

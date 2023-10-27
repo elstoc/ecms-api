@@ -14,6 +14,7 @@ const mockStorage = {
     storeAdminFile: jest.fn() as jest.Mock,
     getAdminFileModifiedTime: jest.fn() as jest.Mock,
     storeContentFile: jest.fn() as jest.Mock,
+    deleteContentFile: jest.fn() as jest.Mock
 };
 
 jest.mock('../../../src/services/gallery/GalleryImage');

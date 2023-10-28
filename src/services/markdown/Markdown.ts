@@ -9,24 +9,20 @@ import { NotFoundError, NotPermittedError } from '../../errors';
 import { User } from '../auth';
 
 export class Markdown implements IMarkdown {
-    private apiPath: string;
     private contentPath: string;
-    private childrenContentDir: string;
     private metadata?: MarkdownTree;
     private children: { [key: string]: IMarkdown } = {};
     private metadataFromSourceFileTime = 0;
 
     constructor(
-        apiPath: string,
+        private apiPath: string,
         private config: Config,
         private storage: IStorageAdapter,
         private isRoot = false
     ) {
-        this.apiPath = apiPath.replace(/^\//, '');
-        this.childrenContentDir = this.apiPath.replace(/\.md$/, '');
         this.contentPath = this.isRoot
             ? `${this.apiPath}/index.md`
-            : this.apiPath;
+            : `${this.apiPath}.md`;
     }
 
     public async getPage(targetApiPath: string, user?: User): Promise<MarkdownPage> {
@@ -66,26 +62,20 @@ export class Markdown implements IMarkdown {
     }
 
     private getMdTemplate(filePath: string): string {
-        return `---\ntitle: ${path.basename(filePath, '.md')}\n---\n\n`;
+        return `---\ntitle: ${path.basename(filePath)}\n---\n\n`;
     }
 
     private async getContentFile(): Promise<string> {
         return (await this.storage.getContentFile(this.contentPath)).toString('utf-8');
     }
 
-    private apiPathIsValid(apiPath: string): boolean {
-        if (apiPath === this.apiPath) {
-            return true;
-        } else if (!apiPath.endsWith('.md')) {
-            return false;
-        }
+    private apiPathIsValid(targetApiPath: string): boolean {
+        if (targetApiPath === this.apiPath) return true;
 
-        const apiPathWithoutMd = apiPath.substring(0, apiPath.lastIndexOf('.'));
-        const pathSegments = splitPath(apiPathWithoutMd);
         const onlyHasValidCharacters = /^[A-Za-z0-9_-]+$/;
 
         let pathValid = true;
-        pathSegments.forEach((segment) => {
+        splitPath(targetApiPath).forEach((segment) => {
             if (!onlyHasValidCharacters.test(segment)) {
                 pathValid = false;
             }
@@ -117,17 +107,33 @@ export class Markdown implements IMarkdown {
     }
 
     public async createContentFile(): Promise<void> {
-        return this.storage.storeContentFile(this.apiPath, Buffer.from(''));
+        return this.storage.storeContentFile(this.contentPath, Buffer.from(''));
     }
 
     private throwIfNoContentFile(): void {
-        if (!this.contentPath.endsWith('.md') || !this.storage.contentFileExists(this.contentPath)) {
+        if (!this.storage.contentFileExists(this.contentPath)) {
             throw new NotFoundError(`No markdown file found matching path ${this.apiPath}`);
         }
     }
 
     private throwIfNoReadAccess(user?: User): void {
         if (!this.userHasReadAccess(user)) throw new NotPermittedError();
+    }
+
+    private userHasReadAccess(user?: User): boolean {
+        return !this.config.enableAuthentication || userHasReadAccess(user, this.metadata?.restrict);
+    }
+
+    private throwIfNoWriteAccess(user?: User): void {
+        if (!this.userHasWriteAccess(user)) throw new NotPermittedError();
+    }
+
+    private userHasWriteAccess(user?: User): boolean {
+        return !this.config.enableAuthentication || userHasWriteAccess(user, this.metadata?.allowWrite);
+    }
+
+    private throwIfNotAdmin(user?: User): void {
+        if (!userIsAdmin(user)) throw new NotPermittedError();
     }
 
     public async deletePage(targetApiPath: string, user?: User | undefined): Promise<void> {
@@ -139,45 +145,29 @@ export class Markdown implements IMarkdown {
             if (children.length > 0) {
                 throw new NotPermittedError('cannot delete markdown files which have children');
             }
-            this.storage.deleteContentFile(this.apiPath);
+            this.storage.deleteContentFile(this.contentPath);
         } else {
             const nextChild = this.getNextChildInTargetPath(targetApiPath);
             return await nextChild.deletePage(targetApiPath, user);
         }
     }
 
-    private throwIfNotAdmin(user?: User): void {
-        if (!userIsAdmin(user)) throw new NotPermittedError();
-    }
-
-    private throwIfNoWriteAccess(user?: User): void {
-        if (!this.userHasWriteAccess(user)) throw new NotPermittedError();
-    }
-
-    private userHasReadAccess(user?: User): boolean {
-        return !this.config.enableAuthentication || userHasReadAccess(user, this.metadata?.restrict);
-    }
-
-    private userHasWriteAccess(user?: User): boolean {
-        return !this.config.enableAuthentication || userHasWriteAccess(user, this.metadata?.allowWrite);
-    }
-
     private getNextChildInTargetPath(targetApiPath: string): IMarkdown {
         /* split the "target path" and "directory containing this instance's children"
            into path segment arrays */
         const targetApiPathSplit = splitPath(targetApiPath);
-        const thisChildrenContentDirSplit = splitPath(this.childrenContentDir);
+        const thisApiPathSplit = splitPath(this.apiPath);
 
-        /* if the target path has one more path segment than the children directory,
+        /* if the target path has one more path segment than this instance,
            it must be a direct child of this instance */
-        if (targetApiPathSplit.length === thisChildrenContentDirSplit.length + 1) {
+        if (targetApiPathSplit.length === thisApiPathSplit.length + 1) {
             return this.getChild(targetApiPath);
         }
 
         /* target is a deeper child
            get the api path to the next file in the chain */
-        const nextChildApiDirSplit = targetApiPathSplit.slice(0, thisChildrenContentDirSplit.length + 1);
-        const nextChildApiPath = path.join(...nextChildApiDirSplit) + '.md';
+        const nextChildApiDirSplit = targetApiPathSplit.slice(0, thisApiPathSplit.length + 1);
+        const nextChildApiPath = path.join(...nextChildApiDirSplit);
         return this.getChild(nextChildApiPath);
     }
 
@@ -193,15 +183,14 @@ export class Markdown implements IMarkdown {
             return this.metadata;
         }
 
-        const frontMatter = await this.parseFrontMatter();
-
         const fieldList = ['apiPath', 'title', 'uiPath', 'weight', 'restrict', 'allowWrite'];
+        const frontMatter = await this.parseFrontMatter();
         const pickedFields = _.pick(frontMatter, fieldList);
         const additionalData = _.omit(frontMatter, fieldList);
 
         this.metadata = {
             apiPath: this.apiPath,
-            title: path.basename(this.apiPath, '.md'),
+            title: path.basename(this.apiPath),
             ...pickedFields,
             additionalData
         };
@@ -219,7 +208,7 @@ export class Markdown implements IMarkdown {
     public async getTree(user?: User): Promise<MarkdownTree | undefined> {
         this.throwIfNoContentFile();
         const metadata = await this.getMetadata();
-        if (this.config.enableAuthentication && !userHasReadAccess(user, this.metadata?.restrict)) {
+        if (this.config.enableAuthentication && !this.userHasReadAccess(user)) {
             return undefined;
         }
         const childObjects = await this.getChildren();
@@ -242,14 +231,14 @@ export class Markdown implements IMarkdown {
         const childMdFiles = await this.getChildFiles();
         return childMdFiles
             .map((childFileName) => {
-                const childApiPath = path.join(this.childrenContentDir, childFileName);
+                const childApiPath = path.join(this.apiPath, path.basename(childFileName, '.md'));
                 return this.getChild(childApiPath);
             });
     }
 
     private async getChildFiles(): Promise<string[]> {
         return this.storage.listContentChildren(
-            this.childrenContentDir,
+            this.apiPath,
             (childFile) => (
                 childFile.endsWith('.md') && !(childFile.endsWith('index.md'))
             )

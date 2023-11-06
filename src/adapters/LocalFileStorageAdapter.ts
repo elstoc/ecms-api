@@ -26,7 +26,8 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
 
     private createDirectoryIfNotExists(fullPath: string) {
         if (!fs.existsSync(fullPath)) {
-            fs.mkdirSync(fullPath, { recursive: true });
+            this.createDirectoryIfNotExists(path.dirname(fullPath));
+            fs.mkdirSync(fullPath);
         }
     }
 

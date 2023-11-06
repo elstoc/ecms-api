@@ -31,7 +31,7 @@ describe('LocalFileStorageAdapter', () => {
     };
 
     beforeEach(() => {
-        existsSyncMock.mockReturnValueOnce(true);
+        existsSyncMock.mockReturnValue(true);
         statsyncMock.mockReturnValueOnce({ isDirectory: () => true });
         storage = new LocalFileStorageAdapter(dataDir);
         jest.resetAllMocks();
@@ -235,9 +235,14 @@ describe('LocalFileStorageAdapter', () => {
 
     describe('storeAdminFile', () => {
         it('creates directories if they do not exist', async () => {
-            existsSyncMock.mockReturnValue(false);
-            await storage.storeAdminFile('dir/file', Buffer.from('file-contents'));
-            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/admin/dir`, { recursive: true });
+            existsSyncMock.mockImplementation((path: string) => !path.startsWith(`${dataDir}/admin/`));
+
+            await storage.storeAdminFile('full/path/to/file', Buffer.from('file-contents'));
+
+            expect(mkdirSyncMock).toBeCalledTimes(3);
+            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/admin/full`);
+            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/admin/full/path`);
+            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/admin/full/path/to`);
         });
 
         it('does not create directories if they do exist', async () => {
@@ -255,9 +260,14 @@ describe('LocalFileStorageAdapter', () => {
 
     describe('storeContentFile', () => {
         it('creates directories if they do not exist', async () => {
-            existsSyncMock.mockReturnValue(false);
-            await storage.storeContentFile('dir/file', Buffer.from('file-contents'));
-            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/content/dir`, { recursive: true });
+            existsSyncMock.mockImplementation((path: string) => !path.startsWith(`${dataDir}/content/`));
+
+            await storage.storeContentFile('full/path/to/file', Buffer.from('file-contents'));
+
+            expect(mkdirSyncMock).toBeCalledTimes(3);
+            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/content/full`);
+            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/content/full/path`);
+            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/content/full/path/to`);
         });
 
         it('does not create directories if they do exist', async () => {
@@ -275,9 +285,15 @@ describe('LocalFileStorageAdapter', () => {
 
     describe('storeGeneratedFile', () => {
         it('creates directories if they do not exist', async () => {
-            existsSyncMock.mockReturnValue(false);
-            await storage.storeGeneratedFile('dir/file', 'tag', Buffer.from('file-contents'));
-            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/cache/dir/tag`, { recursive: true });
+            existsSyncMock.mockImplementation((path: string) => !path.startsWith(`${dataDir}/cache/`));
+
+            await storage.storeGeneratedFile('full/path/to/file', 'tag', Buffer.from('file-contents'));
+
+            expect(mkdirSyncMock).toBeCalledTimes(4);
+            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/cache/full`);
+            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/cache/full/path`);
+            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/cache/full/path/to`);
+            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/cache/full/path/to/tag`);
         });
 
         it('does not create directories if they do exist', async () => {

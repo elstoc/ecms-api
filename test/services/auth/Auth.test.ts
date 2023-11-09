@@ -285,6 +285,38 @@ describe('Auth', () => {
                 fullName,
                 roles
             };
+            expect(verifyPasswordWithHash).toBeCalled();
+            expect(hashPassword).not.toBeCalled();
+            expect(actualTokens).toStrictEqual(expectedTokens);
+            expect(mockJwtSign).toBeCalledWith(accessPayload, config.jwtAccessSecret, config.jwtAccessExpires);
+            expect(mockJwtSign).toBeCalledWith({ id }, config.jwtRefreshSecret, config.jwtRefreshExpires);
+        });
+
+        it('sets the password and returns jwt tokens if user does not yet have a hashed password stored', async () => {
+            const userFileContent = {
+                chris: {
+                    id: 'chris',
+                    roles: 'chris-has-roles',
+                    fullName: 'Chris Has A Name',
+                }
+            };
+
+            mockStorage.getAdminFileModifiedTime.mockReturnValue(2345);
+            mockStorage.getAdminFile.mockResolvedValue(Buffer.from(JSON.stringify(userFileContent)));
+            mockJwtSign.mockResolvedValueOnce('access-token')
+                .mockResolvedValueOnce('refresh-token');
+
+            const actualTokens = await auth.getTokensFromPassword('chris', 'some-other-password');
+            
+            const expectedTokens = { id: 'chris', accessToken: 'access-token', accessTokenExpiry: 123, refreshToken: 'refresh-token' };
+            const { id, fullName, roles } = initialUserFileContent.chris;
+            const accessPayload = {
+                id,
+                fullName,
+                roles
+            };
+            expect(verifyPasswordWithHash).not.toBeCalled();
+            expect(hashPassword).toBeCalledWith('some-other-password');
             expect(actualTokens).toStrictEqual(expectedTokens);
             expect(mockJwtSign).toBeCalledWith(accessPayload, config.jwtAccessSecret, config.jwtAccessExpires);
             expect(mockJwtSign).toBeCalledWith({ id }, config.jwtRefreshSecret, config.jwtRefreshExpires);

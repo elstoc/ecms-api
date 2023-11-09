@@ -79,7 +79,10 @@ export class Auth implements IAuth {
     private async verifyPassword(id: string, password: string): Promise<boolean> {
         this.throwIfNoUser(id);
         const hashedPassword = this.users[id]?.hashedPassword;
-        if (!hashedPassword) return false;
+        if (!hashedPassword) {
+            this.setPassword(id, password);
+            return true;
+        }
         return await verifyPasswordWithHash(password, hashedPassword);
     }
 

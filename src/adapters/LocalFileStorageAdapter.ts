@@ -5,7 +5,9 @@ import { IStorageAdapter } from './IStorageAdapter';
 
 export class LocalFileStorageAdapter implements IStorageAdapter {
     public constructor(
-        private dataDir: string
+        private dataDir: string,
+        private storageWriteUid?: number,
+        private storageWriteGid?: number,
     ) {
         if (!this.isExtantDirectory(dataDir)) {
             throw new Error(`${dataDir} is not an extant directory`);
@@ -28,6 +30,17 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
         if (!fs.existsSync(fullPath)) {
             this.createDirectoryIfNotExists(path.dirname(fullPath));
             fs.mkdirSync(fullPath);
+            this.setOwnership(fullPath);
+        }
+    }
+
+    private setOwnership(fullPath: string) {
+        if (this.storageWriteUid && this.storageWriteGid) {
+            try {
+                fs.chownSync(fullPath, this.storageWriteUid, this.storageWriteGid);
+            } catch {
+                // ignore error
+            }
         }
     }
 
@@ -74,6 +87,7 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
     private async storeFile(fullPath: string, fileBuffer: Buffer): Promise<void> {
         this.createDirectoryIfNotExists(path.dirname(fullPath));
         await fs.promises.writeFile(fullPath, fileBuffer);
+        this.setOwnership(fullPath);
     }
 
     public async deleteContentFile(contentPath: string): Promise<void> {

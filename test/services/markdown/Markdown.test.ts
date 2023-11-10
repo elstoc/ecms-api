@@ -33,6 +33,8 @@ const mockStorage = {
 const mockYAMLparse = YAML.parse as jest.Mock;
 const mockSplitFrontMatter = splitFrontMatter as jest.Mock;
 
+const getMdTemplate = (filename: string) => `---\ntitle: ${path.basename(filename)}\n---\n\n`;
+
 describe('Markdown', () => {
     const contentFile = 'content-file';
     const contentFileBuf = Buffer.from(contentFile);
@@ -84,6 +86,30 @@ describe('Markdown', () => {
                     expect(mockStorage.contentFileExists.mock.calls[3][0]).toBe('root/path/to/page.md');
                     expect(mockStorage.getContentFile).toBeCalledWith('root/path/to/page.md');
                     expect(actualPage.content).toBe(contentFile);
+                    expect(actualPage.pageExists).toBe(true);
+                });
+
+                it('prepends front matter to the content if none is present in the file (but file contains markdown)', async () => {
+                    mockSplitFrontMatter.mockReturnValue([{}]);
+                    mockYAMLparse.mockReturnValue({});
+                    const page = new Markdown('path/to/root', config, mockStorage, true);
+
+                    const actualPage = await page.getPage('path/to/root/file');
+
+                    expect(mockStorage.getContentFile).toBeCalledWith('path/to/root/file.md');
+                    expect(actualPage.content).toBe(getMdTemplate('file'));
+                    expect(actualPage.pageExists).toBe(true);
+                });
+
+                it('prepends front matter to the content if file is empty', async () => {
+                    mockSplitFrontMatter.mockReturnValue([{}, 'some-markdown']);
+                    mockYAMLparse.mockReturnValue({});
+                    const page = new Markdown('path/to/root', config, mockStorage, true);
+
+                    const actualPage = await page.getPage('path/to/root/file');
+
+                    expect(mockStorage.getContentFile).toBeCalledWith('path/to/root/file.md');
+                    expect(actualPage.content).toBe(`${getMdTemplate('file')}some-markdown`);
                     expect(actualPage.pageExists).toBe(true);
                 });
             });
@@ -297,7 +323,7 @@ describe('Markdown', () => {
                     '01-234/5/67_890',
                 ])('and the target path is valid, the returned object reflects this, and contains a markdown template (%s)', async (inPath: string) => {
                     const expectedPage = {
-                        content: `---\ntitle: ${path.basename(inPath)}\n---\n\n`,
+                        content: getMdTemplate(inPath),
                         pageExists: false,
                         pathValid: true,
                         canWrite: true,
@@ -516,15 +542,36 @@ describe('Markdown', () => {
                     'ABCDEF/GHIJKLMNO/PQRSTUVWXYZ',
                     '01-234/5/67_890',
                 ])('creates all intermediate files as well if the entire path is valid (%s)', async (path: string) => {
+                    const pathSplit = path.split('/');
+
                     await expect(rootPage.writePage(`${nonExistentPage}/${path}`, writeContent, user))
                         .resolves.toBeUndefined();
-                    // each non-existent content file is created (empty)
-                    // the final file in the path is then written with the appropriate content
-                    expect(mockStorage.storeContentFile).toHaveBeenNthCalledWith(1, expect.anything(), Buffer.from(''));
-                    expect(mockStorage.storeContentFile).toHaveBeenNthCalledWith(2, expect.anything(), Buffer.from(''));
-                    expect(mockStorage.storeContentFile).toHaveBeenNthCalledWith(3, expect.anything(), Buffer.from(''));
-                    expect(mockStorage.storeContentFile).toHaveBeenNthCalledWith(4, expect.anything(), Buffer.from(''));
-                    expect(mockStorage.storeContentFile).toHaveBeenNthCalledWith(5, expect.anything(), Buffer.from(writeContent));
+
+                    expect(mockStorage.storeContentFile).toHaveBeenNthCalledWith(
+                        1,
+                        `${nonExistentPage}.md`,
+                        Buffer.from(getMdTemplate(nonExistentPage))
+                    );
+                    expect(mockStorage.storeContentFile).toHaveBeenNthCalledWith(
+                        2,
+                        `${nonExistentPage}/${pathSplit[0]}.md`,
+                        Buffer.from(getMdTemplate(pathSplit[0]))
+                    );
+                    expect(mockStorage.storeContentFile).toHaveBeenNthCalledWith(
+                        3,
+                        `${nonExistentPage}/${pathSplit.slice(0,2).join('/')}.md`,
+                        Buffer.from(getMdTemplate(pathSplit[1]))
+                    );
+                    expect(mockStorage.storeContentFile).toHaveBeenNthCalledWith(
+                        4,
+                        `${nonExistentPage}/${pathSplit.slice(0,3).join('/')}.md`,
+                        Buffer.from(getMdTemplate(pathSplit[2]))
+                    );
+                    expect(mockStorage.storeContentFile).toHaveBeenNthCalledWith(
+                        5,
+                        `${nonExistentPage}/${path}.md`,
+                        Buffer.from(writeContent)
+                    );
                 });
 
                 it.each([

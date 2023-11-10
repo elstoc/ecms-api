@@ -11,6 +11,7 @@ import { User } from '../auth';
 export class Markdown implements IMarkdown {
     private contentPath: string;
     private metadata?: MarkdownTree;
+    private hasFrontMatter = false;
     private children: { [key: string]: IMarkdown } = {};
     private metadataFromSourceFileTime = 0;
 
@@ -31,7 +32,11 @@ export class Markdown implements IMarkdown {
         this.throwIfNoReadAccess(user);
 
         if (targetApiPath === this.apiPath) {
-            const content = await this.getContentFile();
+            let content = await this.getContentFile();
+            if (!this.hasFrontMatter) {
+                const [, markdown] = splitFrontMatter(content);
+                content = this.getFrontMatterTemplate(this.apiPath) + (markdown || '');
+            }
             const canDelete = userIsAdmin(user) && (await this.getChildFiles()).length === 0;
             return {
                 content,
@@ -49,7 +54,7 @@ export class Markdown implements IMarkdown {
             if (e instanceof NotFoundError && userIsAdmin(user)) {
                 const pathValid = this.apiPathIsValid(targetApiPath);
                 return {
-                    content: pathValid ? this.getMdTemplate(targetApiPath) : '',
+                    content: pathValid ? this.getFrontMatterTemplate(targetApiPath) : '',
                     pageExists: false,
                     canDelete: false,
                     pathValid,
@@ -61,7 +66,7 @@ export class Markdown implements IMarkdown {
         }
     }
 
-    private getMdTemplate(filePath: string): string {
+    private getFrontMatterTemplate(filePath: string): string {
         return `---\ntitle: ${path.basename(filePath)}\n---\n\n`;
     }
 
@@ -107,7 +112,7 @@ export class Markdown implements IMarkdown {
     }
 
     public async createContentFile(): Promise<void> {
-        return this.storage.storeContentFile(this.contentPath, Buffer.from(''));
+        return this.storage.storeContentFile(this.contentPath, Buffer.from(this.getFrontMatterTemplate(this.apiPath)));
     }
 
     private throwIfNoContentFile(): void {
@@ -183,10 +188,12 @@ export class Markdown implements IMarkdown {
             return this.metadata;
         }
 
-        const fieldList = ['apiPath', 'title', 'uiPath', 'weight', 'restrict', 'allowWrite'];
         const frontMatter = await this.parseFrontMatter();
-        const pickedFields = _.pick(frontMatter, fieldList);
-        const additionalData = _.omit(frontMatter, fieldList);
+        this.hasFrontMatter = Boolean(Object.keys(frontMatter).length);
+
+        const fieldList = ['apiPath', 'title', 'uiPath', 'weight', 'restrict', 'allowWrite'];
+        const pickedFields = this.hasFrontMatter ? _.pick(frontMatter, fieldList) : {};
+        const additionalData = this.hasFrontMatter ? _.omit(frontMatter, fieldList) : {};
 
         this.metadata = {
             apiPath: this.apiPath,

@@ -189,7 +189,7 @@ export class Markdown implements IMarkdown {
         }
 
         const frontMatter = await this.parseFrontMatter();
-        this.hasFrontMatter = Boolean(Object.keys(frontMatter).length);
+        this.hasFrontMatter = Boolean(frontMatter && Object.keys(frontMatter).length);
 
         const fieldList = ['apiPath', 'title', 'uiPath', 'weight', 'restrict', 'allowWrite'];
         const pickedFields = this.hasFrontMatter ? _.pick(frontMatter, fieldList) : {};

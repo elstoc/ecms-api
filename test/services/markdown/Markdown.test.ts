@@ -643,6 +643,15 @@ describe('Markdown', () => {
             expect(mockStorage.contentFileExists).toBeCalledTimes(4);
             expect(mockStorage.deleteContentFile).toBeCalledWith('path/to/root/path/to/page.md');
         });
+
+        it('throws an error when trying to delete the root page', async () => {
+            const user = { id: 'some-user', roles: ['admin'] };
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.listContentChildren.mockResolvedValue([]);
+            const page = new Markdown('path/to/root', config, mockStorage, true);
+
+            await expect(page.deletePage('path/to/root', user)).rejects.toThrow(new NotPermittedError('cannot delete the root file'));
+        });
     });
 
     describe('getTree', () => {

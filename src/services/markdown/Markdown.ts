@@ -146,6 +146,9 @@ export class Markdown implements IMarkdown {
         this.throwIfNoContentFile();
 
         if (targetApiPath === this.apiPath) {
+            if (this.isRoot) {
+                throw new NotPermittedError('cannot delete the root file');
+            }
             const children = await this.getChildFiles();
             if (children.length > 0) {
                 throw new NotPermittedError('cannot delete markdown files which have children');

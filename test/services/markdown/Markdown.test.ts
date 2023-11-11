@@ -227,7 +227,7 @@ describe('Markdown', () => {
                     mockStorage.listContentChildren.mockResolvedValue(['file1.md', 'file2.md']);
                     const user = { id: 'some-user', roles: ['admin'] };
 
-                    const actualPage = await page.getPage('path/to/root', user);
+                    const actualPage = await page.getPage('path/to/root/file', user);
 
                     expect(actualPage.canDelete).toBe(false);
                 });
@@ -236,7 +236,7 @@ describe('Markdown', () => {
                     mockStorage.listContentChildren.mockResolvedValue([]);
                     const user = { id: 'some-user', roles: ['role1'] };
 
-                    const actualPage = await page.getPage('path/to/root', user);
+                    const actualPage = await page.getPage('path/to/root/file', user);
 
                     expect(actualPage.canDelete).toBe(false);
                 });
@@ -245,9 +245,18 @@ describe('Markdown', () => {
                     mockStorage.listContentChildren.mockResolvedValue([]);
                     const user = { id: 'some-user', roles: ['admin'] };
 
-                    const actualPage = await page.getPage('path/to/root', user);
+                    const actualPage = await page.getPage('path/to/root/file', user);
 
                     expect(actualPage.canDelete).toBe(true);
+                });
+
+                it('false for the root page, even if the user is admin and the page has no children', async () => {
+                    mockStorage.listContentChildren.mockResolvedValue([]);
+                    const user = { id: 'some-user', roles: ['admin'] };
+
+                    const actualPage = await page.getPage('path/to/root', user);
+
+                    expect(actualPage.canDelete).toBe(false);
                 });
             });
         });

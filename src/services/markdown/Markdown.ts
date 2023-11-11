@@ -37,7 +37,7 @@ export class Markdown implements IMarkdown {
                 const [, markdown] = splitFrontMatter(content);
                 content = this.getFrontMatterTemplate(this.apiPath) + (markdown || '');
             }
-            const canDelete = userIsAdmin(user) && (await this.getChildFiles()).length === 0;
+            const canDelete = !this.isRoot && userIsAdmin(user) && (await this.getChildFiles()).length === 0;
             return {
                 content,
                 pageExists: true,

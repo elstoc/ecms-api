@@ -42,7 +42,7 @@ describe('That resizeImage', () => {
         expect(resize).toBeCalledWith(10, 20);
         expect(quality).toBeCalledWith(30);
         expect(strip).toBeCalledWith();
-        expect(borderColor).toBeCalledWith('rgb(50,50,50)');
+        expect(borderColor).toBeCalledWith('rgb(60,60,60)');
         expect(border).toBeCalledWith(2, 2);
         expect(toBuffer.mock.calls[0][0]).toBe('JPG');
     });
@@ -55,7 +55,7 @@ describe('That resizeImage', () => {
         expect(resize).toBeCalledWith(10, 20);
         expect(quality).toBeCalledWith(30);
         expect(strip).not.toBeCalled();
-        expect(borderColor).toBeCalledWith('rgb(50,50,50)');
+        expect(borderColor).toBeCalledWith('rgb(60,60,60)');
         expect(border).toBeCalledWith(2, 2);
         expect(toBuffer.mock.calls[0][0]).toBe('JPG');
     });

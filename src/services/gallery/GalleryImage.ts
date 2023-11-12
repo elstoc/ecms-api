@@ -73,12 +73,12 @@ export class GalleryImage implements IGalleryImage {
         return `${this.config.apiUrl}/gallery/image/${this.contentPath}?timestamp=${this.imageDataFromSourceFileTime}&size=${config.desc}&version=${config.version}`;
     }
 
-    public async getFile(size: ImageSize, timestamp: number): Promise<Buffer> {
+    public async getFile(size: ImageSize, timestamp: string): Promise<Buffer> {
         if (![ImageSize.fhd, ImageSize.thumb].includes(size)) {
             throw new NotFoundError('Incorrect size description');
         }
         this.throwIfNoSourceFile();
-        if (timestamp !== this.getSourceModifiedTime()) {
+        if (timestamp !== this.getSourceModifiedTime().toString()) {
             throw new NotPermittedError('incorrect timestamp given');
         }
 

@@ -10,7 +10,7 @@ export type SiteConfig = {
 
 export interface ISite {
     listComponents(user?: User): Promise<ComponentMetadata[]>;
-    getGalleryImageFile(apiPath: string, size: string, timestamp: number): Promise<Buffer>;
+    getGalleryImageFile(apiPath: string, size: string, timestamp: string): Promise<Buffer>;
     getGalleryContents(apiPath: string, limit?: number): Promise<GalleryContents>;
     getMarkdownPage(apiPath: string, user?: User): Promise<MarkdownPage>;
     writeMarkdownPage(apiPath: string, content: string, user?: User): Promise<void>;

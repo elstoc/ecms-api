@@ -34,7 +34,7 @@ export class Gallery implements IGallery {
         return await image.getImageMetadata();
     }
 
-    public async getImageFile(apiPath: string, size: ImageSize, timestamp: number): Promise<Buffer> {
+    public async getImageFile(apiPath: string, size: ImageSize, timestamp: string): Promise<Buffer> {
         const image = this.getGalleryImage(apiPath);
         return image.getFile(size, timestamp);
     }

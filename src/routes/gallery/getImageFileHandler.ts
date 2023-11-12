@@ -11,7 +11,7 @@ export const createGetImageFileHandler = (site: ISite, logger: winston.Logger): 
         if (!size || !timestamp || typeof size !== 'string' || typeof timestamp !== 'string') {
             throw new NotFoundError('incorrect route parameters');
         }
-        const imageFileBuf = await site.getGalleryImageFile(path, size as ImageSize, parseInt(timestamp));
+        const imageFileBuf = await site.getGalleryImageFile(path, size as ImageSize, timestamp);
         res.send(imageFileBuf);
     } catch (err: unknown) {
         if (err instanceof Error) {

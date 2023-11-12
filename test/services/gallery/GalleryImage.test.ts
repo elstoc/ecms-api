@@ -48,14 +48,14 @@ describe('GalleryImage', () => {
             'test',
             'something'
         ])('throws an error if the size description is not valid - %s', async (size) => {
-            await expect(galleryImage.getFile(size as any, 1234))
+            await expect(galleryImage.getFile(size as any, '1234'))
                 .rejects.toThrow(new NotFoundError('Incorrect size description'));
         });
 
         it('throws an error if the source image does not exist', async () => {
             mockStorage.contentFileExists.mockReturnValue(false);
 
-            await expect(galleryImage.getFile(ImageSize.thumb, 1234))
+            await expect(galleryImage.getFile(ImageSize.thumb, '1234'))
                 .rejects.toThrow(new NotFoundError(`Source file ${imagePath} does not exist`));
             expect(mockStorage.contentFileExists).toBeCalledWith(imagePath);
         });
@@ -71,7 +71,7 @@ describe('GalleryImage', () => {
             mockStorage.getContentFile.mockResolvedValue(sourceContentBuf);
             resizeImageMock.mockResolvedValue(targetContentBuf);
 
-            const actualFileBuf = await galleryImage.getFile(size as ImageSize, 1234);
+            const actualFileBuf = await galleryImage.getFile(size as ImageSize, '1234');
 
             expect(resizeImageMock).toBeCalledWith(sourceContentBuf, imageParams);
             expect(mockStorage.storeGeneratedFile).toBeCalledWith(imagePath, size, targetContentBuf);
@@ -89,7 +89,7 @@ describe('GalleryImage', () => {
             mockStorage.generatedFileIsOlder.mockReturnValue(false);
             mockStorage.getGeneratedFile.mockResolvedValue(generatedContentBuf);
 
-            const actualFileBuf = await galleryImage.getFile(size as ImageSize, 1234);
+            const actualFileBuf = await galleryImage.getFile(size as ImageSize, '1234');
 
             expect(mockStorage.getGeneratedFile).toBeCalledWith(imagePath, `${size}_v1`);
             expect(actualFileBuf).toBe(generatedContentBuf);
@@ -104,7 +104,7 @@ describe('GalleryImage', () => {
         ])('throws an error when an incorrect timestamp is passed - %s', async (size: string) => {
             mockStorage.contentFileExists.mockReturnValue(true);
 
-            await expect(galleryImage.getFile(size as ImageSize, 999))
+            await expect(galleryImage.getFile(size as ImageSize, '999'))
                 .rejects.toThrow(new NotPermittedError('incorrect timestamp given'));
             expect(mockStorage.getContentFileModifiedTime).toBeCalledWith(imagePath);
         });

@@ -7,5 +7,5 @@ export type GalleryContents = {
 
 export interface IGallery {
     getContents(limit?: number): Promise<GalleryContents>;
-    getImageFile(apiPath: string, size: ImageSize, timestamp: number): Promise<Buffer>;
+    getImageFile(apiPath: string, size: ImageSize, timestamp: string): Promise<Buffer>;
 }

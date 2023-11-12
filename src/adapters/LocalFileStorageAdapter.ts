@@ -19,7 +19,10 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
     }
 
     private isExtantDirectory(fullPath: string) {
-        return fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory();
+        const pathToCheck = fs.lstatSync(fullPath).isSymbolicLink()
+            ? fs.readlinkSync(fullPath)
+            : fullPath;
+        return fs.existsSync(pathToCheck) && fs.statSync(pathToCheck).isDirectory();
     }
 
     private isExtantFile(fullPath: string) {

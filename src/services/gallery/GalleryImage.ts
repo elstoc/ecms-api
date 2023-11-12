@@ -7,7 +7,7 @@ import { NotFoundError, NotPermittedError } from '../../errors';
 
 export const RESIZE_OPTIONS = {
     thumb: { version: 1, desc: ImageSize.thumb, width: 100000, height: 300, quality: 60, stripExif: true, addBorder: true },
-    fhd: { version: 1, desc: ImageSize.fhd, width: 2400, height: 1350, quality: 90, stripExif: true, addBorder: false },
+    fhd: { version: 1, desc: ImageSize.fhd, width: 2300, height: 1300, quality: 90, stripExif: true, addBorder: false },
     forExif: { version: 1, desc: ImageSize.forExif, width: 1, height: 1, quality: 0, stripExif: false, addBorder: false }
 };
 
@@ -86,8 +86,7 @@ export class GalleryImage implements IGalleryImage {
     }
 
     private async getResizedImageBuf(size: ImageSize): Promise<Buffer> {
-        const config = RESIZE_OPTIONS[size];
-        const tag = `${config.desc}_v${config.version}`;
+        const tag = this.getResizedImageTag(size);
         if (this.storage.generatedFileIsOlder(this.contentPath, tag)) {
             return this.generateResizedImage(size);
         }
@@ -97,7 +96,12 @@ export class GalleryImage implements IGalleryImage {
     private async generateResizedImage(size: ImageSize): Promise<Buffer> {
         const sourceFileBuf = await this.storage.getContentFile(this.contentPath);
         const targetFileBuf = await resizeImage(sourceFileBuf, RESIZE_OPTIONS[size]);
-        await this.storage.storeGeneratedFile(this.contentPath, size, targetFileBuf);
+        await this.storage.storeGeneratedFile(this.contentPath, this.getResizedImageTag(size), targetFileBuf);
         return targetFileBuf;
+    }
+
+    private getResizedImageTag(size: ImageSize): string {
+        const config = RESIZE_OPTIONS[size];
+        return `${config.desc}_v${config.version}`;
     }
 }

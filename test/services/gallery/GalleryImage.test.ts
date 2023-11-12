@@ -74,7 +74,7 @@ describe('GalleryImage', () => {
             const actualFileBuf = await galleryImage.getFile(size as ImageSize, '1234');
 
             expect(resizeImageMock).toBeCalledWith(sourceContentBuf, imageParams);
-            expect(mockStorage.storeGeneratedFile).toBeCalledWith(imagePath, size, targetContentBuf);
+            expect(mockStorage.storeGeneratedFile).toBeCalledWith(imagePath, `${size}_v1`, targetContentBuf);
             expect(actualFileBuf).toBe(targetContentBuf);
 
             expect(mockStorage.getGeneratedFile).not.toBeCalled();

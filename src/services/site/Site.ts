@@ -47,9 +47,9 @@ export class Site implements ISite {
         return gallery.getContents(limit);
     }
 
-    public async getGalleryImageFile(apiPath: string, size: string): Promise<Buffer> {
+    public async getGalleryImageFile(apiPath: string, size: string, timestamp: number): Promise<Buffer> {
         const gallery = await this.getRootComponent(apiPath).getGallery();
-        return gallery.getImageFile(apiPath, size as ImageSize);
+        return gallery.getImageFile(apiPath, size as ImageSize, timestamp);
     }
 
     public async getMarkdownTree(apiPath: string, user?: User): Promise<MarkdownTree | undefined> {

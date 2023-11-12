@@ -20,5 +20,5 @@ export type ImageMetadata = {
 
 export interface IGalleryImage {
     getImageMetadata(): Promise<ImageMetadata>;
-    getFile(size: ImageSize): Promise<Buffer>;
+    getFile(size: ImageSize, timestamp: number): Promise<Buffer>;
 }

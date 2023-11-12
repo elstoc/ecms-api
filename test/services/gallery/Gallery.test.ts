@@ -115,10 +115,10 @@ describe('Gallery', () => {
                 getFile
             }));
     
-            await gallery.getImageFile('gallery/image1.jpg', ImageSize.thumb);
+            await gallery.getImageFile('gallery/image1.jpg', ImageSize.thumb, 1234);
     
             expect(GalleryImageMock).toBeCalledTimes(1);
-            expect(getFile).toBeCalledWith('thumb');
+            expect(getFile).toBeCalledWith('thumb', 1234);
         });
     
         it('calls image.sendFile on the existing object the second time it is called', async () => {
@@ -127,15 +127,15 @@ describe('Gallery', () => {
                 getFile
             }));
     
-            await gallery.getImageFile('gallery/image1.jpg', ImageSize.thumb);
-            await gallery.getImageFile('gallery/image1.jpg', ImageSize.fhd);
+            await gallery.getImageFile('gallery/image1.jpg', ImageSize.thumb, 1234);
+            await gallery.getImageFile('gallery/image1.jpg', ImageSize.fhd, 1234);
     
             expect(GalleryImageMock).toBeCalledTimes(1);
             expect(getFile).toBeCalledTimes(2);
             const path1Parms = getFile.mock.calls[0];
             const path2Parms = getFile.mock.calls[1];
-            expect(path1Parms).toEqual(['thumb']);
-            expect(path2Parms).toEqual(['fhd']);
+            expect(path1Parms).toEqual(['thumb', 1234]);
+            expect(path2Parms).toEqual(['fhd', 1234]);
         });
     });
 });

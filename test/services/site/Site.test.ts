@@ -208,9 +208,9 @@ describe('Site', () => {
             }));
 
             const site = new Site(config, mockStorage);
-            await site.getGalleryImageFile('component01/image1.jpg', 'thumb');
+            await site.getGalleryImageFile('component01/image1.jpg', 'thumb', 1234);
 
-            expect(getImageFile).toBeCalledWith('component01/image1.jpg', 'thumb');
+            expect(getImageFile).toBeCalledWith('component01/image1.jpg', 'thumb', 1234);
         });
     });
 

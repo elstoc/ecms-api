@@ -3,7 +3,7 @@ import { basename } from 'path';
 import { IGalleryImage, ImageMetadata, ImageSize } from './IGalleryImage';
 import { getExif, resizeImage, getImageDimensions, Config } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
-import { NotFoundError } from '../../errors';
+import { NotFoundError, NotPermittedError } from '../../errors';
 
 export const RESIZE_OPTIONS = {
     thumb: { version: 1, desc: ImageSize.thumb, width: 100000, height: 300, quality: 60, stripExif: true, addBorder: true },
@@ -25,7 +25,7 @@ export class GalleryImage implements IGalleryImage {
     public async getImageMetadata(): Promise<ImageMetadata> {
         this.throwIfNoSourceFile();
 
-        const sourceModifiedTime = this.storage.getContentFileModifiedTime(this.contentPath);
+        const sourceModifiedTime = this.getSourceModifiedTime();
 
         if (this.imageMetadata && sourceModifiedTime <= this.imageDataFromSourceFileTime) {
             return this.imageMetadata;
@@ -58,6 +58,10 @@ export class GalleryImage implements IGalleryImage {
         return this.imageMetadata;
     }
 
+    private getSourceModifiedTime(): number {
+        return this.storage.getContentFileModifiedTime(this.contentPath);
+    }
+
     private throwIfNoSourceFile(): void {
         if (!this.storage.contentFileExists(this.contentPath)) {
             throw new NotFoundError(`Source file ${this.contentPath} does not exist`);
@@ -66,14 +70,17 @@ export class GalleryImage implements IGalleryImage {
 
     private getSourceUrl(size: ImageSize) {
         const config = RESIZE_OPTIONS[size];
-        return `${this.config.apiUrl}/gallery/image/${this.contentPath}?id=${this.imageDataFromSourceFileTime}&size=${config.desc}&version=${config.version}`;
+        return `${this.config.apiUrl}/gallery/image/${this.contentPath}?timestamp=${this.imageDataFromSourceFileTime}&size=${config.desc}&version=${config.version}`;
     }
 
-    public async getFile(size: ImageSize): Promise<Buffer> {
+    public async getFile(size: ImageSize, timestamp: number): Promise<Buffer> {
         if (![ImageSize.fhd, ImageSize.thumb].includes(size)) {
             throw new NotFoundError('Incorrect size description');
         }
         this.throwIfNoSourceFile();
+        if (timestamp !== this.getSourceModifiedTime()) {
+            throw new NotPermittedError('incorrect timestamp given');
+        }
 
         return this.getResizedImageBuf(size);
     }

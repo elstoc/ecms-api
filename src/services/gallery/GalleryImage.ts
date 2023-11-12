@@ -6,8 +6,8 @@ import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { NotFoundError } from '../../errors';
 
 const RESIZE_OPTIONS = {
-    thumb: { width: 100000, height: 350, quality: 60, stripExif: true, addBorder: true },
-    fhd: { width: 2130, height: 1200, quality: 95, stripExif: true, addBorder: false },
+    thumb: { width: 100000, height: 300, quality: 60, stripExif: true, addBorder: true },
+    fhd: { width: 2400, height: 1350, quality: 90, stripExif: true, addBorder: false },
     forExif: { width: 1, height: 1, quality: 0, stripExif: false, addBorder: false }
 };
 

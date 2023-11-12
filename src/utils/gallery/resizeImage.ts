@@ -1,15 +1,18 @@
 import gm from 'gm';
+import { ImageSize } from '../../services';
 
-export type ResizeOptions = {
-    width: number,
-    height: number,
-    quality: number,
-    stripExif: boolean,
-    addBorder: boolean
+export type ResizeConfig = {
+    desc: ImageSize;
+    width: number;
+    height: number;
+    quality: number;
+    stripExif: boolean;
+    addBorder: boolean;
+    version?: number;
 };
 
-export const resizeImage = (sourceImage: Buffer, options: ResizeOptions): Promise<Buffer> => {
-    const { width, height, quality, stripExif, addBorder } = options;
+export const resizeImage = (sourceImage: Buffer, config: ResizeConfig): Promise<Buffer> => {
+    const { width, height, quality, stripExif, addBorder } = config;
     return new Promise((resolve, reject) => {
         let resizedImage = gm(sourceImage)
             .resize(width, height)

@@ -5,10 +5,10 @@ import { getExif, resizeImage, getImageDimensions, Config } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { NotFoundError } from '../../errors';
 
-const RESIZE_OPTIONS = {
-    thumb: { width: 100000, height: 300, quality: 60, stripExif: true, addBorder: true },
-    fhd: { width: 2400, height: 1350, quality: 90, stripExif: true, addBorder: false },
-    forExif: { width: 1, height: 1, quality: 0, stripExif: false, addBorder: false }
+export const RESIZE_OPTIONS = {
+    thumb: { version: 1, desc: ImageSize.thumb, width: 100000, height: 300, quality: 60, stripExif: true, addBorder: true },
+    fhd: { version: 1, desc: ImageSize.fhd, width: 2400, height: 1350, quality: 90, stripExif: true, addBorder: false },
+    forExif: { version: 1, desc: ImageSize.forExif, width: 1, height: 1, quality: 0, stripExif: false, addBorder: false }
 };
 
 export class GalleryImage implements IGalleryImage {
@@ -65,7 +65,8 @@ export class GalleryImage implements IGalleryImage {
     }
 
     private getSourceUrl(size: ImageSize) {
-        return `${this.config.apiUrl}/gallery/image/${this.contentPath}?id=${this.imageDataFromSourceFileTime}&size=${size}`;
+        const config = RESIZE_OPTIONS[size];
+        return `${this.config.apiUrl}/gallery/image/${this.contentPath}?id=${this.imageDataFromSourceFileTime}&size=${config.desc}&version=${config.version}`;
     }
 
     public async getFile(size: ImageSize): Promise<Buffer> {
@@ -78,10 +79,12 @@ export class GalleryImage implements IGalleryImage {
     }
 
     private async getResizedImageBuf(size: ImageSize): Promise<Buffer> {
-        if (this.storage.generatedFileIsOlder(this.contentPath, size)) {
+        const config = RESIZE_OPTIONS[size];
+        const tag = `${config.desc}_v${config.version}`;
+        if (this.storage.generatedFileIsOlder(this.contentPath, tag)) {
             return this.generateResizedImage(size);
         }
-        return this.storage.getGeneratedFile(this.contentPath, size);
+        return this.storage.getGeneratedFile(this.contentPath, tag);
     }
 
     private async generateResizedImage(size: ImageSize): Promise<Buffer> {

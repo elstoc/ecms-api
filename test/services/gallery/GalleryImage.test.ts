@@ -2,6 +2,7 @@
 import { NotFoundError } from '../../../src/errors';
 import { GalleryImage, IGalleryImage, ImageSize } from '../../../src/services/';
 import { getExif, resizeImage, getImageDimensions } from '../../../src/utils';
+import { RESIZE_OPTIONS } from '../../../src/services/gallery/GalleryImage';
 
 jest.mock('../../../src/utils');
 
@@ -32,12 +33,6 @@ const mockStorage = {
 const getExifMock = getExif as jest.Mock;
 const resizeImageMock = resizeImage as jest.Mock;
 const getImageDimensionsMock = getImageDimensions as jest.Mock;
-
-const RESIZE_OPTIONS = {
-    thumb: { width: 100000, height: 350, quality: 60, stripExif: true, addBorder: true },
-    fhd: { width: 2130, height: 1200, quality: 95, stripExif: true, addBorder: false },
-    forExif: { width: 1, height: 1, quality: 0, stripExif: false, addBorder: false }
-};
 
 describe('GalleryImage', () => {
     let galleryImage: IGalleryImage;
@@ -95,7 +90,7 @@ describe('GalleryImage', () => {
 
             const actualFileBuf = await galleryImage.getFile(size as ImageSize);
 
-            expect(mockStorage.getGeneratedFile).toBeCalledWith(imagePath, size);
+            expect(mockStorage.getGeneratedFile).toBeCalledWith(imagePath, `${size}_v1`);
             expect(actualFileBuf).toBe(generatedContentBuf);
 
             expect(resizeImageMock).not.toBeCalled();
@@ -115,8 +110,8 @@ describe('GalleryImage', () => {
             description: 'my image',
             exif: { title: 'my image', ISO: '1000' },
             thumbDimensions: { width: 100, height: 200 },
-            thumbSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=5000&size=thumb',
-            fhdSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=5000&size=fhd'
+            thumbSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=5000&size=thumb&version=1',
+            fhdSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=5000&size=fhd&version=1'
         };
 
         beforeEach(() => {
@@ -179,8 +174,8 @@ describe('GalleryImage', () => {
         it('resizes files and re-reads data when called a second time after source file has changed', async () => {
             const expectedMetadata2 = {
                 ...expectedMetadata,
-                thumbSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=7000&size=thumb',
-                fhdSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=7000&size=fhd'
+                thumbSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=7000&size=thumb&version=1',
+                fhdSrcUrl: 'site-url/gallery/image/gallery/image.jpg?id=7000&size=fhd&version=1'
             };
 
             mockStorage.contentFileExists.mockReturnValue(true);

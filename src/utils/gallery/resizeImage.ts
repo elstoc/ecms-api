@@ -18,7 +18,7 @@ export const resizeImage = (sourceImage: Buffer, config: ResizeConfig): Promise<
             .resize(width, height)
             .quality(quality);
         
-        if (addBorder) resizedImage = resizedImage.borderColor('rgb(32,32,32)').border(2, 2);
+        if (addBorder) resizedImage = resizedImage.borderColor('rgb(40,40,40)').border(2, 2);
         if (stripExif) resizedImage = resizedImage.strip();
 
         return resizedImage.toBuffer(

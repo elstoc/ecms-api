@@ -7,7 +7,7 @@ import { NotFoundError, NotPermittedError } from '../../errors';
 
 export const RESIZE_OPTIONS = {
     thumb: { version: 1, desc: ImageSize.thumb, width: 100000, height: 300, quality: 60, stripExif: true, addBorder: true },
-    fhd: { version: 1, desc: ImageSize.fhd, width: 2560, height: 1440, quality: 90, stripExif: true, addBorder: false },
+    fhd: { version: 1, desc: ImageSize.fhd, width: 2560, height: 1440, quality: 85, stripExif: true, addBorder: false },
     forExif: { version: 1, desc: ImageSize.forExif, width: 1, height: 1, quality: 0, stripExif: false, addBorder: false }
 };
 

@@ -112,7 +112,7 @@ export class Markdown implements IMarkdown {
     }
 
     public async createContentFile(): Promise<void> {
-        return this.storage.storeContentFile(this.contentPath, Buffer.from(this.getFrontMatterTemplate(this.apiPath)));
+        await this.storage.storeContentFile(this.contentPath, Buffer.from(this.getFrontMatterTemplate(this.apiPath)));
     }
 
     private throwIfNoContentFile(): void {

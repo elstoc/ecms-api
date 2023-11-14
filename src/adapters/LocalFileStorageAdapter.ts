@@ -73,15 +73,15 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
     }
 
     public async storeContentFile(apiPath: string, fileBuffer: Buffer): Promise<void> {
-        this.storeFile(this.getContentFullPath(apiPath), fileBuffer);
+        await this.storeFile(this.getContentFullPath(apiPath), fileBuffer);
     }
 
     public async storeGeneratedFile(contentPath: string, tag: string, fileBuffer: Buffer): Promise<void> {
-        this.storeFile(this.getGeneratedFileFullPath(contentPath, tag), fileBuffer);
+        await this.storeFile(this.getGeneratedFileFullPath(contentPath, tag), fileBuffer);
     }
 
     public async storeAdminFile(adminPath: string, fileBuffer: Buffer): Promise<void> {
-        this.storeFile(this.getAdminFullPath(adminPath), fileBuffer);
+        await this.storeFile(this.getAdminFullPath(adminPath), fileBuffer);
     }
 
     private async storeFile(fullPath: string, fileBuffer: Buffer): Promise<void> {

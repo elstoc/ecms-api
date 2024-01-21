@@ -3,6 +3,7 @@ import { RequestHandler } from '../RequestHandler';
 
 export const createPostAuthLogoutHandler = (logger: winston.Logger): RequestHandler => async (req, res) => {
     logger.info('logging out');
-    res.cookie('refresh_token', '', { httpOnly: true });
+    // TODO: remove duplication with login/refresh
+    res.cookie('refresh_token', '', { httpOnly: true, sameSite: true });
     res.sendStatus(200);
 };

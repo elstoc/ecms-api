@@ -128,7 +128,7 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
             : 0;
     }
 
-    private getContentFullPath(contentPath: string): string {
+    public getContentFullPath(contentPath: string): string {
         return path.join(this.dataDir, 'content', contentPath);
     }
 

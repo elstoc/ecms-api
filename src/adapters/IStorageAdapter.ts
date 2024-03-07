@@ -1,5 +1,6 @@
 export interface IStorageAdapter {
     listContentChildren(contentDirPath: string, fileMatcher: (fileName: string) => boolean): Promise<string[]>;
+    getContentFullPath(contentPath: string): string;
     contentFileExists(contentPath: string): boolean;
     contentDirectoryExists(contentPath: string): boolean;
     getContentFile(apiPath: string): Promise<Buffer>;

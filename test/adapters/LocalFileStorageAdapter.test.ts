@@ -45,7 +45,7 @@ describe('LocalFileStorageAdapter', () => {
 
             expect(() => new LocalFileStorageAdapter(dataDir))
                 .toThrow(`${dataDir} is not an extant directory`);
-            expect(existsSyncMock).toBeCalledWith(dataDir);
+            expect(existsSyncMock).toHaveBeenCalledWith(dataDir);
         });
 
         it('throws an error if config.dataDir is not a directory', () => {
@@ -54,7 +54,7 @@ describe('LocalFileStorageAdapter', () => {
 
             expect(() => new LocalFileStorageAdapter(dataDir))
                 .toThrow(`${dataDir} is not an extant directory`);
-            expect(statsyncMock).toBeCalledWith(dataDir);
+            expect(statsyncMock).toHaveBeenCalledWith(dataDir);
         });
 
         it('creates subdirectories if they do not exist', () => {
@@ -63,7 +63,7 @@ describe('LocalFileStorageAdapter', () => {
 
             new LocalFileStorageAdapter(dataDir);
 
-            expect(mkdirSyncMock).toBeCalledTimes(3);
+            expect(mkdirSyncMock).toHaveBeenCalledTimes(3);
             expect(mkdirSyncMock.mock.calls[0][0]).toBe(`${dataDir}/content`);
             expect(mkdirSyncMock.mock.calls[1][0]).toBe(`${dataDir}/admin`);
             expect(mkdirSyncMock.mock.calls[2][0]).toBe(`${dataDir}/cache`);
@@ -75,10 +75,10 @@ describe('LocalFileStorageAdapter', () => {
 
             new LocalFileStorageAdapter(dataDir, 1000, 1000);
 
-            expect(chownSyncMock).toBeCalledTimes(3);
-            expect(chownSyncMock).toBeCalledWith(`${dataDir}/content`, 1000, 1000);
-            expect(chownSyncMock).toBeCalledWith(`${dataDir}/admin`, 1000, 1000);
-            expect(chownSyncMock).toBeCalledWith(`${dataDir}/cache`, 1000, 1000);
+            expect(chownSyncMock).toHaveBeenCalledTimes(3);
+            expect(chownSyncMock).toHaveBeenCalledWith(`${dataDir}/content`, 1000, 1000);
+            expect(chownSyncMock).toHaveBeenCalledWith(`${dataDir}/admin`, 1000, 1000);
+            expect(chownSyncMock).toHaveBeenCalledWith(`${dataDir}/cache`, 1000, 1000);
         });
 
         it('handles any errors chowning subdirectories', () => {
@@ -90,7 +90,7 @@ describe('LocalFileStorageAdapter', () => {
 
             expect(() => new LocalFileStorageAdapter(dataDir, 1000, 1000)).not.toThrowError();
 
-            expect(chownSyncMock).toBeCalledTimes(3);
+            expect(chownSyncMock).toHaveBeenCalledTimes(3);
         });
 
         it('does not attempt to chown subdirectories if uid is not set', () => {
@@ -99,7 +99,7 @@ describe('LocalFileStorageAdapter', () => {
 
             new LocalFileStorageAdapter(dataDir, undefined, 1000);
 
-            expect(chownSyncMock).not.toBeCalled();
+            expect(chownSyncMock).not.toHaveBeenCalled();
         });
 
         it('does not attempt to chown subdirectories if gid is not set', () => {
@@ -108,7 +108,7 @@ describe('LocalFileStorageAdapter', () => {
 
             new LocalFileStorageAdapter(dataDir, 1000, undefined);
 
-            expect(chownSyncMock).not.toBeCalled();
+            expect(chownSyncMock).not.toHaveBeenCalled();
         });
 
         it('does not create subdirectories if they do exist', () => {
@@ -117,7 +117,7 @@ describe('LocalFileStorageAdapter', () => {
 
             new LocalFileStorageAdapter(dataDir);
 
-            expect(mkdirSyncMock).not.toBeCalled();
+            expect(mkdirSyncMock).not.toHaveBeenCalled();
         });
     });
 
@@ -133,7 +133,7 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.listContentChildren('some/path', fileMatcher);
 
-            expect(promiseReaddirMock).toBeCalledWith(`${dataDir}/content/some/path`);
+            expect(promiseReaddirMock).toHaveBeenCalledWith(`${dataDir}/content/some/path`);
         });
 
         it('returns an empty array if directory does not exist', async () => {
@@ -141,7 +141,7 @@ describe('LocalFileStorageAdapter', () => {
             
             const fileList = await storage.listContentChildren('some/path', fileMatcher);
 
-            expect(existsSyncMock).toBeCalledWith(`${dataDir}/content/some/path`);
+            expect(existsSyncMock).toHaveBeenCalledWith(`${dataDir}/content/some/path`);
             expect(fileList).toEqual([]);
         });
 
@@ -151,8 +151,8 @@ describe('LocalFileStorageAdapter', () => {
 
             const fileList = await storage.listContentChildren('some/path', fileMatcher);
 
-            expect(statsyncMock).toBeCalledWith(`${dataDir}/content/some/path`);
-            expect(promiseReaddirMock).toBeCalledWith(`${dataDir}/content/some/path`);
+            expect(statsyncMock).toHaveBeenCalledWith(`${dataDir}/content/some/path`);
+            expect(promiseReaddirMock).toHaveBeenCalledWith(`${dataDir}/content/some/path`);
             expect(fileList).toEqual(['match','matched']);
         });
     });
@@ -162,7 +162,7 @@ describe('LocalFileStorageAdapter', () => {
             existsSyncMock.mockReturnValue(false);
             const exists = storage.contentFileExists('path/to/file');
             expect(exists).toBeFalsy();
-            expect(existsSyncMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
+            expect(existsSyncMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
         });
 
         it('returns false if the content file is not a file', () => {
@@ -170,7 +170,7 @@ describe('LocalFileStorageAdapter', () => {
             statsyncMock.mockReturnValue({ isFile: () => false });
             const exists = storage.contentFileExists('path/to/file');
             expect(exists).toBeFalsy();
-            expect(statsyncMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
+            expect(statsyncMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
         });
 
         it('returns true if the content exists and is a file', () => {
@@ -186,7 +186,7 @@ describe('LocalFileStorageAdapter', () => {
             existsSyncMock.mockReturnValue(false);
             const exists = storage.contentDirectoryExists('path/to/file');
             expect(exists).toBeFalsy();
-            expect(existsSyncMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
+            expect(existsSyncMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
         });
 
         it('returns false if the content file is not a file', () => {
@@ -194,7 +194,7 @@ describe('LocalFileStorageAdapter', () => {
             statsyncMock.mockReturnValue({ isDirectory: () => false });
             const exists = storage.contentDirectoryExists('path/to/file');
             expect(exists).toBeFalsy();
-            expect(statsyncMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
+            expect(statsyncMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
         });
 
         it('returns true if the content exists and is a file', () => {
@@ -212,7 +212,7 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.getContentFile('path/to/file');
             
-            expect(promiseReadFileMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
+            expect(promiseReadFileMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
         });
 
         it('throws an error if the path does not exist', async () => {
@@ -236,7 +236,7 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.getAdminFile('path/to/file');
             
-            expect(promiseReadFileMock).toBeCalledWith(`${dataDir}/admin/path/to/file`);
+            expect(promiseReadFileMock).toHaveBeenCalledWith(`${dataDir}/admin/path/to/file`);
         });
 
         it('throws an error if the path does not exist', async () => {
@@ -260,7 +260,7 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.getGeneratedFile('path/to/file', 'tag');
             
-            expect(promiseReadFileMock).toBeCalledWith(`${dataDir}/cache/path/to/tag/file`);
+            expect(promiseReadFileMock).toHaveBeenCalledWith(`${dataDir}/cache/path/to/tag/file`);
         });
 
         it('throws an error if the path does not exist', async () => {
@@ -283,22 +283,22 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.storeAdminFile('full/path/to/file', Buffer.from('file-contents'));
 
-            expect(mkdirSyncMock).toBeCalledTimes(3);
-            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/admin/full`);
-            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/admin/full/path`);
-            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/admin/full/path/to`);
+            expect(mkdirSyncMock).toHaveBeenCalledTimes(3);
+            expect(mkdirSyncMock).toHaveBeenCalledWith(`${dataDir}/admin/full`);
+            expect(mkdirSyncMock).toHaveBeenCalledWith(`${dataDir}/admin/full/path`);
+            expect(mkdirSyncMock).toHaveBeenCalledWith(`${dataDir}/admin/full/path/to`);
         });
 
         it('does not create directories if they do exist', async () => {
             existsSyncMock.mockReturnValue(true);
             await storage.storeAdminFile('dir/file', Buffer.from('file-contents'));
-            expect(mkdirSyncMock).not.toBeCalled();
+            expect(mkdirSyncMock).not.toHaveBeenCalled();
         });
 
         it('attempts to store the file with the correct parameters', async () => {
             existsSyncMock.mockReturnValue(true);
             await storage.storeAdminFile('dir/file', Buffer.from('file-contents'));
-            expect(promiseWriteFileMock).toBeCalledWith(`${dataDir}/admin/dir/file`, Buffer.from('file-contents'));
+            expect(promiseWriteFileMock).toHaveBeenCalledWith(`${dataDir}/admin/dir/file`, Buffer.from('file-contents'));
         });
 
         it('attempts to chown files/folders if uid and gid are set', async () => {
@@ -310,10 +310,10 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.storeAdminFile('path/to/file', Buffer.from('file-contents'));
 
-            expect(chownSyncMock).toBeCalledTimes(3);
-            expect(chownSyncMock).toBeCalledWith(`${dataDir}/admin/path`, 1000, 1000);
-            expect(chownSyncMock).toBeCalledWith(`${dataDir}/admin/path/to`, 1000, 1000);
-            expect(chownSyncMock).toBeCalledWith(`${dataDir}/admin/path/to/file`, 1000, 1000);
+            expect(chownSyncMock).toHaveBeenCalledTimes(3);
+            expect(chownSyncMock).toHaveBeenCalledWith(`${dataDir}/admin/path`, 1000, 1000);
+            expect(chownSyncMock).toHaveBeenCalledWith(`${dataDir}/admin/path/to`, 1000, 1000);
+            expect(chownSyncMock).toHaveBeenCalledWith(`${dataDir}/admin/path/to/file`, 1000, 1000);
         });
 
         it('handles any errors when chowning files/folders', async () => {
@@ -326,7 +326,7 @@ describe('LocalFileStorageAdapter', () => {
 
             await expect(storage.storeAdminFile('path/to/file', Buffer.from('file-contents'))).resolves.toBeUndefined();
 
-            expect(chownSyncMock).toBeCalledTimes(3);
+            expect(chownSyncMock).toHaveBeenCalledTimes(3);
         });
 
         it('does not attempt to chown files/folders if uid not set', async () => {
@@ -339,7 +339,7 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.storeAdminFile('path/to/file', Buffer.from('file-contents'));
 
-            expect(chownSyncMock).not.toBeCalled();
+            expect(chownSyncMock).not.toHaveBeenCalled();
         });
 
         it('does not attempt to chown files/folders if gid not set', async () => {
@@ -352,7 +352,7 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.storeAdminFile('path/to/file', Buffer.from('file-contents'));
 
-            expect(chownSyncMock).not.toBeCalled();
+            expect(chownSyncMock).not.toHaveBeenCalled();
         });
     });
 
@@ -362,22 +362,22 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.storeContentFile('full/path/to/file', Buffer.from('file-contents'));
 
-            expect(mkdirSyncMock).toBeCalledTimes(3);
-            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/content/full`);
-            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/content/full/path`);
-            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/content/full/path/to`);
+            expect(mkdirSyncMock).toHaveBeenCalledTimes(3);
+            expect(mkdirSyncMock).toHaveBeenCalledWith(`${dataDir}/content/full`);
+            expect(mkdirSyncMock).toHaveBeenCalledWith(`${dataDir}/content/full/path`);
+            expect(mkdirSyncMock).toHaveBeenCalledWith(`${dataDir}/content/full/path/to`);
         });
 
         it('does not create directories if they do exist', async () => {
             existsSyncMock.mockReturnValue(true);
             await storage.storeContentFile('dir/file', Buffer.from('file-contents'));
-            expect(mkdirSyncMock).not.toBeCalled();
+            expect(mkdirSyncMock).not.toHaveBeenCalled();
         });
 
         it('attempts to store the file with the correct parameters', async () => {
             existsSyncMock.mockReturnValue(true);
             await storage.storeContentFile('dir/file', Buffer.from('file-contents'));
-            expect(promiseWriteFileMock).toBeCalledWith(`${dataDir}/content/dir/file`, Buffer.from('file-contents'));
+            expect(promiseWriteFileMock).toHaveBeenCalledWith(`${dataDir}/content/dir/file`, Buffer.from('file-contents'));
         });
 
         it('attempts to chown files/folders if uid and gid are set', async () => {
@@ -389,10 +389,10 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.storeContentFile('path/to/file', Buffer.from('file-contents'));
 
-            expect(chownSyncMock).toBeCalledTimes(3);
-            expect(chownSyncMock).toBeCalledWith(`${dataDir}/content/path`, 1000, 1000);
-            expect(chownSyncMock).toBeCalledWith(`${dataDir}/content/path/to`, 1000, 1000);
-            expect(chownSyncMock).toBeCalledWith(`${dataDir}/content/path/to/file`, 1000, 1000);
+            expect(chownSyncMock).toHaveBeenCalledTimes(3);
+            expect(chownSyncMock).toHaveBeenCalledWith(`${dataDir}/content/path`, 1000, 1000);
+            expect(chownSyncMock).toHaveBeenCalledWith(`${dataDir}/content/path/to`, 1000, 1000);
+            expect(chownSyncMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`, 1000, 1000);
         });
 
         it('handles any errors when chowning files/folders', async () => {
@@ -405,7 +405,7 @@ describe('LocalFileStorageAdapter', () => {
 
             await expect(storage.storeContentFile('path/to/file', Buffer.from('file-contents'))).resolves.toBeUndefined();
 
-            expect(chownSyncMock).toBeCalledTimes(3);
+            expect(chownSyncMock).toHaveBeenCalledTimes(3);
         });
 
         it('does not attempt to chown files/folders if uid not set', async () => {
@@ -418,7 +418,7 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.storeContentFile('path/to/file', Buffer.from('file-contents'));
 
-            expect(chownSyncMock).not.toBeCalled();
+            expect(chownSyncMock).not.toHaveBeenCalled();
         });
 
         it('does not attempt to chown files/folders if gid not set', async () => {
@@ -431,7 +431,7 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.storeContentFile('path/to/file', Buffer.from('file-contents'));
 
-            expect(chownSyncMock).not.toBeCalled();
+            expect(chownSyncMock).not.toHaveBeenCalled();
         });
     });
 
@@ -441,23 +441,23 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.storeGeneratedFile('full/path/to/file', 'tag', Buffer.from('file-contents'));
 
-            expect(mkdirSyncMock).toBeCalledTimes(4);
-            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/cache/full`);
-            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/cache/full/path`);
-            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/cache/full/path/to`);
-            expect(mkdirSyncMock).toBeCalledWith(`${dataDir}/cache/full/path/to/tag`);
+            expect(mkdirSyncMock).toHaveBeenCalledTimes(4);
+            expect(mkdirSyncMock).toHaveBeenCalledWith(`${dataDir}/cache/full`);
+            expect(mkdirSyncMock).toHaveBeenCalledWith(`${dataDir}/cache/full/path`);
+            expect(mkdirSyncMock).toHaveBeenCalledWith(`${dataDir}/cache/full/path/to`);
+            expect(mkdirSyncMock).toHaveBeenCalledWith(`${dataDir}/cache/full/path/to/tag`);
         });
 
         it('does not create directories if they do exist', async () => {
             existsSyncMock.mockReturnValue(true);
             await storage.storeGeneratedFile('dir/file', 'tag', Buffer.from('file-contents'));
-            expect(mkdirSyncMock).not.toBeCalled();
+            expect(mkdirSyncMock).not.toHaveBeenCalled();
         });
 
         it('attempts to store the file with the correct parameters', async () => {
             existsSyncMock.mockReturnValue(true);
             await storage.storeGeneratedFile('dir/file', 'tag', Buffer.from('file-contents'));
-            expect(promiseWriteFileMock).toBeCalledWith(`${dataDir}/cache/dir/tag/file`, Buffer.from('file-contents'));
+            expect(promiseWriteFileMock).toHaveBeenCalledWith(`${dataDir}/cache/dir/tag/file`, Buffer.from('file-contents'));
         });
 
         it('attempts to chown files/folders if uid and gid are set', async () => {
@@ -469,11 +469,11 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.storeGeneratedFile('path/to/file', 'tag', Buffer.from('file-contents'));
 
-            expect(chownSyncMock).toBeCalledTimes(4);
-            expect(chownSyncMock).toBeCalledWith(`${dataDir}/cache/path`, 1000, 1000);
-            expect(chownSyncMock).toBeCalledWith(`${dataDir}/cache/path/to`, 1000, 1000);
-            expect(chownSyncMock).toBeCalledWith(`${dataDir}/cache/path/to/tag`, 1000, 1000);
-            expect(chownSyncMock).toBeCalledWith(`${dataDir}/cache/path/to/tag/file`, 1000, 1000);
+            expect(chownSyncMock).toHaveBeenCalledTimes(4);
+            expect(chownSyncMock).toHaveBeenCalledWith(`${dataDir}/cache/path`, 1000, 1000);
+            expect(chownSyncMock).toHaveBeenCalledWith(`${dataDir}/cache/path/to`, 1000, 1000);
+            expect(chownSyncMock).toHaveBeenCalledWith(`${dataDir}/cache/path/to/tag`, 1000, 1000);
+            expect(chownSyncMock).toHaveBeenCalledWith(`${dataDir}/cache/path/to/tag/file`, 1000, 1000);
         });
 
         it('handles any errors when chowning files/folders', async () => {
@@ -486,7 +486,7 @@ describe('LocalFileStorageAdapter', () => {
 
             await expect(storage.storeGeneratedFile('path/to/file', 'tag', Buffer.from('file-contents'))).resolves.toBeUndefined();
 
-            expect(chownSyncMock).toBeCalledTimes(4);
+            expect(chownSyncMock).toHaveBeenCalledTimes(4);
         });
 
         it('does not attempt to chown files/folders if uid not set', async () => {
@@ -499,7 +499,7 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.storeGeneratedFile('path/to/file', 'tag', Buffer.from('file-contents'));
 
-            expect(chownSyncMock).not.toBeCalled();
+            expect(chownSyncMock).not.toHaveBeenCalled();
         });
 
         it('does not attempt to chown files/folders if gid not set', async () => {
@@ -512,7 +512,7 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.storeGeneratedFile('path/to/file', 'tag', Buffer.from('file-contents'));
 
-            expect(chownSyncMock).not.toBeCalled();
+            expect(chownSyncMock).not.toHaveBeenCalled();
         });
     });
 
@@ -522,7 +522,7 @@ describe('LocalFileStorageAdapter', () => {
 
             const mTime = storage.getContentFileModifiedTime('path/to/file');
 
-            expect(existsSyncMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
+            expect(existsSyncMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
             expect(mTime).toBe(0);
         });
 
@@ -532,8 +532,16 @@ describe('LocalFileStorageAdapter', () => {
 
             const mTime = storage.getContentFileModifiedTime('path/to/file');
 
-            expect(statsyncMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
+            expect(statsyncMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
             expect(mTime).toBe(100);
+        });
+    });
+
+    describe('getContentFullPath', () => {
+        it('returns the full path of the content file', () => {
+            const fullPath = storage.getContentFullPath('path/to/file');
+
+            expect(fullPath).toBe(`${dataDir}/content/path/to/file`);
         });
     });
 
@@ -543,7 +551,7 @@ describe('LocalFileStorageAdapter', () => {
 
             const mTime = storage.getAdminFileModifiedTime('path/to/file');
 
-            expect(existsSyncMock).toBeCalledWith(`${dataDir}/admin/path/to/file`);
+            expect(existsSyncMock).toHaveBeenCalledWith(`${dataDir}/admin/path/to/file`);
             expect(mTime).toBe(0);
         });
 
@@ -553,7 +561,7 @@ describe('LocalFileStorageAdapter', () => {
 
             const mTime = storage.getAdminFileModifiedTime('path/to/file');
 
-            expect(statsyncMock).toBeCalledWith(`${dataDir}/admin/path/to/file`);
+            expect(statsyncMock).toHaveBeenCalledWith(`${dataDir}/admin/path/to/file`);
             expect(mTime).toBe(100);
         });
     });
@@ -566,8 +574,8 @@ describe('LocalFileStorageAdapter', () => {
             ));
 
             const isOlder = storage.generatedFileIsOlder('path/to/file', 'tag');
-            expect(statsyncMock).toBeCalledWith(`${dataDir}/cache/path/to/tag/file`);
-            expect(statsyncMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
+            expect(statsyncMock).toHaveBeenCalledWith(`${dataDir}/cache/path/to/tag/file`);
+            expect(statsyncMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
             expect(isOlder).toBeTruthy();
         });
 
@@ -578,8 +586,8 @@ describe('LocalFileStorageAdapter', () => {
             ));
 
             const isOlder = storage.generatedFileIsOlder('path/to/file', 'tag');
-            expect(statsyncMock).toBeCalledWith(`${dataDir}/cache/path/to/tag/file`);
-            expect(statsyncMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
+            expect(statsyncMock).toHaveBeenCalledWith(`${dataDir}/cache/path/to/tag/file`);
+            expect(statsyncMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
             expect(isOlder).toBeFalsy();
         });
 
@@ -590,8 +598,8 @@ describe('LocalFileStorageAdapter', () => {
             ));
 
             const isOlder = storage.generatedFileIsOlder('path/to/file', 'tag');
-            expect(statsyncMock).toBeCalledWith(`${dataDir}/cache/path/to/tag/file`);
-            expect(statsyncMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
+            expect(statsyncMock).toHaveBeenCalledWith(`${dataDir}/cache/path/to/tag/file`);
+            expect(statsyncMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
             expect(isOlder).toBeFalsy();
         });
     });
@@ -603,8 +611,8 @@ describe('LocalFileStorageAdapter', () => {
 
             await storage.deleteContentFile('path/to/file');
 
-            expect(existsSyncMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
-            expect(promiseRmMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
+            expect(existsSyncMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
+            expect(promiseRmMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
         });
 
         it('throws an error if the file does not exist', async () => {
@@ -613,7 +621,7 @@ describe('LocalFileStorageAdapter', () => {
 
             await expect(storage.deleteContentFile('path/to/file')).rejects.toThrowError();
 
-            expect(existsSyncMock).toBeCalledWith(`${dataDir}/content/path/to/file`);
+            expect(existsSyncMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
         });
     });
 });

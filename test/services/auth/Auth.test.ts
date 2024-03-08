@@ -100,16 +100,16 @@ describe('Auth', () => {
         it('loads the users file the first time it is run', async () => {
             await auth.createUser('chris');
 
-            expect(mockStorage.getAdminFileModifiedTime).toBeCalledWith('users.json');
-            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
-            expect(mockStorage.getAdminFile).toBeCalledWith('users.json');
+            expect(mockStorage.getAdminFileModifiedTime).toHaveBeenCalledWith('users.json');
+            expect(mockStorage.getAdminFile).toHaveBeenCalledTimes(1);
+            expect(mockStorage.getAdminFile).toHaveBeenCalledWith('users.json');
         });
 
         it('does not load the users file if is run again without the file changing (e.g. if it errored the first time)', async () => {
             await auth.createUser('chris');
             await auth.createUser('john');
 
-            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
+            expect(mockStorage.getAdminFile).toHaveBeenCalledTimes(1);
         });
 
         it('reloads the users file if is changed externally', async () => {
@@ -123,7 +123,7 @@ describe('Auth', () => {
             await auth.createUser('chris');
             await auth.createUser('john');
 
-            expect(mockStorage.getAdminFile).toBeCalledTimes(2);
+            expect(mockStorage.getAdminFile).toHaveBeenCalledTimes(2);
         });
 
         it('throws an error if added user already exists; doesn\'t attempt to write users.json', async () => {
@@ -132,14 +132,14 @@ describe('Auth', () => {
                 .mockResolvedValue(Buffer.from('{ "chris": {} }'));
 
             await expect(auth.createUser('chris')).rejects.toThrow('user already exists');
-            expect(mockStorage.storeAdminFile).not.toBeCalled();
+            expect(mockStorage.storeAdminFile).not.toHaveBeenCalled();
         });
 
         it('writes newly created user to users.json', async () => {
             await auth.createUser('chris');
 
             const expectedFileContent = JSON.stringify({ chris: { id: 'chris' } }, null, 4);
-            expect(mockStorage.storeAdminFile).toBeCalledWith('users.json', Buffer.from(expectedFileContent, 'utf-8'));
+            expect(mockStorage.storeAdminFile).toHaveBeenCalledWith('users.json', Buffer.from(expectedFileContent, 'utf-8'));
         });
     });
 
@@ -153,16 +153,16 @@ describe('Auth', () => {
         it('loads the users file the first time it is run', async () => {
             await auth.setPassword('chris', 'Blob');
 
-            expect(mockStorage.getAdminFileModifiedTime).toBeCalledWith('users.json');
-            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
-            expect(mockStorage.getAdminFile).toBeCalledWith('users.json');
+            expect(mockStorage.getAdminFileModifiedTime).toHaveBeenCalledWith('users.json');
+            expect(mockStorage.getAdminFile).toHaveBeenCalledTimes(1);
+            expect(mockStorage.getAdminFile).toHaveBeenCalledWith('users.json');
         });
 
         it('does not load the users file if is run again without the file changing (e.g. if it errored the first time)', async () => {
             await auth.setPassword('chris', 'Blob');
             await auth.setPassword('chris', 'Blib', 'Blob');
 
-            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
+            expect(mockStorage.getAdminFile).toHaveBeenCalledTimes(1);
         });
 
         it('reloads the users file if is changed externally', async () => {
@@ -176,7 +176,7 @@ describe('Auth', () => {
             await auth.setPassword('chris', 'Blob');
             await auth.setPassword('chris', 'Blib', 'Blob');
 
-            expect(mockStorage.getAdminFile).toBeCalledTimes(2);
+            expect(mockStorage.getAdminFile).toHaveBeenCalledTimes(2);
         });
 
         it('throws error for a non-existent user', async () => {
@@ -216,8 +216,8 @@ describe('Auth', () => {
             await auth.setPassword('chris', 'some-password');
             await auth.setPassword('chris', 'some-new-password', 'some-password');
 
-            expect(mockVerifyPasswordWithHash).toBeCalledWith('some-password', 'some-password-hashed');
-            expect(mockHashPassword).lastCalledWith('some-new-password');
+            expect(mockVerifyPasswordWithHash).toHaveBeenCalledWith('some-password', 'some-password-hashed');
+            expect(mockHashPassword).toHaveBeenLastCalledWith('some-new-password');
         });
     });
 
@@ -239,15 +239,15 @@ describe('Auth', () => {
         it('loads the users file the first time it is run', async () => {
             await auth.getTokensFromPassword('chris', 'some-password');
 
-            expect(mockStorage.getAdminFileModifiedTime).toBeCalledWith('users.json');
-            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
-            expect(mockStorage.getAdminFile).toBeCalledWith('users.json');
+            expect(mockStorage.getAdminFileModifiedTime).toHaveBeenCalledWith('users.json');
+            expect(mockStorage.getAdminFile).toHaveBeenCalledTimes(1);
+            expect(mockStorage.getAdminFile).toHaveBeenCalledWith('users.json');
         });
 
         it('does not load the users file if is run again without the file changing (e.g. if it errored the first time)', async () => {
             await auth.getTokensFromPassword('chris', 'some-password');
 
-            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
+            expect(mockStorage.getAdminFile).toHaveBeenCalledTimes(1);
         });
 
         it('reloads the users file if is changed externally', async () => {
@@ -261,7 +261,7 @@ describe('Auth', () => {
             await auth.getTokensFromPassword('chris', 'some-password');
             await auth.getTokensFromPassword('chris', 'some-password');
 
-            expect(mockStorage.getAdminFile).toBeCalledTimes(2);
+            expect(mockStorage.getAdminFile).toHaveBeenCalledTimes(2);
         });
 
         it('throws error for a non-existent user', async () => {
@@ -286,11 +286,11 @@ describe('Auth', () => {
                 fullName,
                 roles
             };
-            expect(verifyPasswordWithHash).toBeCalled();
-            expect(hashPassword).not.toBeCalled();
+            expect(verifyPasswordWithHash).toHaveBeenCalled();
+            expect(hashPassword).not.toHaveBeenCalled();
             expect(actualTokens).toStrictEqual(expectedTokens);
-            expect(mockJwtSign).toBeCalledWith(accessPayload, config.jwtAccessSecret, config.jwtAccessExpires);
-            expect(mockJwtSign).toBeCalledWith({ id }, config.jwtRefreshSecret, config.jwtRefreshExpires);
+            expect(mockJwtSign).toHaveBeenCalledWith(accessPayload, config.jwtAccessSecret, config.jwtAccessExpires);
+            expect(mockJwtSign).toHaveBeenCalledWith({ id }, config.jwtRefreshSecret, config.jwtRefreshExpires);
         });
 
         it('sets the password and returns jwt tokens if user does not yet have a hashed password stored', async () => {
@@ -316,11 +316,11 @@ describe('Auth', () => {
                 fullName,
                 roles
             };
-            expect(verifyPasswordWithHash).not.toBeCalled();
-            expect(hashPassword).toBeCalledWith('some-other-password');
+            expect(verifyPasswordWithHash).not.toHaveBeenCalled();
+            expect(hashPassword).toHaveBeenCalledWith('some-other-password');
             expect(actualTokens).toStrictEqual(expectedTokens);
-            expect(mockJwtSign).toBeCalledWith(accessPayload, config.jwtAccessSecret, config.jwtAccessExpires);
-            expect(mockJwtSign).toBeCalledWith({ id }, config.jwtRefreshSecret, config.jwtRefreshExpires);
+            expect(mockJwtSign).toHaveBeenCalledWith(accessPayload, config.jwtAccessSecret, config.jwtAccessExpires);
+            expect(mockJwtSign).toHaveBeenCalledWith({ id }, config.jwtRefreshSecret, config.jwtRefreshExpires);
         });
     });
 
@@ -343,15 +343,15 @@ describe('Auth', () => {
         it('loads the users file the first time it is run', async () => {
             await auth.getTokensFromRefreshToken('{ "id": "chris" }');
 
-            expect(mockStorage.getAdminFileModifiedTime).toBeCalledWith('users.json');
-            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
-            expect(mockStorage.getAdminFile).toBeCalledWith('users.json');
+            expect(mockStorage.getAdminFileModifiedTime).toHaveBeenCalledWith('users.json');
+            expect(mockStorage.getAdminFile).toHaveBeenCalledTimes(1);
+            expect(mockStorage.getAdminFile).toHaveBeenCalledWith('users.json');
         });
 
         it('does not load the users file if is run again without the file changing (e.g. if it errored the first time)', async () => {
             await auth.getTokensFromRefreshToken('{ "id": "chris" }');
 
-            expect(mockStorage.getAdminFile).toBeCalledTimes(1);
+            expect(mockStorage.getAdminFile).toHaveBeenCalledTimes(1);
         });
 
         it('reloads the users file if is changed externally', async () => {
@@ -365,7 +365,7 @@ describe('Auth', () => {
             await auth.getTokensFromRefreshToken('{ "id": "chris" }');
             await auth.getTokensFromRefreshToken('{ "id": "chris" }');
 
-            expect(mockStorage.getAdminFile).toBeCalledTimes(2);
+            expect(mockStorage.getAdminFile).toHaveBeenCalledTimes(2);
         });
 
         it('throws an error if jwtVerify throws (e.g. expired/incorrectly-signed token)', async () => {
@@ -398,8 +398,8 @@ describe('Auth', () => {
                 roles
             };
             expect(actualTokens).toStrictEqual(expectedTokens);
-            expect(mockJwtSign).toBeCalledWith(accessPayload, config.jwtAccessSecret, config.jwtAccessExpires);
-            expect(mockJwtSign).toBeCalledWith({ id }, config.jwtRefreshSecret, config.jwtRefreshExpires);
+            expect(mockJwtSign).toHaveBeenCalledWith(accessPayload, config.jwtAccessSecret, config.jwtAccessExpires);
+            expect(mockJwtSign).toHaveBeenCalledWith({ id }, config.jwtRefreshSecret, config.jwtRefreshExpires);
         });
     });
 

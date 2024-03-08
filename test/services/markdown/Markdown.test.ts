@@ -60,7 +60,7 @@ describe('Markdown', () => {
 
                     const actualPage = await page.getPage('path/to/root');
 
-                    expect(mockStorage.getContentFile).toBeCalledWith('path/to/root/index.md');
+                    expect(mockStorage.getContentFile).toHaveBeenCalledWith('path/to/root/index.md');
                     expect(actualPage.content).toBe(contentFile);
                     expect(actualPage.pageExists).toBe(true);
                 });
@@ -70,7 +70,7 @@ describe('Markdown', () => {
 
                     const actualPage = await page.getPage('path/to/file');
 
-                    expect(mockStorage.getContentFile).toBeCalledWith('path/to/file.md');
+                    expect(mockStorage.getContentFile).toHaveBeenCalledWith('path/to/file.md');
                     expect(actualPage.content).toBe(contentFile);
                     expect(actualPage.pageExists).toBe(true);
                 });
@@ -80,12 +80,12 @@ describe('Markdown', () => {
 
                     const actualPage = await page.getPage('root/path/to/page');
 
-                    expect(mockStorage.contentFileExists).toBeCalledTimes(4);
+                    expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(4);
                     expect(mockStorage.contentFileExists.mock.calls[0][0]).toBe('root/index.md');
                     expect(mockStorage.contentFileExists.mock.calls[1][0]).toBe('root/path.md');
                     expect(mockStorage.contentFileExists.mock.calls[2][0]).toBe('root/path/to.md');
                     expect(mockStorage.contentFileExists.mock.calls[3][0]).toBe('root/path/to/page.md');
-                    expect(mockStorage.getContentFile).toBeCalledWith('root/path/to/page.md');
+                    expect(mockStorage.getContentFile).toHaveBeenCalledWith('root/path/to/page.md');
                     expect(actualPage.content).toBe(contentFile);
                     expect(actualPage.pageExists).toBe(true);
                 });
@@ -97,7 +97,7 @@ describe('Markdown', () => {
 
                     const actualPage = await page.getPage('path/to/root/file');
 
-                    expect(mockStorage.getContentFile).toBeCalledWith('path/to/root/file.md');
+                    expect(mockStorage.getContentFile).toHaveBeenCalledWith('path/to/root/file.md');
                     expect(actualPage.content).toBe(getMdTemplate('file'));
                     expect(actualPage.pageExists).toBe(true);
                 });
@@ -109,7 +109,7 @@ describe('Markdown', () => {
 
                     const actualPage = await page.getPage('path/to/root/file');
 
-                    expect(mockStorage.getContentFile).toBeCalledWith('path/to/root/file.md');
+                    expect(mockStorage.getContentFile).toHaveBeenCalledWith('path/to/root/file.md');
                     expect(actualPage.content).toBe(`${getMdTemplate('file')}some-markdown`);
                     expect(actualPage.pageExists).toBe(true);
                 });
@@ -270,7 +270,7 @@ describe('Markdown', () => {
                     const page = new Markdown('path/to/root', config, mockStorage, true);
                     await expect(page.getPage('path/to/root')).rejects.toThrow(NotFoundError);
         
-                    expect(mockStorage.contentFileExists).toBeCalledWith('path/to/root/index.md');
+                    expect(mockStorage.contentFileExists).toHaveBeenCalledWith('path/to/root/index.md');
                 });
         
                 it('throws for a non-root object if that object\'s content file does not exist', async () => {
@@ -279,7 +279,7 @@ describe('Markdown', () => {
                     const page = new Markdown('path/to/file', config, mockStorage);
                     await expect(page.getPage('path/to/file')).rejects.toThrow(NotFoundError);
         
-                    expect(mockStorage.contentFileExists).toBeCalledWith('path/to/file.md');
+                    expect(mockStorage.contentFileExists).toHaveBeenCalledWith('path/to/file.md');
                 });
 
                 it('throws if any object deeper in the path does not have a markdown file associated with it', async () => {
@@ -290,7 +290,7 @@ describe('Markdown', () => {
                     const page = new Markdown('root', config, mockStorage, true);
                     await expect(page.getPage('root/path/to/page')).rejects.toThrow(NotFoundError);
 
-                    expect(mockStorage.contentFileExists).toBeCalledTimes(3);
+                    expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(3);
                     expect(mockStorage.contentFileExists.mock.calls[0][0]).toBe('root/index.md');
                     expect(mockStorage.contentFileExists.mock.calls[1][0]).toBe('root/path.md');
                     expect(mockStorage.contentFileExists.mock.calls[2][0]).toBe('root/path/to.md');
@@ -417,7 +417,7 @@ describe('Markdown', () => {
 
                     await expect(page.writePage('path/to/root/some/long/path/to/markdown', writeContent, user))
                         .rejects.toThrow(NotPermittedError);
-                    expect(mockStorage.getContentFile).toBeCalledTimes(4);
+                    expect(mockStorage.getContentFile).toHaveBeenCalledTimes(4);
                 });
 
                 it('throws if user does not have write access to the last file in the path (and only read access to the rest)', async () => {
@@ -427,7 +427,7 @@ describe('Markdown', () => {
 
                     await expect(page.writePage('path/to/root/some/long/path/to/markdown', writeContent, user))
                         .rejects.toThrow(NotPermittedError);
-                    expect(mockStorage.getContentFile).toBeCalledTimes(6);
+                    expect(mockStorage.getContentFile).toHaveBeenCalledTimes(6);
                 });
 
                 it('does not throw if user only has write access to the last file in the path (and only read access to the rest)', async () => {
@@ -444,7 +444,7 @@ describe('Markdown', () => {
 
                     await expect(page.writePage('path/to/root/some/long/path/to/markdown', writeContent, user))
                         .resolves.toBeUndefined();
-                    expect(mockStorage.getContentFile).toBeCalledTimes(6);
+                    expect(mockStorage.getContentFile).toHaveBeenCalledTimes(6);
                 });
             });
 
@@ -460,7 +460,7 @@ describe('Markdown', () => {
 
                     await page.writePage('path/to/root', writeContent, user);
 
-                    expect(mockStorage.storeContentFile).toBeCalledWith('path/to/root/index.md', writeContentBuf);
+                    expect(mockStorage.storeContentFile).toHaveBeenCalledWith('path/to/root/index.md', writeContentBuf);
                 });
 
                 it('writes to the requested content file for a non-root object where the targetPath matches the first object', async () => {
@@ -468,7 +468,7 @@ describe('Markdown', () => {
 
                     await page.writePage('path/to/file', writeContent, user);
 
-                    expect(mockStorage.storeContentFile).toBeCalledWith('path/to/file.md', writeContentBuf);
+                    expect(mockStorage.storeContentFile).toHaveBeenCalledWith('path/to/file.md', writeContentBuf);
                 });
 
                 it('recurses through objects for a long path and writes to the file from the last object', async () => {
@@ -476,12 +476,12 @@ describe('Markdown', () => {
 
                     await page.writePage('root/path/to/page', writeContent, user);
 
-                    expect(mockStorage.contentFileExists).toBeCalledTimes(4);
+                    expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(4);
                     expect(mockStorage.contentFileExists.mock.calls[0][0]).toBe('root/index.md');
                     expect(mockStorage.contentFileExists.mock.calls[1][0]).toBe('root/path.md');
                     expect(mockStorage.contentFileExists.mock.calls[2][0]).toBe('root/path/to.md');
                     expect(mockStorage.contentFileExists.mock.calls[3][0]).toBe('root/path/to/page.md');
-                    expect(mockStorage.storeContentFile).toBeCalledWith('root/path/to/page.md', writeContentBuf);
+                    expect(mockStorage.storeContentFile).toHaveBeenCalledWith('root/path/to/page.md', writeContentBuf);
                 });
             });
         });
@@ -496,7 +496,7 @@ describe('Markdown', () => {
                     const page = new Markdown('path/to/root', config, mockStorage, true);
                     await expect(page.writePage('path/to/root', writeContent, user)).rejects.toThrow(NotFoundError);
         
-                    expect(mockStorage.contentFileExists).toBeCalledWith('path/to/root/index.md');
+                    expect(mockStorage.contentFileExists).toHaveBeenCalledWith('path/to/root/index.md');
                 });
         
                 it('for a non-root object if the object\'s content file does not exist', async () => {
@@ -505,7 +505,7 @@ describe('Markdown', () => {
                     const page = new Markdown('path/to/file', config, mockStorage);
                     await expect(page.writePage('path/to/file', writeContent, user)).rejects.toThrow(NotFoundError);
         
-                    expect(mockStorage.contentFileExists).toBeCalledWith('path/to/file.md');
+                    expect(mockStorage.contentFileExists).toHaveBeenCalledWith('path/to/file.md');
                 });
 
                 it('if any object in the path does not have a markdown file associated with it', async () => {
@@ -516,7 +516,7 @@ describe('Markdown', () => {
                     const page = new Markdown('root', config, mockStorage, true);
                     await expect(page.writePage('root/path/to/page', writeContent, user)).rejects.toThrow(NotFoundError);
 
-                    expect(mockStorage.contentFileExists).toBeCalledTimes(3);
+                    expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(3);
                     expect(mockStorage.contentFileExists.mock.calls[0][0]).toBe('root/index.md');
                     expect(mockStorage.contentFileExists.mock.calls[1][0]).toBe('root/path.md');
                     expect(mockStorage.contentFileExists.mock.calls[2][0]).toBe('root/path/to.md');
@@ -630,7 +630,7 @@ describe('Markdown', () => {
 
             await expect(page.deletePage('path/to/root/page', user)).resolves.toBeUndefined();
 
-            expect(mockStorage.deleteContentFile).toBeCalledWith('path/to/root/page.md');
+            expect(mockStorage.deleteContentFile).toHaveBeenCalledWith('path/to/root/page.md');
         });
 
         it('recurses through objects if the file to be deleted is deeper in the tree', async () => {
@@ -641,8 +641,8 @@ describe('Markdown', () => {
 
             await expect(page.deletePage('path/to/root/path/to/page', user)).resolves.toBeUndefined();
 
-            expect(mockStorage.contentFileExists).toBeCalledTimes(4);
-            expect(mockStorage.deleteContentFile).toBeCalledWith('path/to/root/path/to/page.md');
+            expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(4);
+            expect(mockStorage.deleteContentFile).toHaveBeenCalledWith('path/to/root/path/to/page.md');
         });
 
         it('throws an error when trying to delete the root page', async () => {
@@ -668,7 +668,7 @@ describe('Markdown', () => {
     
                 await expect(() => page.getTree())
                     .rejects.toThrow(new NotFoundError('No markdown file found matching path root'));
-                expect(mockStorage.contentFileExists).toBeCalledWith('root/index.md');
+                expect(mockStorage.contentFileExists).toHaveBeenCalledWith('root/index.md');
             });
     
             it('if the content file does not exist for a non-root object', async () => {
@@ -678,7 +678,7 @@ describe('Markdown', () => {
     
                 await expect(() => page.getTree())
                     .rejects.toThrow(new NotFoundError('No markdown file found matching path root/file'));
-                expect(mockStorage.contentFileExists).toBeCalledWith('root/file.md');
+                expect(mockStorage.contentFileExists).toHaveBeenCalledWith('root/file.md');
             });
         });
 
@@ -699,10 +699,10 @@ describe('Markdown', () => {
                     title: 'Some Title',
                     additionalData: {}
                 };
-                expect(mockStorage.getContentFileModifiedTime).toBeCalledWith('root/file.md');
-                expect(mockStorage.getContentFile).toBeCalledWith('root/file.md');
-                expect(mockSplitFrontMatter).toBeCalledWith(contentFileBuf.toString('utf-8'));
-                expect(mockYAMLparse).toBeCalledWith(parsedYaml);
+                expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledWith('root/file.md');
+                expect(mockStorage.getContentFile).toHaveBeenCalledWith('root/file.md');
+                expect(mockSplitFrontMatter).toHaveBeenCalledWith(contentFileBuf.toString('utf-8'));
+                expect(mockYAMLparse).toHaveBeenCalledWith(parsedYaml);
     
                 expect(actualMetadata).toEqual(expectedMetadata);
             });
@@ -750,10 +750,10 @@ describe('Markdown', () => {
                     title: 'Some Title',
                     additionalData: {}
                 };
-                expect(mockStorage.getContentFileModifiedTime).toBeCalledTimes(2);
-                expect(mockStorage.getContentFile).toBeCalledTimes(1);
-                expect(mockSplitFrontMatter).toBeCalledTimes(1);
-                expect(mockYAMLparse).toBeCalledTimes(1);
+                expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledTimes(2);
+                expect(mockStorage.getContentFile).toHaveBeenCalledTimes(1);
+                expect(mockSplitFrontMatter).toHaveBeenCalledTimes(1);
+                expect(mockYAMLparse).toHaveBeenCalledTimes(1);
     
                 expect(actualMetadata1).toEqual(expectedMetadata);
                 expect(actualMetadata2).toEqual(expectedMetadata);
@@ -779,10 +779,10 @@ describe('Markdown', () => {
                     title: 'Some Title',
                     additionalData: {}
                 };
-                expect(mockStorage.getContentFileModifiedTime).toBeCalledTimes(2);
-                expect(mockStorage.getContentFile).toBeCalledTimes(2);
-                expect(mockSplitFrontMatter).toBeCalledTimes(2);
-                expect(mockYAMLparse).toBeCalledTimes(2);
+                expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledTimes(2);
+                expect(mockStorage.getContentFile).toHaveBeenCalledTimes(2);
+                expect(mockSplitFrontMatter).toHaveBeenCalledTimes(2);
+                expect(mockYAMLparse).toHaveBeenCalledTimes(2);
     
                 expect(actualMetadata1).toEqual(expectedMetadata);
                 expect(actualMetadata2).toEqual(expectedMetadata);
@@ -804,10 +804,10 @@ describe('Markdown', () => {
                     title: 'file',
                     additionalData: {}
                 };
-                expect(mockStorage.getContentFileModifiedTime).toBeCalledWith('root/file.md');
-                expect(mockStorage.getContentFile).toBeCalledWith('root/file.md');
-                expect(mockSplitFrontMatter).toBeCalledWith(contentFileBuf.toString('utf-8'));
-                expect(mockYAMLparse).toBeCalledWith(parsedYaml);
+                expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledWith('root/file.md');
+                expect(mockStorage.getContentFile).toHaveBeenCalledWith('root/file.md');
+                expect(mockSplitFrontMatter).toHaveBeenCalledWith(contentFileBuf.toString('utf-8'));
+                expect(mockYAMLparse).toHaveBeenCalledWith(parsedYaml);
     
                 expect(actualMetadata).toEqual(expectedMetadata);
             });

@@ -22,7 +22,7 @@ describe('That resizeImage', () => {
         border = jest.fn().mockReturnThis();
         toBuffer = jest.fn().mockReturnThis();
 
-        const spy = jest.spyOn(gm, 'default');
+        const spy = jest.spyOn(gm, 'default') as jest.Mock;
         spy.mockImplementation(() => ({
             resize,
             strip,
@@ -38,12 +38,12 @@ describe('That resizeImage', () => {
         const resizeOptions = { width: 10, height: 20, quality: 30, stripExif: true, addBorder: true };
         resizeImage(fileBuffer, resizeOptions as any);
 
-        expect(gm).toBeCalledWith(fileBuffer);
-        expect(resize).toBeCalledWith(10, 20);
-        expect(quality).toBeCalledWith(30);
-        expect(strip).toBeCalledWith();
-        expect(borderColor).toBeCalledWith('rgb(60,60,60)');
-        expect(border).toBeCalledWith(2, 2);
+        expect(gm).toHaveBeenCalledWith(fileBuffer);
+        expect(resize).toHaveBeenCalledWith(10, 20);
+        expect(quality).toHaveBeenCalledWith(30);
+        expect(strip).toHaveBeenCalledWith();
+        expect(borderColor).toHaveBeenCalledWith('rgb(60,60,60)');
+        expect(border).toHaveBeenCalledWith(2, 2);
         expect(toBuffer.mock.calls[0][0]).toBe('JPG');
     });
 
@@ -51,12 +51,12 @@ describe('That resizeImage', () => {
         const resizeOptions = { width: 10, height: 20, quality: 30, stripExif: false, addBorder: true };
         resizeImage(fileBuffer, resizeOptions as any);
 
-        expect(gm).toBeCalledWith(fileBuffer);
-        expect(resize).toBeCalledWith(10, 20);
-        expect(quality).toBeCalledWith(30);
-        expect(strip).not.toBeCalled();
-        expect(borderColor).toBeCalledWith('rgb(60,60,60)');
-        expect(border).toBeCalledWith(2, 2);
+        expect(gm).toHaveBeenCalledWith(fileBuffer);
+        expect(resize).toHaveBeenCalledWith(10, 20);
+        expect(quality).toHaveBeenCalledWith(30);
+        expect(strip).not.toHaveBeenCalled();
+        expect(borderColor).toHaveBeenCalledWith('rgb(60,60,60)');
+        expect(border).toHaveBeenCalledWith(2, 2);
         expect(toBuffer.mock.calls[0][0]).toBe('JPG');
     });
 
@@ -64,12 +64,12 @@ describe('That resizeImage', () => {
         const resizeOptions = { width: 10, height: 20, quality: 30, stripExif: true, addBorder: false };
         resizeImage(fileBuffer, resizeOptions as any);
 
-        expect(gm).toBeCalledWith(fileBuffer);
-        expect(resize).toBeCalledWith(10, 20);
-        expect(quality).toBeCalledWith(30);
-        expect(strip).toBeCalledWith();
-        expect(borderColor).not.toBeCalled();
-        expect(border).not.toBeCalled();
+        expect(gm).toHaveBeenCalledWith(fileBuffer);
+        expect(resize).toHaveBeenCalledWith(10, 20);
+        expect(quality).toHaveBeenCalledWith(30);
+        expect(strip).toHaveBeenCalledWith();
+        expect(borderColor).not.toHaveBeenCalled();
+        expect(border).not.toHaveBeenCalled();
         expect(toBuffer.mock.calls[0][0]).toBe('JPG');
     });
 

@@ -53,11 +53,11 @@ describe('Gallery', () => {
         it('only creates GalleryImage instances for files it has not seen before', async () => {
             await gallery.getContents(3);
             await gallery.getContents(3);
-            expect(GalleryImageMock).toBeCalledTimes(3);
+            expect(GalleryImageMock).toHaveBeenCalledTimes(3);
             await gallery.getContents(6);
-            expect(GalleryImageMock).toBeCalledTimes(6);
+            expect(GalleryImageMock).toHaveBeenCalledTimes(6);
             await gallery.getContents(9);
-            expect(GalleryImageMock).toBeCalledTimes(9);
+            expect(GalleryImageMock).toHaveBeenCalledTimes(9);
         });
     
         it('returns metadata for each file in reverse order (within defined limit), plus total count', async () => {
@@ -118,8 +118,8 @@ describe('Gallery', () => {
     
             await gallery.getImageFile('gallery/image1.jpg', ImageSize.thumb, '1234');
     
-            expect(GalleryImageMock).toBeCalledTimes(1);
-            expect(getFile).toBeCalledWith('thumb', '1234');
+            expect(GalleryImageMock).toHaveBeenCalledTimes(1);
+            expect(getFile).toHaveBeenCalledWith('thumb', '1234');
         });
     
         it('calls image.sendFile on the existing object the second time it is called', async () => {
@@ -131,8 +131,8 @@ describe('Gallery', () => {
             await gallery.getImageFile('gallery/image1.jpg', ImageSize.thumb, '1234');
             await gallery.getImageFile('gallery/image1.jpg', ImageSize.fhd, '1234');
     
-            expect(GalleryImageMock).toBeCalledTimes(1);
-            expect(getFile).toBeCalledTimes(2);
+            expect(GalleryImageMock).toHaveBeenCalledTimes(1);
+            expect(getFile).toHaveBeenCalledTimes(2);
             const path1Parms = getFile.mock.calls[0];
             const path2Parms = getFile.mock.calls[1];
             expect(path1Parms).toEqual(['thumb', '1234']);

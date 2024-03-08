@@ -58,7 +58,7 @@ describe('GalleryImage', () => {
 
             await expect(galleryImage.getFile(ImageSize.thumb, '1234'))
                 .rejects.toThrow(new NotFoundError(`Source file ${imagePath} does not exist`));
-            expect(mockStorage.contentFileExists).toBeCalledWith(imagePath);
+            expect(mockStorage.contentFileExists).toHaveBeenCalledWith(imagePath);
         });
 
         it.each([
@@ -74,11 +74,11 @@ describe('GalleryImage', () => {
 
             const actualFileBuf = await galleryImage.getFile(size as ImageSize, '1234');
 
-            expect(resizeImageMock).toBeCalledWith(sourceContentBuf, imageParams);
-            expect(mockStorage.storeGeneratedFile).toBeCalledWith(imagePath, `${size}_v1`, targetContentBuf);
+            expect(resizeImageMock).toHaveBeenCalledWith(sourceContentBuf, imageParams);
+            expect(mockStorage.storeGeneratedFile).toHaveBeenCalledWith(imagePath, `${size}_v1`, targetContentBuf);
             expect(actualFileBuf).toBe(targetContentBuf);
 
-            expect(mockStorage.getGeneratedFile).not.toBeCalled();
+            expect(mockStorage.getGeneratedFile).not.toHaveBeenCalled();
         });
 
         it.each([
@@ -92,11 +92,11 @@ describe('GalleryImage', () => {
 
             const actualFileBuf = await galleryImage.getFile(size as ImageSize, '1234');
 
-            expect(mockStorage.getGeneratedFile).toBeCalledWith(imagePath, `${size}_v1`);
+            expect(mockStorage.getGeneratedFile).toHaveBeenCalledWith(imagePath, `${size}_v1`);
             expect(actualFileBuf).toBe(generatedContentBuf);
 
-            expect(resizeImageMock).not.toBeCalled();
-            expect(mockStorage.storeGeneratedFile).not.toBeCalled();
+            expect(resizeImageMock).not.toHaveBeenCalled();
+            expect(mockStorage.storeGeneratedFile).not.toHaveBeenCalled();
         });
 
         it.each([
@@ -107,7 +107,7 @@ describe('GalleryImage', () => {
 
             await expect(galleryImage.getFile(size as ImageSize, '999'))
                 .rejects.toThrow(new NotPermittedError('incorrect timestamp given'));
-            expect(mockStorage.getContentFileModifiedTime).toBeCalledWith(imagePath);
+            expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledWith(imagePath);
         });
     });
 
@@ -151,13 +151,13 @@ describe('GalleryImage', () => {
             const actualMetadata = await galleryImage.getImageMetadata();
 
             expect(actualMetadata).toStrictEqual(expectedMetadata);
-            expect(getExif).toBeCalledTimes(1);
-            expect(getExif).toBeCalledWith(exifFileBuf);
-            expect(resizeImage).toBeCalledTimes(2);
-            expect(resizeImage).toBeCalledWith(originalFileBuf, RESIZE_OPTIONS['forExif']);
-            expect(resizeImage).toBeCalledWith(originalFileBuf, RESIZE_OPTIONS['thumb']);
-            expect(getImageDimensions).toBeCalledTimes(1);
-            expect(getImageDimensions).toBeCalledWith(thumbFileBuf);
+            expect(getExif).toHaveBeenCalledTimes(1);
+            expect(getExif).toHaveBeenCalledWith(exifFileBuf);
+            expect(resizeImage).toHaveBeenCalledTimes(2);
+            expect(resizeImage).toHaveBeenCalledWith(originalFileBuf, RESIZE_OPTIONS['forExif']);
+            expect(resizeImage).toHaveBeenCalledWith(originalFileBuf, RESIZE_OPTIONS['thumb']);
+            expect(getImageDimensions).toHaveBeenCalledTimes(1);
+            expect(getImageDimensions).toHaveBeenCalledWith(thumbFileBuf);
         });
 
         it('returns identical metadata on second run without resizing and using cached data', async () => {
@@ -179,9 +179,9 @@ describe('GalleryImage', () => {
             expect(actualMetadata2).toStrictEqual(actualMetadata1);
 
             //the following function calls are from the first call to getImageMetadata
-            expect(getExif).toBeCalledTimes(1);
-            expect(resizeImage).toBeCalledTimes(2);
-            expect(getImageDimensions).toBeCalledTimes(1);
+            expect(getExif).toHaveBeenCalledTimes(1);
+            expect(resizeImage).toHaveBeenCalledTimes(2);
+            expect(getImageDimensions).toHaveBeenCalledTimes(1);
         });
 
         it('resizes files and re-reads data when called a second time after source file has changed', async () => {
@@ -206,9 +206,9 @@ describe('GalleryImage', () => {
 
             expect(actualMetadata1).toStrictEqual(expectedMetadata);
             expect(actualMetadata2).toStrictEqual(expectedMetadata2);
-            expect(getExif).toBeCalledTimes(2);
-            expect(resizeImage).toBeCalledTimes(4);
-            expect(getImageDimensions).toBeCalledTimes(2);
+            expect(getExif).toHaveBeenCalledTimes(2);
+            expect(resizeImage).toHaveBeenCalledTimes(4);
+            expect(getImageDimensions).toHaveBeenCalledTimes(2);
         });
 
         it('appends the date taken to the image description if present in exif', async () => {

@@ -12,7 +12,7 @@ describe('getExif', () => {
 
         getExif(fileBuffer);
 
-        expect(ExifReader.load).toBeCalledWith(fileBuffer, { expanded: true, length: 128 * 1024 });
+        expect(ExifReader.load).toHaveBeenCalledWith(fileBuffer, { expanded: true, length: 128 * 1024 });
     });
 
     it('correctly reformats dateTaken to ISO format', () => {
@@ -73,6 +73,6 @@ describe('getExif', () => {
             throw new Error('Error');
         });
 
-        expect(() => getExif(fileBuffer)).toThrowError('Error');
+        expect(() => getExif(fileBuffer)).toThrow('Error');
     });
 });

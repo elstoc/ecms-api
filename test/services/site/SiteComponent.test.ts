@@ -51,7 +51,7 @@ describe('SiteComponent', () => {
     
                 await expect(component.getMetadata()).rejects
                     .toThrow(new NotFoundError('A yaml file does not exist for the path my-component'));
-                expect(mockStorage.contentFileExists).toBeCalledWith('my-component.yaml');
+                expect(mockStorage.contentFileExists).toHaveBeenCalledWith('my-component.yaml');
             });
     
             it('if no content directory is found', async () => {
@@ -60,7 +60,7 @@ describe('SiteComponent', () => {
     
                 await expect(component.getMetadata()).rejects
                     .toThrow(new NotFoundError('A content directory does not exist for the path my-component'));
-                expect(mockStorage.contentDirectoryExists).toBeCalledWith('my-component');
+                expect(mockStorage.contentDirectoryExists).toHaveBeenCalledWith('my-component');
             });
     
             it('if the type is not markdown or gallery', async () => {
@@ -100,11 +100,11 @@ describe('SiteComponent', () => {
                     type: 'gallery',
                     additionalData: {}
                 };
-                expect(mockStorage.contentDirectoryExists).toBeCalled();
-                expect(mockStorage.contentFileExists).toBeCalled();
-                expect(mockStorage.getContentFileModifiedTime).toBeCalledWith('my-component.yaml');
-                expect(mockStorage.getContentFile).toBeCalledWith('my-component.yaml');
-                expect(yamlParseMock).toBeCalledWith(contentFileBuf.toString('utf-8'));
+                expect(mockStorage.contentDirectoryExists).toHaveBeenCalled();
+                expect(mockStorage.contentFileExists).toHaveBeenCalled();
+                expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledWith('my-component.yaml');
+                expect(mockStorage.getContentFile).toHaveBeenCalledWith('my-component.yaml');
+                expect(yamlParseMock).toHaveBeenCalledWith(contentFileBuf.toString('utf-8'));
                 expect(actualMetadata).toStrictEqual(expectedMetadata);
             });
     
@@ -157,11 +157,11 @@ describe('SiteComponent', () => {
                     type: 'gallery',
                     additionalData: {}
                 };
-                expect(mockStorage.contentDirectoryExists).toBeCalledTimes(2);
-                expect(mockStorage.contentFileExists).toBeCalledTimes(2);
-                expect(mockStorage.getContentFileModifiedTime).toBeCalledTimes(2);
-                expect(mockStorage.getContentFile).toBeCalledTimes(1);
-                expect(yamlParseMock).toBeCalledTimes(1);
+                expect(mockStorage.contentDirectoryExists).toHaveBeenCalledTimes(2);
+                expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(2);
+                expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledTimes(2);
+                expect(mockStorage.getContentFile).toHaveBeenCalledTimes(1);
+                expect(yamlParseMock).toHaveBeenCalledTimes(1);
                 expect(actualMetadata1).toStrictEqual(expectedMetadata);
                 expect(actualMetadata2).toStrictEqual(expectedMetadata);
             });
@@ -194,11 +194,11 @@ describe('SiteComponent', () => {
                     additionalData: {}
                 };
                 const expectedMetadata2 = { ...expectedMetadata1, title: 'The New Title' };
-                expect(mockStorage.contentDirectoryExists).toBeCalledTimes(2);
-                expect(mockStorage.contentFileExists).toBeCalledTimes(2);
-                expect(mockStorage.getContentFileModifiedTime).toBeCalledTimes(2);
-                expect(mockStorage.getContentFile).toBeCalledTimes(2);
-                expect(yamlParseMock).toBeCalledTimes(2);
+                expect(mockStorage.contentDirectoryExists).toHaveBeenCalledTimes(2);
+                expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(2);
+                expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledTimes(2);
+                expect(mockStorage.getContentFile).toHaveBeenCalledTimes(2);
+                expect(yamlParseMock).toHaveBeenCalledTimes(2);
                 expect(actualMetadata1).toStrictEqual(expectedMetadata1);
                 expect(actualMetadata2).toStrictEqual(expectedMetadata2);
             });
@@ -323,7 +323,7 @@ describe('SiteComponent', () => {
     
                 await expect(component.getGallery()).rejects
                     .toThrow(new NotFoundError('A yaml file does not exist for the path my-component'));
-                expect(mockStorage.contentFileExists).toBeCalledWith('my-component.yaml');
+                expect(mockStorage.contentFileExists).toHaveBeenCalledWith('my-component.yaml');
             });
     
             it('if no content directory is found', async () => {
@@ -332,7 +332,7 @@ describe('SiteComponent', () => {
     
                 await expect(component.getGallery()).rejects
                     .toThrow(new NotFoundError('A content directory does not exist for the path my-component'));
-                expect(mockStorage.contentDirectoryExists).toBeCalledWith('my-component');
+                expect(mockStorage.contentDirectoryExists).toHaveBeenCalledWith('my-component');
             });
     
             it('if the type is not markdown or gallery', async () => {
@@ -388,7 +388,7 @@ describe('SiteComponent', () => {
     
                 await expect(component.getMarkdown()).rejects
                     .toThrow(new NotFoundError('A yaml file does not exist for the path my-component'));
-                expect(mockStorage.contentFileExists).toBeCalledWith('my-component.yaml');
+                expect(mockStorage.contentFileExists).toHaveBeenCalledWith('my-component.yaml');
             });
     
             it('if no content directory is found', async () => {
@@ -397,7 +397,7 @@ describe('SiteComponent', () => {
     
                 await expect(component.getMarkdown()).rejects
                     .toThrow(new NotFoundError('A content directory does not exist for the path my-component'));
-                expect(mockStorage.contentDirectoryExists).toBeCalledWith('my-component');
+                expect(mockStorage.contentDirectoryExists).toHaveBeenCalledWith('my-component');
             });
     
             it('if the type is not markdown or gallery', async () => {

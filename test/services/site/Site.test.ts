@@ -53,10 +53,10 @@ describe('Site', () => {
                 { uiPath: 'component02' },
                 { uiPath: 'component03' },
             ];
-            expect(mockSiteComponent).toBeCalledTimes(3);
-            expect(mockSiteComponent).toBeCalledWith(config, 'component01', mockStorage);
-            expect(mockSiteComponent).toBeCalledWith(config, 'component02', mockStorage);
-            expect(mockSiteComponent).toBeCalledWith(config, 'component03', mockStorage);
+            expect(mockSiteComponent).toHaveBeenCalledTimes(3);
+            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component01', mockStorage);
+            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component02', mockStorage);
+            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component03', mockStorage);
 
             expect(actualComponentList).toStrictEqual(expectedComponentList);
         });
@@ -86,11 +86,11 @@ describe('Site', () => {
                 { uiPath: 'component03' },
             ];
             const expectedComponentList2 = [...expectedComponentList1, { uiPath: 'component04' }];
-            expect(mockSiteComponent).toBeCalledTimes(4);
-            expect(mockSiteComponent).toBeCalledWith(config, 'component01', mockStorage);
-            expect(mockSiteComponent).toBeCalledWith(config, 'component02', mockStorage);
-            expect(mockSiteComponent).toBeCalledWith(config, 'component03', mockStorage);
-            expect(mockSiteComponent).toBeCalledWith(config, 'component04', mockStorage);
+            expect(mockSiteComponent).toHaveBeenCalledTimes(4);
+            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component01', mockStorage);
+            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component02', mockStorage);
+            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component03', mockStorage);
+            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component04', mockStorage);
 
             expect(actualComponentList1).toStrictEqual(expectedComponentList1);
             expect(actualComponentList2).toStrictEqual(expectedComponentList2);
@@ -211,7 +211,7 @@ describe('Site', () => {
             const site = new Site(config, mockStorage);
             await site.getGalleryImageFile('component01/image1.jpg', 'thumb', '1234');
 
-            expect(getImageFile).toBeCalledWith('component01/image1.jpg', 'thumb', '1234');
+            expect(getImageFile).toHaveBeenCalledWith('component01/image1.jpg', 'thumb', '1234');
         });
     });
 
@@ -250,7 +250,7 @@ describe('Site', () => {
             const site = new Site(config, mockStorage);
             await site.getMarkdownPage('component02/path/to/file', user);
 
-            expect(getPage).toBeCalledWith('component02/path/to/file', user);
+            expect(getPage).toHaveBeenCalledWith('component02/path/to/file', user);
         });
     });
 
@@ -265,7 +265,7 @@ describe('Site', () => {
             const site = new Site(config, mockStorage);
             await site.writeMarkdownPage('component02/path/to/file', 'some-content', user);
 
-            expect(writePage).toBeCalledWith('component02/path/to/file', 'some-content', user);
+            expect(writePage).toHaveBeenCalledWith('component02/path/to/file', 'some-content', user);
         });
     });
 
@@ -280,7 +280,7 @@ describe('Site', () => {
             const site = new Site(config, mockStorage);
             await site.deleteMarkdownPage('component02/path/to/file', user);
 
-            expect(deletePage).toBeCalledWith('component02/path/to/file', user);
+            expect(deletePage).toHaveBeenCalledWith('component02/path/to/file', user);
         });
     });
 

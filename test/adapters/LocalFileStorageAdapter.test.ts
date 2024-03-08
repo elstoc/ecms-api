@@ -88,7 +88,7 @@ describe('LocalFileStorageAdapter', () => {
                 throw new Error('cannot chown');
             });
 
-            expect(() => new LocalFileStorageAdapter(dataDir, 1000, 1000)).not.toThrowError();
+            expect(() => new LocalFileStorageAdapter(dataDir, 1000, 1000)).not.toThrow();
 
             expect(chownSyncMock).toHaveBeenCalledTimes(3);
         });
@@ -218,14 +218,14 @@ describe('LocalFileStorageAdapter', () => {
         it('throws an error if the path does not exist', async () => {
             existsSyncMock.mockReturnValue(false);
 
-            await expect(storage.getContentFile('path/to/file')).rejects.toThrowError();
+            await expect(storage.getContentFile('path/to/file')).rejects.toThrow();
         });
 
         it('throws an error if the path does not point to a file', async () => {
             existsSyncMock.mockReturnValue(true);
             statsyncMock.mockReturnValueOnce({ isFile: () => false });
 
-            await expect(storage.getContentFile('path/to/file')).rejects.toThrowError();
+            await expect(storage.getContentFile('path/to/file')).rejects.toThrow();
         });
     });
 
@@ -242,14 +242,14 @@ describe('LocalFileStorageAdapter', () => {
         it('throws an error if the path does not exist', async () => {
             existsSyncMock.mockReturnValue(false);
 
-            await expect(storage.getAdminFile('path/to/file')).rejects.toThrowError();
+            await expect(storage.getAdminFile('path/to/file')).rejects.toThrow();
         });
 
         it('throws an error if the path does not point to a file', async () => {
             existsSyncMock.mockReturnValue(true);
             statsyncMock.mockReturnValueOnce({ isFile: () => false });
 
-            await expect(storage.getAdminFile('path/to/file')).rejects.toThrowError();
+            await expect(storage.getAdminFile('path/to/file')).rejects.toThrow();
         });
     });
 
@@ -266,14 +266,14 @@ describe('LocalFileStorageAdapter', () => {
         it('throws an error if the path does not exist', async () => {
             existsSyncMock.mockReturnValue(false);
 
-            await expect(storage.getGeneratedFile('path/to/file', 'tag')).rejects.toThrowError();
+            await expect(storage.getGeneratedFile('path/to/file', 'tag')).rejects.toThrow();
         });
 
         it('throws an error if the path does not point to a file', async () => {
             existsSyncMock.mockReturnValue(true);
             statsyncMock.mockReturnValueOnce({ isFile: () => false });
 
-            await expect(storage.getGeneratedFile('path/to/file', 'tag')).rejects.toThrowError();
+            await expect(storage.getGeneratedFile('path/to/file', 'tag')).rejects.toThrow();
         });
     });
 
@@ -619,7 +619,7 @@ describe('LocalFileStorageAdapter', () => {
             existsSyncMock.mockReturnValue(false);
             statsyncMock.mockReturnValueOnce({ isFile: () => false });
 
-            await expect(storage.deleteContentFile('path/to/file')).rejects.toThrowError();
+            await expect(storage.deleteContentFile('path/to/file')).rejects.toThrow();
 
             expect(existsSyncMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
         });

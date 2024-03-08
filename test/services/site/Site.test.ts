@@ -12,6 +12,7 @@ const config = {
 const mockStorage = {
     listContentChildren: jest.fn() as jest.Mock,
     contentFileExists: jest.fn() as jest.Mock,
+    getContentFullPath: jest.fn() as jest.Mock,
     getContentFile: jest.fn() as jest.Mock,
     getGeneratedFile: jest.fn() as jest.Mock,
     storeGeneratedFile: jest.fn() as jest.Mock,

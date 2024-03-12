@@ -1,6 +1,7 @@
 import { User } from '../auth';
 import { IGallery } from '../gallery';
-import { IMarkdown } from '../markdown/IMarkdown';
+import { IMarkdown } from '../markdown';
+import { IMediaDb } from '../mediadb';
 
 export type AdditionalData = {
     [key: string]: boolean | number | string | undefined; 
@@ -20,4 +21,6 @@ export interface ISiteComponent {
     getMetadata(user?: User): Promise<ComponentMetadata | undefined>;
     getGallery(): Promise<IGallery>;
     getMarkdown(): Promise<IMarkdown>;
+    getMediaDb(): Promise<IMediaDb>;
+    shutdown(): Promise<void>;
 }

@@ -8,11 +8,13 @@ import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
 import { IStorageAdapter } from '../../adapters';
 import { NotFoundError } from '../../errors';
 import { User } from '../auth';
+import { IMediaDb, MediaDb } from '../mediadb';
 
 export class SiteComponent implements ISiteComponent {
     private contentYamlPath: string;
     private gallery?: IGallery;
     private markdown?: IMarkdown;
+    private mediaDb?: IMediaDb;
     private metadataFromSourceTime = -1;
     private metadata?: ComponentMetadata;
 
@@ -43,7 +45,7 @@ export class SiteComponent implements ISiteComponent {
         }
         const yamlFileBuf = await this.storage.getContentFile(this.contentYamlPath);
         const parsedYaml = YAML.parse(yamlFileBuf.toString('utf-8'));
-        if (!['gallery', 'markdown'].includes(parsedYaml?.type)) {
+        if (!['gallery', 'markdown', 'mediadb'].includes(parsedYaml?.type)) {
             throw new NotFoundError('Valid component type not found');
         }
 
@@ -90,5 +92,20 @@ export class SiteComponent implements ISiteComponent {
         } else {
             throw new NotFoundError(`No markdown component found at the path ${this.contentDir}`);
         }
+    }
+
+    public async getMediaDb(): Promise<IMediaDb> {
+        await this.getMetadata();
+        if (this.metadata?.type == 'mediadb') {
+            this.mediaDb ??= new MediaDb(this.contentDir, this.config, this.storage);
+            await this.mediaDb.initialise();
+            return this.mediaDb;
+        } else {
+            throw new NotFoundError(`No mediadb component found at the path ${this.contentDir}`);
+        }
+    }
+
+    public async shutdown(): Promise<void> {
+        await this.mediaDb?.shutdown();
     }
 }

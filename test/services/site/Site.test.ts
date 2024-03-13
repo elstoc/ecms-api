@@ -284,6 +284,44 @@ describe('Site', () => {
         });
     });
 
+    describe('getMediaDbVersion', () => {
+        it('runs getVersion on the appropriate mediadb object', async () => {
+            const getVersion = jest.fn();
+            mockSiteComponent.mockImplementation(() => ({
+                getMediaDb: () => ({ getVersion })
+            }));
+
+            const site = new Site(config, mockStorage);
+            await site.getMediaDbVersion('component02/path/to/file');
+            
+            expect(getVersion).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('shutdown', () => {
+        it('runs shutdown on every created site component', async () => {
+            const mockShutdown = jest.fn();
+            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
+                getMetadata: () => ({ uiPath: inputFilePath }),
+                shutdown: mockShutdown
+            }));
+            mockStorage.listContentChildren.mockImplementation(async (_, fileMatcher) => {
+                return [
+                    'component01.yaml',
+                    'component02.yaml',
+                    'component03.yaml',
+                ].filter(fileMatcher);
+            });
+
+            const site = new Site(config, mockStorage);
+            await site.listComponents(); // required to create the components to be shut down
+
+            await site.shutdown();
+
+            expect(mockShutdown).toHaveBeenCalledTimes(3);
+        });
+    });
+
     describe('getConfig', () => {
         it('returns true & footer text if enableAuthentication is true', () => {
             const newConfig = { ...config, enableAuthentication: true, footerText: 'some-footer-text' };

@@ -16,5 +16,7 @@ export interface ISite {
     writeMarkdownPage(apiPath: string, content: string, user?: User): Promise<void>;
     deleteMarkdownPage(apiPath: string, user?: User): Promise<void>;
     getMarkdownTree(apiPath: string, user?: User): Promise<MarkdownTree | undefined>;
+    getMediaDbVersion(apiPath: string): Promise<number>;
     getConfig(): SiteConfig;
+    shutdown(): Promise<void>;
 }

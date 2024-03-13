@@ -35,9 +35,16 @@ const server = app.listen(apiPort, () => {
     console.log(`app started, listening on port ${apiPort}`);
 });
 
-process.on('SIGTERM', () => {
-    logger.info('SIGTERM signal received: closing HTTP server');
+const shutdown = () => {
+    logger.info('Closing HTTP server');
     server.close(() => {
-        logger.info('HTTP server closed');
+        logger.info('HTTP server closed, shutting down site components');
+        site.shutdown().then(() => {
+            logger.info('shutdown complete');
+            process.exit(0);
+        });
     });
-});
+};
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);

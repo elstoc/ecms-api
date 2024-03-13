@@ -76,6 +76,11 @@ export class Site implements ISite {
         return markdown.deletePage(apiPath, user);
     }
 
+    public async getMediaDbVersion(apiPath: string): Promise<number> {
+        const mediaDb = await this.getRootComponent(apiPath).getMediaDb();
+        return mediaDb.getVersion();
+    }
+
     private getRootComponent(apiPath: string): ISiteComponent {
         const rootPath = apiPath.replace(/^\//, '').split('/')[0];
         return this.getComponent(rootPath);
@@ -86,5 +91,11 @@ export class Site implements ISite {
             authEnabled: this.config.enableAuthentication,
             footerText: this.config.footerText
         };
+    }
+
+    public async shutdown(): Promise<void> {
+        for (const component of Object.values(this.components)) {
+            await component.shutdown();
+        }
     }
 }

@@ -37,4 +37,12 @@ export class SQLiteDatabaseAdapter implements IDatabaseAdapter {
             });
         });
     }
+
+    public getAll<T>(sql: string): Promise<T[]> {
+        return new Promise((resolve, reject) => {
+            this.database?.all(sql, (err: Error | null, rows: T[]) => {
+                err ? reject(err) : resolve(rows);
+            });
+        });
+    }
 }

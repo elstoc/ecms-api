@@ -1,14 +1,12 @@
 import path from 'path';
-import { ISiteComponent, ComponentMetadata, ComponentTypes } from './ISiteComponent';
+import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
 import { ISite, SiteConfig } from './ISite';
 import { SiteComponent } from './SiteComponent';
 import { Config, sortByWeightAndTitle } from '../../utils';
-import { GalleryContents, IGallery, ImageSize } from '../gallery';
-import { MarkdownTree } from '../markdown';
+import { IGallery } from '../gallery';
 import { IStorageAdapter } from '../../adapters';
 import { User } from '../auth';
-import { NotPermittedError } from '../../errors';
-import { IMarkdown, MarkdownPage } from '../markdown/IMarkdown';
+import { IMarkdown } from '../markdown/IMarkdown';
 import { IMediaDb } from '../mediadb';
 
 export class Site implements ISite {
@@ -53,45 +51,6 @@ export class Site implements ISite {
 
     public async getMediaDb(apiPath: string): Promise<IMediaDb> {
         return await this.getRootComponent(apiPath).getMediaDb();
-    }
-
-    public async getGalleryContents(apiPath: string, limit?: number): Promise<GalleryContents> {
-        const gallery = await this.getRootComponent(apiPath).getGallery();
-        return gallery.getContents(limit);
-    }
-
-    public async getGalleryImageFile(apiPath: string, size: string, timestamp: string): Promise<Buffer> {
-        const gallery = await this.getRootComponent(apiPath).getGallery();
-        return gallery.getImageFile(apiPath, size as ImageSize, timestamp);
-    }
-
-    public async getMarkdownTree(apiPath: string, user?: User): Promise<MarkdownTree | undefined> {
-        const markdown = await this.getRootComponent(apiPath).getMarkdown();
-        const structure = await markdown.getTree(user);
-        if (!structure) {
-            throw new NotPermittedError();
-        }
-        return structure;
-    }
-
-    public async getMarkdownPage(apiPath: string, user?: User): Promise<MarkdownPage> {
-        const markdown = await this.getRootComponent(apiPath).getMarkdown();
-        return markdown.getPage(apiPath, user);
-    }
-
-    public async writeMarkdownPage(apiPath: string, content: string, user?: User): Promise<void> {
-        const markdown = await this.getRootComponent(apiPath).getMarkdown();
-        return markdown.writePage(apiPath, content, user);
-    }
-
-    public async deleteMarkdownPage(apiPath: string, user?: User): Promise<void> {
-        const markdown = await this.getRootComponent(apiPath).getMarkdown();
-        return markdown.deletePage(apiPath, user);
-    }
-
-    public async getMediaDbVersion(apiPath: string): Promise<number> {
-        const mediaDb = await this.getRootComponent(apiPath).getMediaDb();
-        return mediaDb.getVersion();
     }
 
     private getRootComponent(apiPath: string): ISiteComponent {

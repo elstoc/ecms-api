@@ -11,7 +11,8 @@ export const createDeleteMarkdownPageHandler = (site: ISite, logger: winston.Log
         if (!req.user || req.user.id === 'guest') {
             throw new NotPermittedError('User must be logged in to delete markdown pages');
         }
-        await site.deleteMarkdownPage(mdPath, req.user);
+        const markdown = await site.getMarkdown(mdPath);
+        await markdown.deletePage(mdPath, req.user);
         res.sendStatus(200);
     } catch (err: unknown) {
         handleError(req, res, err, logger);

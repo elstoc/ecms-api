@@ -12,7 +12,8 @@ export const createPutMarkdownPageHandler = (site: ISite, logger: winston.Logger
             throw new NotPermittedError('User must be logged in to update markdown pages');
         }
         const { fileContents } = req.body;
-        await site.writeMarkdownPage(mdPath, fileContents, req.user);
+        const markdown = await site.getMarkdown(mdPath);
+        await markdown.writePage(mdPath, fileContents, req.user);
         res.sendStatus(200);
     } catch (err: unknown) {
         handleError(req, res, err, logger);

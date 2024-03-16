@@ -7,6 +7,12 @@ export type AdditionalData = {
     [key: string]: boolean | number | string | undefined; 
 };
 
+export enum ComponentTypes {
+    gallery = 'gallery',
+    markdown = 'markdown',
+    mediadb = 'mediadb'
+}
+
 export type ComponentMetadata = {
     type: string;
     apiPath: string;

@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Config, userHasReadAccess } from '../../utils';
 import { Gallery, IGallery } from '../gallery';
 import { IMarkdown, Markdown } from '../markdown';
-import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
+import { ISiteComponent, ComponentMetadata, ComponentTypes } from './ISiteComponent';
 import { IStorageAdapter } from '../../adapters';
 import { NotFoundError } from '../../errors';
 import { User } from '../auth';
@@ -45,7 +45,7 @@ export class SiteComponent implements ISiteComponent {
         }
         const yamlFileBuf = await this.storage.getContentFile(this.contentYamlPath);
         const parsedYaml = YAML.parse(yamlFileBuf.toString('utf-8'));
-        if (!['gallery', 'markdown', 'mediadb'].includes(parsedYaml?.type)) {
+        if (!(parsedYaml?.type in ComponentTypes)) {
             throw new NotFoundError('Valid component type not found');
         }
 
@@ -74,35 +74,30 @@ export class SiteComponent implements ISiteComponent {
         }
     }
 
-    public async getGallery(): Promise<IGallery> {
+    private async checkComponentExistsHere(type: ComponentTypes): Promise<void> {
         await this.getMetadata();
-        if (this.metadata?.type === 'gallery') {
-            this.gallery ??= new Gallery(this.contentDir, this.config, this.storage);
-            return this.gallery;
-        } else {
-            throw new NotFoundError(`No gallery component found at the path ${this.contentDir}`);
+        if (this.metadata?.type !== type) {
+            throw new NotFoundError(`No ${type} component found at the path ${this.contentDir}`);
         }
+    }
+
+    public async getGallery(): Promise<IGallery> {
+        await this.checkComponentExistsHere(ComponentTypes.gallery);
+        this.gallery ??= new Gallery(this.contentDir, this.config, this.storage);
+        return this.gallery;
     }
 
     public async getMarkdown(): Promise<IMarkdown> {
-        await this.getMetadata();
-        if (this.metadata?.type === 'markdown') {
-            this.markdown ??= new Markdown(this.contentDir, this.config, this.storage, true);
-            return this.markdown;
-        } else {
-            throw new NotFoundError(`No markdown component found at the path ${this.contentDir}`);
-        }
+        await this.checkComponentExistsHere(ComponentTypes.markdown);
+        this.markdown ??= new Markdown(this.contentDir, this.config, this.storage, true);
+        return this.markdown;
     }
 
     public async getMediaDb(): Promise<IMediaDb> {
-        await this.getMetadata();
-        if (this.metadata?.type == 'mediadb') {
-            this.mediaDb ??= new MediaDb(this.contentDir, this.config, this.storage);
-            await this.mediaDb.initialise();
-            return this.mediaDb;
-        } else {
-            throw new NotFoundError(`No mediadb component found at the path ${this.contentDir}`);
-        }
+        await this.checkComponentExistsHere(ComponentTypes.mediadb);
+        this.mediaDb ??= new MediaDb(this.contentDir, this.config, this.storage);
+        await this.mediaDb.initialise();
+        return this.mediaDb;
     }
 
     public async shutdown(): Promise<void> {

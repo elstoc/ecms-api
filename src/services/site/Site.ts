@@ -1,14 +1,15 @@
 import path from 'path';
-import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
+import { ISiteComponent, ComponentMetadata, ComponentTypes } from './ISiteComponent';
 import { ISite, SiteConfig } from './ISite';
 import { SiteComponent } from './SiteComponent';
 import { Config, sortByWeightAndTitle } from '../../utils';
-import { GalleryContents, ImageSize } from '../gallery';
+import { GalleryContents, IGallery, ImageSize } from '../gallery';
 import { MarkdownTree } from '../markdown';
 import { IStorageAdapter } from '../../adapters';
 import { User } from '../auth';
 import { NotPermittedError } from '../../errors';
-import { MarkdownPage } from '../markdown/IMarkdown';
+import { IMarkdown, MarkdownPage } from '../markdown/IMarkdown';
+import { IMediaDb } from '../mediadb';
 
 export class Site implements ISite {
     private components: { [key: string]: ISiteComponent } = {};
@@ -40,6 +41,18 @@ export class Site implements ISite {
     private async getComponentMetadata(apiRootPath: string, user?: User): Promise<ComponentMetadata | undefined> {
         const component = this.getComponent(apiRootPath);
         return component.getMetadata(user);
+    }
+
+    public async getGallery(apiPath: string): Promise<IGallery> {
+        return await this.getRootComponent(apiPath).getGallery();
+    }
+
+    public async getMarkdown(apiPath: string): Promise<IMarkdown> {
+        return await this.getRootComponent(apiPath).getMarkdown();
+    }
+
+    public async getMediaDb(apiPath: string): Promise<IMediaDb> {
+        return await this.getRootComponent(apiPath).getMediaDb();
     }
 
     public async getGalleryContents(apiPath: string, limit?: number): Promise<GalleryContents> {

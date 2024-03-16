@@ -187,6 +187,42 @@ describe('Site', () => {
 
     });
 
+    describe('getGallery', () => {
+        it('gets the appropriate gallery object', async () => {
+            const site = new Site(config, mockStorage);
+            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
+                getGallery: () => inputFilePath
+            }));
+            const gallery = await site.getGallery('galleryComponent');
+
+            expect(gallery).toBe('galleryComponent');
+        });
+    });
+
+    describe('getMarkdown', () => {
+        it('gets the appropriate markdown object', async () => {
+            const site = new Site(config, mockStorage);
+            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
+                getMarkdown: () => inputFilePath
+            }));
+            const markdown = await site.getMarkdown('markdownComponent');
+
+            expect(markdown).toBe('markdownComponent');
+        });
+    });
+
+    describe('getMediaDb', () => {
+        it('gets the appropriate mediadb object', async () => {
+            const site = new Site(config, mockStorage);
+            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
+                getMediaDb: () => inputFilePath
+            }));
+            const mediadb = await site.getMediaDb('mediaDbComponent');
+
+            expect(mediadb).toBe('mediaDbComponent');
+        });
+    });
+
     describe('getGalleryContents', () => {
         it('runs getContents on the appropriate gallery object', async () => {
             mockSiteComponent.mockImplementation((_, inputFilePath) => ({

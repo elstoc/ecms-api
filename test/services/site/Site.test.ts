@@ -1,6 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { NotPermittedError } from '../../../src/errors';
-import { Site, SiteComponent, User } from '../../../src/services';
+import { Site, SiteComponent } from '../../../src/services';
 
 jest.mock('../../../src/services/site/SiteComponent');
 

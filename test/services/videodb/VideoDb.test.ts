@@ -164,7 +164,7 @@ describe('VideoDb', () => {
         it('attempts to run SQL and returns results the first time it is run', async () => {
             const tableName = Object.values(LookupTables)[0];
             mockGetAll.mockResolvedValue(resultRows);
-            const tablePrefix = tableName.replace('lookup_', '');
+            const tablePrefix = tableName.replace('l_', '');
             const expectedSql = `SELECT code, description FROM ${tableName}`;
 
             const values = await videoDb.getLookupValues(tablePrefix);
@@ -177,7 +177,7 @@ describe('VideoDb', () => {
         it('returns the cached results the second time it is run (%s)', async () => {
             const tableName = Object.values(LookupTables)[0];
             mockGetAll.mockResolvedValue(resultRows);
-            const tablePrefix = tableName.replace('lookup_', '');
+            const tablePrefix = tableName.replace('l_', '');
             const expectedSql = `SELECT code, description FROM ${tableName}`;
 
             const values = await videoDb.getLookupValues(tablePrefix);
@@ -192,7 +192,7 @@ describe('VideoDb', () => {
         it('throws an error if the lookup table is empty (%s)', async () => {
             const tableName = Object.values(LookupTables)[0];
             mockGetAll.mockResolvedValue(undefined);
-            const tablePrefix = tableName.replace('lookup_', '');
+            const tablePrefix = tableName.replace('l_', '');
 
             await expect(videoDb.getLookupValues(tablePrefix)).rejects.toThrow(`No records found in ${tableName}`);
         });

@@ -63,7 +63,7 @@ export class VideoDb implements IVideoDb {
     }
 
     public async getLookupValues(tableSuffix: string): Promise<LookupValues> {
-        const tableName = `lookup_${tableSuffix}` as LookupTables;
+        const tableName = `l_${tableSuffix}` as LookupTables;
         if (!Object.values(LookupTables).includes(tableName)) {
             throw new Error(`invalid table suffix ${tableSuffix}`);
         }

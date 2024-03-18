@@ -10,12 +10,12 @@ dbVersionSql.push(`
 `);
 
 dbVersionSql.push(`
-    CREATE TABLE IF NOT EXISTS lookup_video_category (
+    CREATE TABLE IF NOT EXISTS l_categories (
         code VARCHAR(5) PRIMARY KEY,
         description VARCHAR(50) NOT NULL
     );
 
-    INSERT INTO lookup_video_category (code, description)
+    INSERT INTO l_categories (code, description)
     VALUES
         ('TV', 'TV Series'),
         ('TVD', 'TV Documentary'),
@@ -23,12 +23,12 @@ dbVersionSql.push(`
         ('MOVD', 'Feature Length Documentary'),
         ('MUS', 'Music');
 
-    CREATE TABLE IF NOT EXISTS lookup_video_media_type (
+    CREATE TABLE IF NOT EXISTS l_media_types (
         code VARCHAR(5) PRIMARY KEY,
         description VARCHAR(50) NOT NULL
     );
 
-    INSERT INTO lookup_video_media_type (code, description)
+    INSERT INTO l_media_types (code, description)
     VALUES
         ('DVD', 'DVD'),
         ('DVD1C', 'DVD 1:1 copy'),
@@ -41,12 +41,12 @@ dbVersionSql.push(`
         ('DLSD', 'Download SD'),
         ('4K', '4K UHD');
 
-    CREATE TABLE IF NOT EXISTS lookup_video_media_location (
+    CREATE TABLE IF NOT EXISTS l_media_locations (
         code VARCHAR(5) PRIMARY KEY,
         description VARCHAR(50) NOT NULL
     );
 
-    INSERT INTO lookup_video_media_location (code, description)
+    INSERT INTO l_media_locations (code, description)
     VALUES
         ('MW', 'Movies Wallet'),
         ('NAS', 'NAS'),
@@ -56,19 +56,6 @@ dbVersionSql.push(`
         ('TVB', 'TV Series Box'),
         ('EXT', 'External Drive'),
         ('OTH', 'Other');
-
-    CREATE TABLE IF NOT EXISTS video_media (
-        video_id INTEGER NOT NULL,
-        type VARCHAR(5) NOT NULL,
-        location VARCHAR(5),
-        watched INTEGER,
-        notes VARCHAR(100),
-
-        FOREIGN KEY (type)
-            REFERENCES lookup_video_media_type (code),
-        FOREIGN KEY (location)
-            REFERENCES lookup_video_media_location (code)
-    );
 
     CREATE TABLE IF NOT EXISTS videos (
         id INTEGER PRIMARY KEY,
@@ -80,7 +67,23 @@ dbVersionSql.push(`
         progress VARCHAR(50),
 
         FOREIGN KEY (category)
-            REFERENCES lookup_video_category (code)
+            REFERENCES l_categories (code)
+    );
+
+    CREATE TABLE IF NOT EXISTS video_media (
+        video_id INTEGER NOT NULL,
+        media_type VARCHAR(5) NOT NULL,
+        media_location VARCHAR(5),
+        watched INTEGER,
+        notes VARCHAR(100),
+
+        PRIMARY KEY (video_id, media_type),
+        FOREIGN KEY (media_type)
+            REFERENCES l_media_types (code),
+        FOREIGN KEY (media_location)
+            REFERENCES l_media_locations (code),
+        FOREIGN KEY (video_id)
+            REFERENCES videos (id)
     );
 `);
 

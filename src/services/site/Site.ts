@@ -7,7 +7,7 @@ import { IGallery } from '../gallery';
 import { IStorageAdapter } from '../../adapters';
 import { User } from '../auth';
 import { IMarkdown } from '../markdown/IMarkdown';
-import { IMediaDb } from '../mediadb';
+import { IVideoDb } from '../videodb';
 
 export class Site implements ISite {
     private components: { [key: string]: ISiteComponent } = {};
@@ -49,8 +49,8 @@ export class Site implements ISite {
         return await this.getRootComponent(apiPath).getMarkdown();
     }
 
-    public async getMediaDb(apiPath: string): Promise<IMediaDb> {
-        return await this.getRootComponent(apiPath).getMediaDb();
+    public async getVideoDb(apiPath: string): Promise<IVideoDb> {
+        return await this.getRootComponent(apiPath).getVideoDb();
     }
 
     private getRootComponent(apiPath: string): ISiteComponent {

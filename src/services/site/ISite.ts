@@ -1,7 +1,7 @@
 import { User } from '../auth';
 import { IGallery } from '../gallery';
 import { IMarkdown } from '../markdown';
-import { IMediaDb } from '../mediadb';
+import { IVideoDb } from '../videodb';
 import { ComponentMetadata } from './ISiteComponent';
 
 export type SiteConfig = {
@@ -13,7 +13,7 @@ export interface ISite {
     listComponents(user?: User): Promise<ComponentMetadata[]>;
     getGallery(apiPath: string): Promise<IGallery>;
     getMarkdown(apiPath: string): Promise<IMarkdown>;
-    getMediaDb(apiPath: string): Promise<IMediaDb>;
+    getVideoDb(apiPath: string): Promise<IVideoDb>;
     getConfig(): SiteConfig;
     shutdown(): Promise<void>;
 }

@@ -1,12 +1,12 @@
 import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
-import { IMediaDb, LookupRow, LookupValues, LookupTables } from './IMediaDb';
+import { IVideoDb, LookupRow, LookupValues, LookupTables } from './IVideoDb';
 import { Config } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { SQLiteDatabaseAdapter } from '../../adapters';
 import { dbVersionSql } from './dbVersionSql';
 import path from 'path';
 
-export class MediaDb implements IMediaDb {
+export class VideoDb implements IVideoDb {
     private apiPath: string;
     private database?: IDatabaseAdapter;
     private dbVersion?: number;

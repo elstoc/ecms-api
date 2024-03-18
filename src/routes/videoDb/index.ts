@@ -5,7 +5,7 @@ import { ISite } from '../../services';
 import { createGetDbVersionHandler } from './getDbVersionHandler';
 import { createGetLookupValuesHandler } from './getLookupValuesHandler';
 
-export const createMediaDbRouter = (site: ISite, logger: Logger): Router => {
+export const createVideoDbRouter = (site: ISite, logger: Logger): Router => {
     const router = Router();
 
     const getDbVersionHandler = createGetDbVersionHandler(site, logger);

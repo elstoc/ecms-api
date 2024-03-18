@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MediaDb, IMediaDb } from '../../../src/services/mediadb';
+import { VideoDb, IVideoDb } from '../../../src/services/videodb';
 import { Config } from '../../../src/utils';
 import { SQLiteDatabaseAdapter } from '../../../src/adapters';
-import { LookupTables } from '../../../src/services/mediadb/IMediaDb';
+import { LookupTables } from '../../../src/services/videodb/IVideoDb';
 const mockSQLiteDatabaseAdapter = jest.mocked(SQLiteDatabaseAdapter);
 
 jest.mock('../../../src/adapters');
-jest.mock('../../../src/services/mediadb/dbVersionSql', () => ({
+jest.mock('../../../src/services/videodb/dbVersionSql', () => ({
     dbVersionSql: ['SQL v1', 'SQL v2', 'SQL v3', 'SQL v4']
 }));
 
@@ -23,8 +23,8 @@ const dbFullPath = '/path/to/content/videos/data.db';
 const emptyBuffer = Buffer.from('');
 const config = {} as Config;
 
-describe('MediaDb', () => {
-    let mediaDb: IMediaDb;
+describe('VideoDb', () => {
+    let videoDb: IVideoDb;
     const mockGet = jest.fn();
     const mockGetAll = jest.fn();
     const mockExec = jest.fn();
@@ -32,7 +32,7 @@ describe('MediaDb', () => {
     const mockClose = jest.fn();
 
     beforeEach(() => {
-        mediaDb = new MediaDb(apiPath, config, mockStorage as any);
+        videoDb = new VideoDb(apiPath, config, mockStorage as any);
         mockSQLiteDatabaseAdapter.mockClear();
         mockSQLiteDatabaseAdapter.mockImplementation(() => ({
             initialise: mockInit,
@@ -48,7 +48,7 @@ describe('MediaDb', () => {
         it('attempts to create an empty file if no db exists (so that permissions are set)', async () => {
             mockStorage.contentFileExists.mockReturnValue(false);
 
-            await mediaDb.initialise();
+            await videoDb.initialise();
 
             expect(mockStorage.contentFileExists).toHaveBeenCalledWith(apiDbPath);
             expect(mockStorage.storeContentFile).toHaveBeenCalledWith(apiDbPath, emptyBuffer);
@@ -58,7 +58,7 @@ describe('MediaDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
 
-            await mediaDb.initialise();
+            await videoDb.initialise();
 
             expect(mockStorage.contentFileExists).toHaveBeenCalledWith(apiDbPath);
             expect(mockStorage.storeContentFile).not.toHaveBeenCalled();
@@ -67,7 +67,7 @@ describe('MediaDb', () => {
         it('initialises the database with the correct path', async () => {
             mockStorage.contentFileExists.mockReturnValue(false);
 
-            await mediaDb.initialise();
+            await videoDb.initialise();
 
             expect(mockSQLiteDatabaseAdapter).toHaveBeenCalledTimes(1);
             expect(mockSQLiteDatabaseAdapter).toHaveBeenCalledWith(dbFullPath);
@@ -77,7 +77,7 @@ describe('MediaDb', () => {
         it('runs all upgrade SQL on a new database, updates but does not attempt to retrieve version', async () => {
             mockStorage.contentFileExists.mockReturnValue(false);
 
-            await mediaDb.initialise();
+            await videoDb.initialise();
 
             expect(mockExec).toHaveBeenCalledTimes(5);
             expect(mockExec).toHaveBeenNthCalledWith(1, versionSql[0]);
@@ -93,7 +93,7 @@ describe('MediaDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 2 });
 
-            await mediaDb.initialise();
+            await videoDb.initialise();
 
             expect(mockExec).toHaveBeenCalledTimes(3);
             expect(mockExec).toHaveBeenNthCalledWith(1, versionSql[2]);
@@ -105,7 +105,7 @@ describe('MediaDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
 
-            await mediaDb.initialise();
+            await videoDb.initialise();
 
             expect(mockExec).not.toHaveBeenCalled();
         });
@@ -114,8 +114,8 @@ describe('MediaDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 3 });
 
-            await mediaDb.initialise();
-            await mediaDb.initialise();
+            await videoDb.initialise();
+            await videoDb.initialise();
 
             expect(mockStorage.getContentFullPath).toHaveBeenCalledTimes(1);
             expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(1);
@@ -129,9 +129,9 @@ describe('MediaDb', () => {
         it('returns the retrieved database version', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
-            await mediaDb.initialise();
+            await videoDb.initialise();
 
-            const ver = await mediaDb.getVersion();
+            const ver = await videoDb.getVersion();
 
             expect(ver).toBe(4);
         });
@@ -153,11 +153,11 @@ describe('MediaDb', () => {
         beforeEach(async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
-            mediaDb.initialise();
+            videoDb.initialise();
         });
 
         it('throws an error if passed an invalid table suffix', async () => {
-            await expect(mediaDb.getLookupValues('invalid-suffix')).rejects.toThrow('invalid table suffix invalid-suffix');
+            await expect(videoDb.getLookupValues('invalid-suffix')).rejects.toThrow('invalid table suffix invalid-suffix');
             expect(mockGetAll).not.toHaveBeenCalled();
         });
 
@@ -167,7 +167,7 @@ describe('MediaDb', () => {
             const tablePrefix = tableName.replace('lookup_', '');
             const expectedSql = `SELECT code, description FROM ${tableName}`;
 
-            const values = await mediaDb.getLookupValues(tablePrefix);
+            const values = await videoDb.getLookupValues(tablePrefix);
 
             expect(mockGetAll).toHaveBeenCalledTimes(1);
             expect(mockGetAll).toHaveBeenCalledWith(expectedSql);
@@ -180,8 +180,8 @@ describe('MediaDb', () => {
             const tablePrefix = tableName.replace('lookup_', '');
             const expectedSql = `SELECT code, description FROM ${tableName}`;
 
-            const values = await mediaDb.getLookupValues(tablePrefix);
-            const values2 = await mediaDb.getLookupValues(tablePrefix);
+            const values = await videoDb.getLookupValues(tablePrefix);
+            const values2 = await videoDb.getLookupValues(tablePrefix);
 
             expect(mockGetAll).toHaveBeenCalledTimes(1);
             expect(mockGetAll).toHaveBeenCalledWith(expectedSql);
@@ -194,7 +194,7 @@ describe('MediaDb', () => {
             mockGetAll.mockResolvedValue(undefined);
             const tablePrefix = tableName.replace('lookup_', '');
 
-            await expect(mediaDb.getLookupValues(tablePrefix)).rejects.toThrow(`No records found in ${tableName}`);
+            await expect(videoDb.getLookupValues(tablePrefix)).rejects.toThrow(`No records found in ${tableName}`);
         });
     });
 
@@ -202,9 +202,9 @@ describe('MediaDb', () => {
         it('closes the database', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
-            await mediaDb.initialise();
+            await videoDb.initialise();
 
-            await mediaDb.shutdown();
+            await videoDb.shutdown();
 
             expect(mockClose).toHaveBeenCalledTimes(1);
         });

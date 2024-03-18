@@ -210,15 +210,15 @@ describe('Site', () => {
         });
     });
 
-    describe('getMediaDb', () => {
-        it('gets the appropriate mediadb object', async () => {
+    describe('getVideoDb', () => {
+        it('gets the appropriate videodb object', async () => {
             const site = new Site(config, mockStorage);
             mockSiteComponent.mockImplementation((_, inputFilePath) => ({
-                getMediaDb: () => inputFilePath
+                getVideoDb: () => inputFilePath
             }));
-            const mediadb = await site.getMediaDb('mediaDbComponent');
+            const videodb = await site.getVideoDb('videoDbComponent');
 
-            expect(mediadb).toBe('mediaDbComponent');
+            expect(videodb).toBe('videoDbComponent');
         });
     });
 

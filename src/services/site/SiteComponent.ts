@@ -8,13 +8,13 @@ import { ISiteComponent, ComponentMetadata, ComponentTypes } from './ISiteCompon
 import { IStorageAdapter } from '../../adapters';
 import { NotFoundError } from '../../errors';
 import { User } from '../auth';
-import { IMediaDb, MediaDb } from '../mediadb';
+import { IVideoDb, VideoDb } from '../videodb';
 
 export class SiteComponent implements ISiteComponent {
     private contentYamlPath: string;
     private gallery?: IGallery;
     private markdown?: IMarkdown;
-    private mediaDb?: IMediaDb;
+    private videoDb?: IVideoDb;
     private metadataFromSourceTime = -1;
     private metadata?: ComponentMetadata;
 
@@ -93,14 +93,14 @@ export class SiteComponent implements ISiteComponent {
         return this.markdown;
     }
 
-    public async getMediaDb(): Promise<IMediaDb> {
-        await this.checkComponentExistsHere(ComponentTypes.mediadb);
-        this.mediaDb ??= new MediaDb(this.contentDir, this.config, this.storage);
-        await this.mediaDb.initialise();
-        return this.mediaDb;
+    public async getVideoDb(): Promise<IVideoDb> {
+        await this.checkComponentExistsHere(ComponentTypes.videodb);
+        this.videoDb ??= new VideoDb(this.contentDir, this.config, this.storage);
+        await this.videoDb.initialise();
+        return this.videoDb;
     }
 
     public async shutdown(): Promise<void> {
-        await this.mediaDb?.shutdown();
+        await this.videoDb?.shutdown();
     }
 }

@@ -13,7 +13,7 @@ export type LookupValues = {
     [key: string]: string;
 }
 
-export interface IMediaDb {
+export interface IVideoDb {
     shutdown(): Promise<void>;
     initialise(): Promise<void>;
     getVersion(): Promise<number>;

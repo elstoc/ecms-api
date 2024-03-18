@@ -2,14 +2,14 @@
 import YAML from 'yaml';
 import { Gallery } from '../../../src/services/gallery/Gallery';
 import { Markdown } from '../../../src/services/markdown/Markdown';
-import { MediaDb } from '../../../src/services/mediadb/MediaDb';
+import { VideoDb } from '../../../src/services/videodb/VideoDb';
 import { SiteComponent } from '../../../src/services';
 import { NotFoundError } from '../../../src/errors';
 
 jest.mock('yaml');
 jest.mock('../../../src/services/gallery/Gallery');
 jest.mock('../../../src/services/markdown/Markdown');
-jest.mock('../../../src/services/mediadb/MediaDb');
+jest.mock('../../../src/services/videodb/VideoDb');
 
 const config = {
     dataDir: '/path/to/data',
@@ -35,7 +35,7 @@ const mockStorage = {
 
 const mockGallery = Gallery as jest.Mock;
 const mockMarkdown = Markdown as jest.Mock;
-const mockMediaDb = MediaDb as jest.Mock;
+const mockVideoDb = VideoDb as jest.Mock;
 const contentFileBuf = Buffer.from('content-file');
 const yamlParseMock = YAML.parse as jest.Mock;
 
@@ -351,7 +351,7 @@ describe('SiteComponent', () => {
                     .toThrow(new NotFoundError('Valid component type not found'));
             });
 
-            it.each(['markdown', 'mediadb'])('when called for a %s component', async (type: string) => {
+            it.each(['markdown', 'videodb'])('when called for a %s component', async (type: string) => {
                 mockStorage.contentFileExists.mockReturnValue(true);
                 mockStorage.contentDirectoryExists.mockReturnValue(true);
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
@@ -416,7 +416,7 @@ describe('SiteComponent', () => {
                     .toThrow(new NotFoundError('Valid component type not found'));
             });
 
-            it.each(['gallery','mediadb'])('when called for a %s component', async (type: string) => {
+            it.each(['gallery','videodb'])('when called for a %s component', async (type: string) => {
                 mockStorage.contentFileExists.mockReturnValue(true);
                 mockStorage.contentDirectoryExists.mockReturnValue(true);
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
@@ -448,13 +448,13 @@ describe('SiteComponent', () => {
         });
     });
 
-    describe('getMediaDb', () => {
+    describe('getVideoDb', () => {
         describe('throws an error', () => {
             it('if no yaml file is found', async () => {
                 mockStorage.contentFileExists.mockReturnValue(false);
                 mockStorage.contentDirectoryExists.mockReturnValue(true);
     
-                await expect(component.getMediaDb()).rejects
+                await expect(component.getVideoDb()).rejects
                     .toThrow(new NotFoundError('A yaml file does not exist for the path my-component'));
                 expect(mockStorage.contentFileExists).toHaveBeenCalledWith('my-component.yaml');
             });
@@ -463,7 +463,7 @@ describe('SiteComponent', () => {
                 mockStorage.contentFileExists.mockReturnValue(true);
                 mockStorage.contentDirectoryExists.mockReturnValue(false);
     
-                await expect(component.getMediaDb()).rejects
+                await expect(component.getVideoDb()).rejects
                     .toThrow(new NotFoundError('A content directory does not exist for the path my-component'));
                 expect(mockStorage.contentDirectoryExists).toHaveBeenCalledWith('my-component');
             });
@@ -477,7 +477,7 @@ describe('SiteComponent', () => {
                     type: 'invalid-type'
                 });
     
-                await expect(component.getMediaDb()).rejects
+                await expect(component.getVideoDb()).rejects
                     .toThrow(new NotFoundError('Valid component type not found'));
             });
 
@@ -490,27 +490,27 @@ describe('SiteComponent', () => {
                     type
                 });
 
-                await expect(component.getMediaDb()).rejects
-                    .toThrow(new NotFoundError('No mediadb component found at the path my-component'));
+                await expect(component.getVideoDb()).rejects
+                    .toThrow(new NotFoundError('No videodb component found at the path my-component'));
             });
         });
 
-        it('returns a MediaDb object when called for a mediadb component', async () => {
+        it('returns a VideoDb object when called for a videodb component', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockStorage.contentDirectoryExists.mockReturnValue(true);
             mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
             mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
             yamlParseMock.mockReturnValue({
-                type: 'mediadb'
+                type: 'videodb'
             });
-            (mockMediaDb).mockImplementation(() => ({
-                name: 'mocked mediadb',
+            (mockVideoDb).mockImplementation(() => ({
+                name: 'mocked videodb',
                 initialise: () => true
             }));
 
-            const mediaDbComponent = await component.getMediaDb();
+            const videoDbComponent = await component.getVideoDb();
 
-            expect((mediaDbComponent as any)?.name).toEqual('mocked mediadb');
+            expect((videoDbComponent as any)?.name).toEqual('mocked videodb');
         });
     });
 
@@ -520,34 +520,34 @@ describe('SiteComponent', () => {
 
         beforeEach(() => {
             jest.resetAllMocks();
-            mockMediaDb.mockImplementation(() => ({
+            mockVideoDb.mockImplementation(() => ({
                 initialise,
                 shutdown
             }));
         });
 
-        it('calls mediaDb.shutdown if a mediaDb object has been created', async () => {
+        it('calls videoDb.shutdown if a videoDb object has been created', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockStorage.contentDirectoryExists.mockReturnValue(true);
             mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
             mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
             yamlParseMock.mockReturnValue({
-                type: 'mediadb'
+                type: 'videodb'
             });
 
-            await component.getMediaDb();
+            await component.getVideoDb();
             await component.shutdown();
 
             expect(shutdown).toHaveBeenCalledTimes(1);
         });
 
-        it('does not calls mediaDb.shutdown if a mediaDb object has not been created', async () => {
+        it('does not calls videoDb.shutdown if a videoDb object has not been created', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockStorage.contentDirectoryExists.mockReturnValue(true);
             mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
             mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
             yamlParseMock.mockReturnValue({
-                type: 'mediadb'
+                type: 'videodb'
             });
 
             await component.shutdown();

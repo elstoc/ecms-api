@@ -1,5 +1,5 @@
 import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
-import { IMediaDb } from './IMediaDb';
+import { IMediaDb, LookupRow, LookupValues, LookupTables } from './IMediaDb';
 import { Config } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { SQLiteDatabaseAdapter } from '../../adapters';
@@ -10,6 +10,7 @@ export class MediaDb implements IMediaDb {
     private apiPath: string;
     private database?: IDatabaseAdapter;
     private dbVersion?: number;
+    private lookupTableCache: { [key: string]: LookupValues } = {};
 
     public constructor(
         apiPath: string,
@@ -49,14 +50,42 @@ export class MediaDb implements IMediaDb {
     private async retrieveVersion(): Promise<number> {
         if (this.database) {
             const versionSql = 'SELECT IFNULL(MAX(version), 0) AS ver FROM db_version';
-            const { ver } = await this.database.get<{ ver: number }>(versionSql);
-            return ver;
+            const result = await this.database.get<{ ver: number }>(versionSql);
+            if (result) {
+                return result.ver;
+            }
         }
         return 0;
     }
 
     public async getVersion(): Promise<number> {
         return this.dbVersion ?? 0;
+    }
+
+    public async getLookupValues(tableSuffix: string): Promise<LookupValues> {
+        const tableName = `lookup_${tableSuffix}` as LookupTables;
+        if (!Object.values(LookupTables).includes(tableName)) {
+            throw new Error(`invalid table suffix ${tableSuffix}`);
+        }
+
+        if (this.lookupTableCache[tableName]) {
+            return this.lookupTableCache[tableName];
+        }
+
+        const sql = `SELECT code, description FROM ${tableName}`;
+        const lookupRows = await this.database?.getAll<LookupRow>(sql);
+
+        if (!lookupRows) {
+            throw new Error(`No records found in ${tableName}`);
+        }
+
+        const returnVal: LookupValues = {};
+        lookupRows.forEach((row) => {
+            returnVal[row.code] = row.description;
+        });
+        this.lookupTableCache[tableName] = returnVal;
+
+        return returnVal;
     }
 
     private async storeVersion(version: number): Promise<void> {

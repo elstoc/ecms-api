@@ -2,6 +2,7 @@
 import { MediaDb, IMediaDb } from '../../../src/services/mediadb';
 import { Config } from '../../../src/utils';
 import { SQLiteDatabaseAdapter } from '../../../src/adapters';
+import { LookupTables } from '../../../src/services/mediadb/IMediaDb';
 const mockSQLiteDatabaseAdapter = jest.mocked(SQLiteDatabaseAdapter);
 
 jest.mock('../../../src/adapters');
@@ -25,6 +26,7 @@ const config = {} as Config;
 describe('MediaDb', () => {
     let mediaDb: IMediaDb;
     const mockGet = jest.fn();
+    const mockGetAll = jest.fn();
     const mockExec = jest.fn();
     const mockInit = jest.fn();
     const mockClose = jest.fn();
@@ -35,6 +37,7 @@ describe('MediaDb', () => {
         mockSQLiteDatabaseAdapter.mockImplementation(() => ({
             initialise: mockInit,
             get: mockGet,
+            getAll: mockGetAll,
             exec: mockExec,
             close: mockClose,
         } as any));
@@ -131,6 +134,67 @@ describe('MediaDb', () => {
             const ver = await mediaDb.getVersion();
 
             expect(ver).toBe(4);
+        });
+    });
+
+    describe('getLookupValues', () => {
+        const resultRows = [
+            { code: 'code1', description: 'description1' },
+            { code: 'code2', description: 'description2' },
+            { code: 'code3', description: 'description3' },
+        ];
+
+        const expectedReturnVal = {
+            'code1': 'description1',
+            'code2': 'description2',
+            'code3': 'description3'
+        };
+
+        beforeEach(async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValue({ ver: 4 });
+            mediaDb.initialise();
+        });
+
+        it('throws an error if passed an invalid table suffix', async () => {
+            await expect(mediaDb.getLookupValues('invalid-suffix')).rejects.toThrow('invalid table suffix invalid-suffix');
+            expect(mockGetAll).not.toHaveBeenCalled();
+        });
+
+        it('attempts to run SQL and returns results the first time it is run', async () => {
+            const tableName = Object.values(LookupTables)[0];
+            mockGetAll.mockResolvedValue(resultRows);
+            const tablePrefix = tableName.replace('lookup_', '');
+            const expectedSql = `SELECT code, description FROM ${tableName}`;
+
+            const values = await mediaDb.getLookupValues(tablePrefix);
+
+            expect(mockGetAll).toHaveBeenCalledTimes(1);
+            expect(mockGetAll).toHaveBeenCalledWith(expectedSql);
+            expect(values).toEqual(expectedReturnVal);
+        });
+
+        it('returns the cached results the second time it is run (%s)', async () => {
+            const tableName = Object.values(LookupTables)[0];
+            mockGetAll.mockResolvedValue(resultRows);
+            const tablePrefix = tableName.replace('lookup_', '');
+            const expectedSql = `SELECT code, description FROM ${tableName}`;
+
+            const values = await mediaDb.getLookupValues(tablePrefix);
+            const values2 = await mediaDb.getLookupValues(tablePrefix);
+
+            expect(mockGetAll).toHaveBeenCalledTimes(1);
+            expect(mockGetAll).toHaveBeenCalledWith(expectedSql);
+            expect(values).toEqual(expectedReturnVal);
+            expect(values).toEqual(values2);
+        });
+
+        it('throws an error if the lookup table is empty (%s)', async () => {
+            const tableName = Object.values(LookupTables)[0];
+            mockGetAll.mockResolvedValue(undefined);
+            const tablePrefix = tableName.replace('lookup_', '');
+
+            await expect(mediaDb.getLookupValues(tablePrefix)).rejects.toThrow(`No records found in ${tableName}`);
         });
     });
 

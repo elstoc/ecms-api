@@ -7,7 +7,7 @@ export const createGetDbVersionHandler = (site: ISite, logger: winston.Logger): 
     const { path } = req.params;
     try {
         const mediaDb = await site.getMediaDb(path);
-        const version = mediaDb.getVersion();
+        const version = await mediaDb.getVersion();
         res.json({ version });
     } catch (err: unknown) {
         handleError(req, res, err, logger);

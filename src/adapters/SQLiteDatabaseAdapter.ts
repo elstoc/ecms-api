@@ -38,6 +38,15 @@ export class SQLiteDatabaseAdapter implements IDatabaseAdapter {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public async runWithParams(sql: string, parameters: any): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.database?.run(sql, parameters, (err: Error | null) => {
+                err ? reject(err) : resolve();
+            });
+        });
+    }
+    
     public getAll<T>(sql: string): Promise<T[] | undefined> {
         return new Promise((resolve, reject) => {
             this.database?.all(sql, (err: Error | null, rows: T[]) => {

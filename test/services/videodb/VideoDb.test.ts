@@ -30,6 +30,7 @@ describe('VideoDb', () => {
     const mockExec = jest.fn();
     const mockInit = jest.fn();
     const mockClose = jest.fn();
+    const mockRunWithParams = jest.fn();
 
     beforeEach(() => {
         videoDb = new VideoDb(apiPath, config, mockStorage as any);
@@ -40,6 +41,7 @@ describe('VideoDb', () => {
             getAll: mockGetAll,
             exec: mockExec,
             close: mockClose,
+            runWithParams: mockRunWithParams
         } as any));
         mockStorage.getContentFullPath.mockReturnValue(dbFullPath);
     });
@@ -79,12 +81,13 @@ describe('VideoDb', () => {
 
             await videoDb.initialise();
 
-            expect(mockExec).toHaveBeenCalledTimes(5);
-            expect(mockExec).toHaveBeenNthCalledWith(1, versionSql[0]);
-            expect(mockExec).toHaveBeenNthCalledWith(2, versionSql[1]);
-            expect(mockExec).toHaveBeenNthCalledWith(3, versionSql[2]);
-            expect(mockExec).toHaveBeenNthCalledWith(4, versionSql[3]);
-            expect(mockExec).toHaveBeenNthCalledWith(5, 'UPDATE db_version SET version = 4;');
+            expect(mockExec).toHaveBeenCalledTimes(6);
+            expect(mockExec).toHaveBeenNthCalledWith(1, 'PRAGMA foreign_keys = ON');
+            expect(mockExec).toHaveBeenNthCalledWith(2, versionSql[0]);
+            expect(mockExec).toHaveBeenNthCalledWith(3, versionSql[1]);
+            expect(mockExec).toHaveBeenNthCalledWith(4, versionSql[2]);
+            expect(mockExec).toHaveBeenNthCalledWith(5, versionSql[3]);
+            expect(mockExec).toHaveBeenNthCalledWith(6, 'UPDATE db_version SET version = 4;');
 
             expect(mockGet).not.toHaveBeenCalled();
         });
@@ -95,10 +98,11 @@ describe('VideoDb', () => {
 
             await videoDb.initialise();
 
-            expect(mockExec).toHaveBeenCalledTimes(3);
-            expect(mockExec).toHaveBeenNthCalledWith(1, versionSql[2]);
-            expect(mockExec).toHaveBeenNthCalledWith(2, versionSql[3]);
-            expect(mockExec).toHaveBeenNthCalledWith(3, 'UPDATE db_version SET version = 4;');
+            expect(mockExec).toHaveBeenCalledTimes(4);
+            expect(mockExec).toHaveBeenNthCalledWith(1, 'PRAGMA foreign_keys = ON');
+            expect(mockExec).toHaveBeenNthCalledWith(2, versionSql[2]);
+            expect(mockExec).toHaveBeenNthCalledWith(3, versionSql[3]);
+            expect(mockExec).toHaveBeenNthCalledWith(4, 'UPDATE db_version SET version = 4;');
         });
 
         it('does not run upgrade SQL or store version on a database already at current version', async () => {
@@ -107,7 +111,7 @@ describe('VideoDb', () => {
 
             await videoDb.initialise();
 
-            expect(mockExec).not.toHaveBeenCalled();
+            expect(mockExec).toHaveBeenCalledTimes(1);
         });
 
         it('does not re-initialise or re-upgrade an already-initialised database', async () => {
@@ -121,7 +125,7 @@ describe('VideoDb', () => {
             expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(1);
             expect(mockInit).toHaveBeenCalledTimes(1);
             expect(mockGet).toHaveBeenCalledTimes(1);
-            expect(mockExec).toHaveBeenCalledTimes(2);
+            expect(mockExec).toHaveBeenCalledTimes(3);
         });
     });
 
@@ -195,6 +199,41 @@ describe('VideoDb', () => {
             const tablePrefix = tableName.replace('l_', '');
 
             await expect(videoDb.getLookupValues(tablePrefix)).rejects.toThrow(`No records found in ${tableName}`);
+        });
+    });
+
+    describe('addVideo', () => {
+        it('runs sql with appropriate parameters', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValue({ ver: 4 });
+            videoDb.initialise();
+
+            const video = {
+                name: 'some-name',
+                category: 'some-category',
+                director: 'some-director',
+                length_mins: 1234,
+                to_watch_priority: 1,
+                progress: 'some-progress'
+            };
+
+            const sql = `INSERT INTO videos
+                     (name, category, director, length_mins, to_watch_priority, progress)
+                     VALUES
+                     ($name, $category, $director, $length_mins, $to_watch_priority, $progress)`;
+
+            const videoParameters = {
+                $name: 'some-name',
+                $category: 'some-category',
+                $director: 'some-director',
+                $length_mins: 1234,
+                $to_watch_priority: 1,
+                $progress: 'some-progress'
+            };
+
+            await videoDb.addVideo(video);
+
+            expect(mockRunWithParams).toHaveBeenCalledWith(sql, videoParameters);
         });
     });
 

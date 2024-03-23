@@ -1,5 +1,5 @@
 import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
-import { IVideoDb, LookupRow, LookupValues, LookupTables } from './IVideoDb';
+import { IVideoDb, LookupRow, LookupValues, LookupTables, Video } from './IVideoDb';
 import { Config } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { SQLiteDatabaseAdapter } from '../../adapters';
@@ -32,6 +32,7 @@ export class VideoDb implements IVideoDb {
 
             this.database = new SQLiteDatabaseAdapter(dbFullPath);
             await this.database.initialise();
+            await this.database.exec('PRAGMA foreign_keys = ON');
             await this.upgradeDb();
         }
     }
@@ -86,6 +87,21 @@ export class VideoDb implements IVideoDb {
         this.lookupTableCache[tableName] = returnVal;
 
         return returnVal;
+    }
+
+    public async addVideo(video: Video): Promise<void> {
+        const sql = `INSERT INTO videos
+                     (name, category, director, length_mins, to_watch_priority, progress)
+                     VALUES
+                     ($name, $category, $director, $length_mins, $to_watch_priority, $progress)`;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const params: any = {};
+        let key: keyof Video;
+        // prefix all column names with $
+        for (key in video) {
+            params[`$${key}`] = video[key];
+        }
+        await this.database?.runWithParams(sql, params);
     }
 
     private async storeVersion(version: number): Promise<void> {

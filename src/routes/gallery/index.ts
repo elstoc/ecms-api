@@ -17,7 +17,7 @@ export const createGalleryRouter = (site: ISite, logger: Logger): Router => {
     );
 
     router.get(
-        '/contents/:path(*)',
+        '/contents',
         getGalleryContentsHandler
     );
 

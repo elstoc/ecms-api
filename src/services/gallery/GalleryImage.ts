@@ -70,7 +70,7 @@ export class GalleryImage implements IGalleryImage {
 
     private getSourceUrl(size: ImageSize) {
         const config = RESIZE_OPTIONS[size];
-        return `${this.config.apiUrl}/gallery/image/${this.contentPath}?timestamp=${this.imageDataFromSourceFileTime}&size=${config.desc}&version=${config.version}`;
+        return `${this.config.apiUrl}/gallery/image/?path=${this.contentPath}&timestamp=${this.imageDataFromSourceFileTime}&size=${config.desc}&version=${config.version}`;
     }
 
     public async getFile(size: ImageSize, timestamp: string): Promise<Buffer> {

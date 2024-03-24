@@ -5,10 +5,9 @@ import { handleError } from '../handleError';
 import { NotFoundError } from '../../errors';
 
 export const createGetImageFileHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res) => {
-    const { path } = req.params;
-    const { size, timestamp } = req.query;
+    const { path, size, timestamp } = req.query;
     try {
-        if (!size || !timestamp || typeof size !== 'string' || typeof timestamp !== 'string') {
+        if (!path || !size || !timestamp || typeof path !== 'string' || typeof size !== 'string' || typeof timestamp !== 'string') {
             throw new NotFoundError('incorrect route parameters');
         }
         const gallery = await site.getGallery(path);

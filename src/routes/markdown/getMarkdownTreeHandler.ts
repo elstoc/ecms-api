@@ -2,13 +2,16 @@ import winston from 'winston';
 import { RequestHandler } from '../RequestHandler';
 import { ISite } from '../../services';
 import { handleError } from '../handleError';
-import { NotPermittedError } from '../../errors';
+import { NotFoundError, NotPermittedError } from '../../errors';
 
 export const createGetMarkdownTreeHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res) => {
     const { path } = req.query;
     logger.debug(`getting md nav contents ${path}`);
     try {
-        const markdown = await site.getMarkdown(path as string);
+        if (!path || typeof path !== 'string') {
+            throw new NotFoundError('incorrect route parameters');
+        }
+        const markdown = await site.getMarkdown(path);
         const mdNavContents = await markdown.getTree(req.user);
         if (!mdNavContents) {
             throw new NotPermittedError();

@@ -5,10 +5,10 @@ import { handleError } from '../handleError';
 import { NotPermittedError } from '../../errors';
 
 export const createGetMarkdownTreeHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res) => {
-    const { rootPath } = req.params;
-    logger.debug(`getting md nav contents ${rootPath}`);
+    const { path } = req.query;
+    logger.debug(`getting md nav contents ${path}`);
     try {
-        const markdown = await site.getMarkdown(rootPath);
+        const markdown = await site.getMarkdown(path as string);
         const mdNavContents = await markdown.getTree(req.user);
         if (!mdNavContents) {
             throw new NotPermittedError();

@@ -16,23 +16,23 @@ export const createMarkdownRouter = (site: ISite, logger: Logger): Router => {
     const deleteMarkdownPageHandler = createDeleteMarkdownPageHandler(site, logger);
 
     router.get(
-        '/page/:mdPath(*)',
+        '/page',
         getMarkdownPageHandler
     );
 
     router.put(
-        '/page/:mdPath(*)',
+        '/page',
         express.json(),
         putMarkdownPageHandler
     );
 
     router.delete(
-        '/page/:mdPath(*)',
+        '/page',
         deleteMarkdownPageHandler
     );
 
     router.get(
-        '/tree/:rootPath(*)',
+        '/tree',
         getMarkdownTreeHandler
     );
 

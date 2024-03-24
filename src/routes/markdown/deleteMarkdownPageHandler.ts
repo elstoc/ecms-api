@@ -15,7 +15,7 @@ export const createDeleteMarkdownPageHandler = (site: ISite, logger: winston.Log
             throw new NotFoundError('incorrect route parameters');
         }
         const markdown = await site.getMarkdown(path);
-        await markdown.deletePage(path);
+        await markdown.deletePage(path, req.user);
         res.sendStatus(200);
     } catch (err: unknown) {
         handleError(req, res, err, logger);

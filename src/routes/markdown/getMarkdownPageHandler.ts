@@ -12,7 +12,7 @@ export const createGetMarkdownPageHandler = (site: ISite, logger: winston.Logger
             throw new NotFoundError('incorrect route parameters');
         }
         const markdown = await site.getMarkdown(path);
-        const mdPage = await markdown.getPage(path);
+        const mdPage = await markdown.getPage(path, req.user);
         res.json(mdPage);
     } catch (err: unknown) {
         handleError(req, res, err, logger);

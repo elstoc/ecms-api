@@ -8,18 +8,8 @@ import { createGetSiteConfigHandler } from './getSiteConfigHandler';
 export const createSiteRouter = (site: ISite, logger: Logger): Router => {
     const router = Router();
 
-    const getSiteComponentsHandler = createGetSiteComponentsHandler(site, logger);
-    const getSiteConfigHandler = createGetSiteConfigHandler(site);
-
-    router.get(
-        '/components',
-        getSiteComponentsHandler
-    );
-
-    router.get(
-        '/config',
-        getSiteConfigHandler
-    );
+    router.get('/components', createGetSiteComponentsHandler(site, logger));
+    router.get('/config', createGetSiteConfigHandler(site));
 
     return router;
 };

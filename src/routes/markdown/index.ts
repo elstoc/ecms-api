@@ -1,4 +1,4 @@
-import express, { Router } from 'express';
+import { Router } from 'express';
 import { Logger } from 'winston';
 
 import { createGetMarkdownPageHandler } from './getMarkdownPageHandler';
@@ -10,31 +10,10 @@ import { ISite } from '../../services';
 export const createMarkdownRouter = (site: ISite, logger: Logger): Router => {
     const router = Router();
 
-    const getMarkdownPageHandler = createGetMarkdownPageHandler(site, logger);
-    const getMarkdownTreeHandler = createGetMarkdownTreeHandler(site, logger);
-    const putMarkdownPageHandler = createPutMarkdownPageHandler(site, logger);
-    const deleteMarkdownPageHandler = createDeleteMarkdownPageHandler(site, logger);
-
-    router.get(
-        '/page',
-        getMarkdownPageHandler
-    );
-
-    router.put(
-        '/page',
-        express.json(),
-        putMarkdownPageHandler
-    );
-
-    router.delete(
-        '/page',
-        deleteMarkdownPageHandler
-    );
-
-    router.get(
-        '/tree',
-        getMarkdownTreeHandler
-    );
+    router.get('/page', createGetMarkdownPageHandler(site, logger));
+    router.put('/page', createPutMarkdownPageHandler(site, logger));
+    router.delete('/page', createDeleteMarkdownPageHandler(site, logger));
+    router.get('/tree', createGetMarkdownTreeHandler(site, logger));
 
     return router;
 };

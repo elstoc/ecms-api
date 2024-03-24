@@ -2,13 +2,16 @@ import { RequestHandler } from '../RequestHandler';
 import { ISite } from '../../services';
 import winston from 'winston';
 import { handleError } from '../handleError';
-import { LookupTables } from '../../services/videodb/IVideoDb';
+import { NotFoundError } from '../../errors';
 
 export const createGetLookupValuesHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res) => {
-    const { path, tableSuffix } = req.params;
+    const { path, table } = req.query;
     try {
+        if (!path || !table || typeof path !== 'string' || typeof table !== 'string') {
+            throw new NotFoundError('incorrect route parameters');
+        }
         const videoDb = await site.getVideoDb(path);
-        const values = await videoDb.getLookupValues(tableSuffix as LookupTables);
+        const values = await videoDb.getLookupValues(table);
         res.json(values);
     } catch (err: unknown) {
         handleError(req, res, err, logger);

@@ -14,17 +14,17 @@ export const createVideoDbRouter = (site: ISite, logger: Logger): Router => {
     const postVideoHandler = createPostVideoHandler(site, logger);
 
     router.get(
-        '/version/:path(*)',
+        '/version',
         getDbVersionHandler
     );
 
     router.get(
-        '/lookup/:tableSuffix/:path(*)',
+        '/lookup',
         getLookupValuesHandler
     );
 
     router.post(
-        '/video/:path(*)',
+        '/video',
         express.json(),
         postVideoHandler
     );

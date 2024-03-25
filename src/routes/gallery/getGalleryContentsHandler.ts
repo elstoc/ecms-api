@@ -18,6 +18,6 @@ export const createGetGalleryContentsHandler = (site: ISite, logger: winston.Log
         if (err instanceof Error) {
             logger.error(`Error getting image list ${path}: ${err.message}`);
         }
-        next && next(err);
+        next?.(err);
     }
 };

@@ -17,6 +17,6 @@ export const createGetMarkdownTreeHandler = (site: ISite, logger: winston.Logger
         }
         res.json(mdNavContents);
     } catch (err: unknown) {
-        next && next(err);
+        next?.(err);
     }
 };

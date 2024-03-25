@@ -13,6 +13,6 @@ export const createGetLookupValuesHandler = (site: ISite, logger: winston.Logger
         const values = await videoDb.getLookupValues(table);
         res.json(values);
     } catch (err: unknown) {
-        next && next(err);
+        next?.(err);
     }
 };

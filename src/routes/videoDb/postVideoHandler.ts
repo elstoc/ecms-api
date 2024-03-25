@@ -9,6 +9,6 @@ export const createPostVideoHandler = (site: ISite, logger: winston.Logger): Req
         await videoDb.addVideo(video);
         res.sendStatus(200);
     } catch (err: unknown) {
-        next && next(err);
+        next?.(err);
     }
 };

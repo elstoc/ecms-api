@@ -13,6 +13,6 @@ export const createGetDbVersionHandler = (site: ISite, logger: winston.Logger): 
         const version = await videoDb.getVersion();
         res.json({ version });
     } catch (err: unknown) {
-        next && next(err);
+        next?.(err);
     }
 };

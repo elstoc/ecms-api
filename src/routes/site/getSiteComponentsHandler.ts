@@ -11,6 +11,6 @@ export const createGetSiteComponentsHandler = (site: ISite, logger: winston.Logg
         if (err instanceof Error) {
             logger.error(`Error getting site components: ${err.message}`);
         }
-        next && next(err);
+        next?.(err);
     }
 };

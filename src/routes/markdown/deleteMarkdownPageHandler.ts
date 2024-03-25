@@ -17,6 +17,6 @@ export const createDeleteMarkdownPageHandler = (site: ISite, logger: winston.Log
         await markdown.deletePage(path, req.user);
         res.sendStatus(200);
     } catch (err: unknown) {
-        next && next(err);
+        next?.(err);
     }
 };

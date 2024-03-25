@@ -14,6 +14,6 @@ export const createPutMarkdownPageHandler = (site: ISite, logger: winston.Logger
         await markdown.writePage(path, fileContents, req.user);
         res.sendStatus(200);
     } catch (err: unknown) {
-        next && next(err);
+        next?.(err);
     }
 };

@@ -14,6 +14,6 @@ export const createGetMarkdownPageHandler = (site: ISite, logger: winston.Logger
         const mdPage = await markdown.getPage(path, req.user);
         res.json(mdPage);
     } catch (err: unknown) {
-        next && next(err);
+        next?.(err);
     }
 };

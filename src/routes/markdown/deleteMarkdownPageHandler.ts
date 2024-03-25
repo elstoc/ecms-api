@@ -1,10 +1,9 @@
 import winston from 'winston';
 import { RequestHandler } from '../RequestHandler';
 import { ISite } from '../../services';
-import { handleError } from '../handleError';
 import { NotFoundError, NotPermittedError } from '../../errors';
 
-export const createDeleteMarkdownPageHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res) => {
+export const createDeleteMarkdownPageHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res, next) => {
     const { path } = req.query;
     logger.debug(`deleting md page ${path}`);
     try {
@@ -18,6 +17,6 @@ export const createDeleteMarkdownPageHandler = (site: ISite, logger: winston.Log
         await markdown.deletePage(path, req.user);
         res.sendStatus(200);
     } catch (err: unknown) {
-        handleError(req, res, err, logger);
+        next && next(err);
     }
 };

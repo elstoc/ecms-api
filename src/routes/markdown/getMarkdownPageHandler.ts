@@ -1,10 +1,9 @@
 import winston from 'winston';
 import { RequestHandler } from '../RequestHandler';
 import { ISite } from '../../services';
-import { handleError } from '../handleError';
 import { NotFoundError } from '../../errors';
 
-export const createGetMarkdownPageHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res) => {
+export const createGetMarkdownPageHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res, next) => {
     const { path } = req.query;
     logger.debug(`getting md page ${path}`);
     try {
@@ -15,6 +14,6 @@ export const createGetMarkdownPageHandler = (site: ISite, logger: winston.Logger
         const mdPage = await markdown.getPage(path, req.user);
         res.json(mdPage);
     } catch (err: unknown) {
-        handleError(req, res, err, logger);
+        next && next(err);
     }
 };

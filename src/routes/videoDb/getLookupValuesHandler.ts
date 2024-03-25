@@ -1,10 +1,9 @@
 import { RequestHandler } from '../RequestHandler';
 import { ISite } from '../../services';
 import winston from 'winston';
-import { handleError } from '../handleError';
 import { NotFoundError } from '../../errors';
 
-export const createGetLookupValuesHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res) => {
+export const createGetLookupValuesHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res, next) => {
     const { path, table } = req.query;
     try {
         if (!path || !table || typeof path !== 'string' || typeof table !== 'string') {
@@ -14,6 +13,6 @@ export const createGetLookupValuesHandler = (site: ISite, logger: winston.Logger
         const values = await videoDb.getLookupValues(table);
         res.json(values);
     } catch (err: unknown) {
-        handleError(req, res, err, logger);
+        next && next(err);
     }
 };

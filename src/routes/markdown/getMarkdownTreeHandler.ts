@@ -1,10 +1,9 @@
 import winston from 'winston';
 import { RequestHandler } from '../RequestHandler';
 import { ISite } from '../../services';
-import { handleError } from '../handleError';
 import { NotFoundError, NotPermittedError } from '../../errors';
 
-export const createGetMarkdownTreeHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res) => {
+export const createGetMarkdownTreeHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res, next) => {
     const { path } = req.query;
     logger.debug(`getting md nav contents ${path}`);
     try {
@@ -18,6 +17,6 @@ export const createGetMarkdownTreeHandler = (site: ISite, logger: winston.Logger
         }
         res.json(mdNavContents);
     } catch (err: unknown) {
-        handleError(req, res, err, logger);
+        next && next(err);
     }
 };

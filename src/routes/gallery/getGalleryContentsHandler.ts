@@ -1,10 +1,9 @@
 import winston from 'winston';
 import { RequestHandler } from '../RequestHandler';
-import { handleError } from '../handleError';
 import { ISite } from '../../services';
 import { NotFoundError } from '../../errors';
 
-export const createGetGalleryContentsHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res) => {
+export const createGetGalleryContentsHandler = (site: ISite, logger: winston.Logger): RequestHandler => async (req, res, next) => {
     const { path, limit } = req.query;
     try {
         if (!path || typeof path !== 'string') {
@@ -19,6 +18,6 @@ export const createGetGalleryContentsHandler = (site: ISite, logger: winston.Log
         if (err instanceof Error) {
             logger.error(`Error getting image list ${path}: ${err.message}`);
         }
-        handleError(req, res, err, logger);
+        next && next(err);
     }
 };

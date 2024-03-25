@@ -9,7 +9,7 @@ import { createRootRouter } from './routes';
 import { Auth, Site } from './services';
 import { getConfig } from './utils';
 import { LocalFileStorageAdapter } from './adapters/LocalFileStorageAdapter';
-import { errorHandler } from './routes/customErrorMiddleware';
+import { createErrorHandler } from './routes/errorHandler';
 
 dotenv.config();
 const config = getConfig();
@@ -39,6 +39,7 @@ const corsConfig = {
 
 const app = express();
 const rootRouter = createRootRouter(logger, site, auth);
+const errorHandler = createErrorHandler(logger);
 
 app.use(cors(corsConfig));
 app.use(express.json());

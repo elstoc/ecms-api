@@ -8,7 +8,7 @@ import { createGetGalleryContentsHandler } from './getGalleryContentsHandler';
 export const createGalleryRouter = (site: ISite, logger: Logger): Router => {
     const router = Router();
 
-    router.get('/image/:path(*)', createGetImageFileHandler(site, logger));
+    router.get('/image', createGetImageFileHandler(site, logger));
     router.get('/contents', createGetGalleryContentsHandler(site, logger));
 
     return router;

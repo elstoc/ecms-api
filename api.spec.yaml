@@ -1,0 +1,67 @@
+openapi: 3.0.0
+info:
+  title: ECMS API
+  description: API for ECMS
+  version: '0.1'
+paths:
+  /videodb/video:
+    post:
+      description: Add a new video to the database at the given component path
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - path
+                - video
+              properties:
+                path:
+                  type: string
+                video:
+                  $ref: '#/components/schemas/Video'
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    Video:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - category
+        - director
+        - length_mins
+        - to_watch_priority
+        - progress
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+          enum:
+            - TV
+            - TVD
+            - MOV
+            - MOVD
+            - MUS
+        director:
+          type: string
+        length_mins:
+          type: integer
+        to_watch_priority:
+          type: integer
+        progress:
+          type: string
+    VideoWithId:
+      allOf:
+        - $ref: '#/components/schemas/Video'
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string

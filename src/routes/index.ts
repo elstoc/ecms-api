@@ -1,4 +1,4 @@
-import express, { Router } from 'express';
+import { Router } from 'express';
 import { IAuth, ISite } from '../services';
 import { Logger } from 'winston';
 import { createSiteRouter } from './site';
@@ -13,7 +13,6 @@ export const createRootRouter = (logger: Logger, site: ISite, auth: IAuth): Rout
     const router = Router();
 
     router.use(createUserInfoMiddleware(auth));
-    router.use(express.json());
     router.use(cookieParser());
     router.use('/auth', createAuthRouter(auth, logger));
     router.use('/site', createSiteRouter(site, logger));

@@ -4,9 +4,195 @@ info:
   description: API for ECMS
   version: '0.1'
 paths:
+  /auth/login:
+    post:
+      description: Obtain access and refresh tokens by providing userid and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - id
+                - password
+              properties:
+                id:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: OK
+  /auth/changepassword:
+    post:
+      description: Change or set a user password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - id
+                - newPassword
+              properties:
+                id:
+                  type: string
+                newPassword:
+                  type: string
+                oldPassword:
+                  type: string
+                  description: This is only optional when creating a password for the first time
+      responses:
+        '200':
+          description: OK
+  /auth/refresh:
+    post:
+      description: Obtain new access and refresh tokens using a refresh token stored in a httpOnly cookie
+      responses:
+        '200':
+          description: OK
+  /auth/logout:
+    post:
+      description: Remove the refresh token, stored in a httpOnly cookie
+      responses:
+        '200':
+          description: OK
+  /auth/get-user-info:
+    get:
+      description: Return details of the currently authenticated user
+      responses:
+        '200':
+          description: OK
+  /site/components:
+    get:
+      description: Get a list of all site components and their metadata
+      responses:
+        '200':
+          description: OK
+  /site/config:
+    get:
+      description: Get site-specific configuration
+      responses:
+        '200':
+          description: OK
+  /gallery/contents:
+    get:
+      description: Get metadata for images in a gallery
+      parameters:
+        - $ref: '#/components/parameters/ComponentPath'
+        - in: query
+          name: limit
+          description: The maximum number of images to return
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: OK
+  /gallery/image:
+    get:
+      description: Get the image at the given path
+      parameters:
+        - in: query
+          name: path
+          description: The path of the image file
+          example: gallery-component/image.jpg
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: size
+          description: The size of image to retrieve
+          schema:
+            type: string
+            enum:
+              - fhd
+              - thumb
+        - in: query
+          name: timestamp
+          description: The timestamp of the file to retrieve
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+  /markdown/tree:
+    get:
+      description: Get a tree representation of all markdown files and metadata
+      parameters:
+        - $ref: '#/components/parameters/ComponentPath'
+      responses:
+        '200':
+          description: OK
+  /markdown/page:
+    get:
+      description:  Get a markdown page
+      parameters:
+        - $ref: '#/components/parameters/MarkdownFilePath'
+      responses:
+        '200':
+          description: OK
+    put:
+      description:  Put a markdown page
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - path
+                - fileContents
+              properties:
+                path:
+                  type: string
+                fileContents:
+                  type: string
+      responses:
+        '200':
+          description: OK
+    delete:
+      description:  Delete a markdown page
+      parameters:
+        - $ref: '#/components/parameters/MarkdownFilePath'
+      responses:
+        '200':
+          description: OK
+  /videodb/version:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/ComponentPath'
+      description:  Get the current version of the video database
+      responses:
+        '200':
+          description: OK
+  /videodb/lookup:
+    get:
+      description:  Get the contents of a lookup table
+      parameters:
+        - $ref: '#/components/parameters/ComponentPath'
+        - in: query
+          name: table
+          description: The name of the lookup table
+          schema:
+            type: string
+            enum:
+              - categories
+              - media_types
+              - media_locations
+      responses:
+        '200':
+          description: OK
   /videodb/video:
     post:
-      description: Add a new video to the database at the given component path
+      description: Add a new video to the database
       requestBody:
         required: true
         content:
@@ -20,12 +206,28 @@ paths:
               properties:
                 path:
                   type: string
+                  description: The path of the videodb component
                 video:
                   $ref: '#/components/schemas/Video'
       responses:
         '200':
           description: OK
 components:
+  parameters:
+    ComponentPath:
+      in: query
+      name: path
+      description: The path of the component
+      required: true
+      schema:
+        type: string
+    MarkdownFilePath:
+      in: query
+      name: path
+      description: The path of the markdown file
+      required: true
+      schema:
+        type: string
   schemas:
     Video:
       type: object

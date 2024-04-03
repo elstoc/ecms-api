@@ -35,4 +35,5 @@ export type EndpointValidationSchemas = EndpointParameterValidationSchema & Endp
 export interface IOASParser {
     parseAndValidateSchema(): Promise<void>;
     getValidationSchemasForEndpoint(endpoint: string): EndpointValidationSchemas;
+    getAllValidationSchemas(): { [endpoint: string]: EndpointValidationSchemas };
 }

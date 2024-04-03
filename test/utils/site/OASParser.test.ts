@@ -311,9 +311,9 @@ describe('OASParser.parseAndValidateSchema', () => {
 
         it('creates a query validation object from query parameters', async () => {
             const parameters = [
-                { name: 'field1', description: 'some-description', in: 'query', schema: { type: 'string', enum: ['value1'], required: true } },
+                { name: 'field1', description: 'some-description', in: 'query', required: true, schema: { type: 'string', enum: ['value1'] } },
                 { name: 'field2', description: 'some-description', in: 'query', schema: { type: 'string' } },
-                { name: 'field3', description: 'some-description', in: 'query', schema: { type: 'integer', required: true, minimum: 0 } },
+                { name: 'field3', description: 'some-description', in: 'query', required: true, schema: { type: 'integer', minimum: 0 } },
                 { name: 'field4', description: 'some-description', in: 'query', schema: { type: 'integer' } }
             ];
             const dereferencedSchema = buildOASSchema('/some/path', 'get', parameters, undefined);
@@ -340,9 +340,9 @@ describe('OASParser.parseAndValidateSchema', () => {
 
         it('creates a path validation object from path parameters', async () => {
             const parameters = [
-                { name: 'field1', description: 'some-description', in: 'path', schema: { type: 'string', enum: ['value1'], required: true } },
+                { name: 'field1', description: 'some-description', in: 'path', required: true, schema: { type: 'string', enum: ['value1'] } },
                 { name: 'field2', description: 'some-description', in: 'path', schema: { type: 'string' } },
-                { name: 'field3', description: 'some-description', in: 'path', schema: { type: 'integer', required: true, minimum: 0 } },
+                { name: 'field3', description: 'some-description', in: 'path', required: true, schema: { type: 'integer',  minimum: 0 } },
                 { name: 'field4', description: 'some-description', in: 'path', schema: { type: 'integer' } }
             ];
             const dereferencedSchema = buildOASSchema('/some/path', 'get', parameters, undefined);
@@ -377,9 +377,9 @@ describe('OASParser.parseAndValidateSchema', () => {
                 }
             };
             const oasParameters = [
-                { name: 'field1', description: 'some-description', in: 'query', schema: { type: 'string', required: true } },
+                { name: 'field1', description: 'some-description', required: true, in: 'query', schema: { type: 'string' } },
                 { name: 'field2', description: 'some-description', in: 'query', schema: { type: 'string' } },
-                { name: 'field3', description: 'some-description', in: 'path', schema: { type: 'integer', required: true } },
+                { name: 'field3', description: 'some-description', required: true, in: 'path', schema: { type: 'integer' } },
                 { name: 'field4', description: 'some-description', in: 'path', schema: { type: 'integer' } }
             ];
             const oasRequestBody = { content: { 'application/json': { schema: oasBodySchema } } };

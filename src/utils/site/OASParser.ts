@@ -24,6 +24,10 @@ export class OASParser implements IOASParser {
         return this.validationSchemas[endpoint];
     }
 
+    public getAllValidationSchemas(): { [endpoint: string]: EndpointValidationSchemas } {
+        return this.validationSchemas;
+    }
+
     public async parseAndValidateSchema(): Promise<void> {
         const apiSpec = await RefParser.dereference(this.apiSpecPath);
 
@@ -122,7 +126,7 @@ export class OASParser implements IOASParser {
             if (oasSchema?.type === 'object') {
                 throw new OASParsingError(`object-type schema is defined for ${name} in ${pathOrQuery} parameters in endpoint ${endpoint}`);
             }
-            if (oasSchema?.required === true) {
+            if (oasParameterRecord?.required === true) {
                 requiredParams.push(name);
             }
             returnVal.properties[name] = this.getValidationSchema(oasSchema, endpoint, `${pathOrQuery}.${name}`);

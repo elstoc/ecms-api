@@ -1,7 +1,7 @@
 export type OptionalRecord = Record<string, unknown> | undefined;
 
 export const convertToRecord = (obj: unknown, allowEmpty = false): Record<string, unknown> => {
-    if (obj !== null && typeof obj === 'object' && Object.keys(obj).length > 0) {
+    if (obj !== null && typeof obj === 'object') {
         if (allowEmpty || Object.keys(obj).length > 0) {
             return obj as Record<string, unknown>;
         }

@@ -11,12 +11,12 @@ export class EndpointValidator implements IEndpointValidator {
     public validateEndpoint(endpoint: string, endpointData: EndpointData): ValidationError[] {
         const errors: ValidationError[] = [];
 
-        if (!this.validationSchemas[endpoint]) {
-            throw new NotFoundError();
+        if (!this.validationSchemas[endpoint.replace(/\/$/, '')]) {
+            throw new NotFoundError(`no validation schema for ${endpoint}`);
         }
 
         const { requestBody, pathParams, queryParams } = endpointData;
-        const { requestBodyRequired, requestBodySchema, pathParamsSchema, queryParamsSchema } = this.validationSchemas[endpoint];
+        const { requestBodyRequired, requestBodySchema, pathParamsSchema, queryParamsSchema } = this.validationSchemas[endpoint.replace(/\/$/, '')];
 
         if (requestBodyRequired && isEmpty(requestBody)) {
             this.pushError(errors, 'requestBody', 'required but not present');
@@ -89,11 +89,16 @@ export class EndpointValidator implements IEndpointValidator {
 
     private validateInteger(errors: ValidationError[], value: unknown, validationSchema: IntegerValidationSchema): void {
         const { minimum } = validationSchema;
-        if (typeof value !== 'number' || !Number.isInteger(value)) {
+        let valueToCheck = value;
+        if (typeof value === 'string' && parseInt(value).toString() === value) {
+            valueToCheck = parseInt(value);
+        }
+        //TODO: coerce string to integer if string contains only an integer
+        if (typeof valueToCheck !== 'number' || !Number.isInteger(valueToCheck)) {
             this.pushError(errors, validationSchema.fullPath, 'invalid data type - integer expected');
             return;
         }
-        if (typeof minimum === 'number' && value < minimum) {
+        if (typeof minimum === 'number' && valueToCheck < minimum) {
             this.pushError(errors, validationSchema.fullPath, `integer must be less than ${minimum}`);
         }
     }

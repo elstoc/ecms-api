@@ -118,7 +118,13 @@ paths:
           description: The timestamp of the file to retrieve
           required: true
           schema:
-            type: integer
+            type: string
+        - in: query
+          name: version
+          description: The version string (unused)
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: OK

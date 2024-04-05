@@ -1,7 +1,7 @@
 import { NextFunction, Response } from 'express';
 import winston from 'winston';
 
-import { RequestWithUser } from '../RequestHandler';
+import { RequestWithUser } from '../RequestHandler.types';
 import { EndpointValidationError, NotFoundError, NotPermittedError } from '../../errors';
 import { ValidationError } from '../../utils/site/IEndpointValidator';
 

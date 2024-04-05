@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { Logger } from 'winston';
 
 import { ISite } from '../../services';
-import { RequestWithUser } from '../RequestHandler';
+import { RequestWithUser } from '../RequestHandler.types';
 
 export const createSiteRouter = (site: ISite, logger: Logger): Router => {
     const router = Router();

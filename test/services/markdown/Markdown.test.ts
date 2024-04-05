@@ -1033,17 +1033,30 @@ describe('Markdown', () => {
                 mockYAMLparse.mockReturnValue(parsedYaml);
             });
 
-            it('returns undefined if access is restricted and no user is entered', async () => {
-                const page = new Markdown('rootDir', config, mockStorage, true);
+            it('returns undefined for non-root page if access is restricted and no user is entered', async () => {
+                const page = new Markdown('rootDir', config, mockStorage, false);
 
                 await expect(page.getTree()).resolves.toBeUndefined();
             });
 
-            it('returns undefined if access is restricted and no user does not have permission', async () => {
+            it('returns error for root page if access is restricted and no user is entered', async () => {
                 const page = new Markdown('rootDir', config, mockStorage, true);
+
+                await expect(page.getTree()).rejects.toThrow(NotPermittedError);
+            });
+
+            it('returns undefined for non-root page if access is restricted and user does not have permission', async () => {
+                const page = new Markdown('rootDir', config, mockStorage, false);
                 const user = { id: 'some-user', roles: ['role2', 'role3'] };
 
                 await expect(page.getTree(user)).resolves.toBeUndefined();
+            });
+
+            it('returns error for root page if access is restricted and user does not have permission', async () => {
+                const page = new Markdown('rootDir', config, mockStorage, true);
+                const user = { id: 'some-user', roles: ['role2', 'role3'] };
+
+                await expect(page.getTree(user)).rejects.toThrow(NotPermittedError);
             });
 
             it('returns value if access is restricted and user has permission', async () => {

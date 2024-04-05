@@ -1,8 +1,8 @@
-import { EndpointValidationError } from '../errors';
-import { EndpointData, IEndpointValidator } from '../utils/site';
-import { RequestHandler } from './RequestHandler';
+import { EndpointValidationError } from '../../errors';
+import { EndpointData, IEndpointValidator } from '../../utils/site';
+import { RequestHandler } from '../RequestHandler';
 
-export const createRequestValidationMiddleware = (endpointValidator: IEndpointValidator): RequestHandler => (req, res, next) => {
+export const createValidateRequestMiddleware = (endpointValidator: IEndpointValidator): RequestHandler => (req, res, next) => {
     const endpointData: EndpointData = {
         requestBody: req.body,
         pathParams: req.params,

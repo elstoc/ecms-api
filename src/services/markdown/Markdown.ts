@@ -219,6 +219,9 @@ export class Markdown implements IMarkdown {
         this.throwIfNoContentFile();
         const metadata = await this.getMetadata();
         if (this.config.enableAuthentication && !this.userHasReadAccess(user)) {
+            if (this.isRoot) {
+                throw new NotPermittedError();
+            }
             return undefined;
         }
         const childObjects = await this.getChildren();

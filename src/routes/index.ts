@@ -1,24 +1,27 @@
-import { Router } from 'express';
-import { IAuth, ISite } from '../services';
-import { Logger } from 'winston';
-import { createSiteRouter } from './site';
-import { createGalleryRouter } from './gallery';
-import { createMarkdownRouter } from './markdown';
-import { createAuthRouter } from './auth';
-import { createVideoDbRouter } from './videoDb';
-import { createUserInfoMiddleware } from './getUserInfoMiddleware';
+import express, { Router } from 'express';
 import cookieParser from 'cookie-parser';
+import { Logger } from 'winston';
 
-export const createRootRouter = (logger: Logger, site: ISite, auth: IAuth): Router => {
+import { IAuth, ISite } from '../services';
+import { createAuthRouter, createGalleryRouter, createMarkdownRouter, createSiteRouter, createVideoDbRouter } from './routers';
+import { createGetUserInfoMiddleware, createErrorHandlerMiddleware, createValidateRequestMiddleware } from './middleware';
+import { IEndpointValidator } from '../utils/site';
+
+export const createRootRouter = (logger: Logger, site: ISite, auth: IAuth, endpointValidator: IEndpointValidator): Router => {
     const router = Router();
 
-    router.use(createUserInfoMiddleware(auth));
+    router.use(express.json());
+    router.use(createValidateRequestMiddleware(endpointValidator));
+    router.use(createGetUserInfoMiddleware(auth));
     router.use(cookieParser());
+
     router.use('/auth', createAuthRouter(auth, logger));
     router.use('/site', createSiteRouter(site, logger));
     router.use('/gallery', createGalleryRouter(site, logger));
     router.use('/markdown', createMarkdownRouter(site, logger));
     router.use('/videodb', createVideoDbRouter(site, logger));
+
+    router.use(createErrorHandlerMiddleware(logger));
 
     return router;
 };

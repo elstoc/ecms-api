@@ -4,7 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 
-import { createRootRouter } from './routes';
+import { createRootRouter } from './routes/rootRouter';
 import { Auth, Site } from './services';
 import { getConfig } from './utils';
 import { LocalFileStorageAdapter } from './adapters/LocalFileStorageAdapter';

@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { Logger } from 'winston';
 
-import { ISite } from '../../services';
-import { RequestWithUser } from '../RequestHandler.types';
+import { ISite } from '../services';
+import { RequestWithUser } from '../middleware/RequestHandler.types';
 
 export const createMarkdownRouter = (site: ISite, logger: Logger): Router => {
     const router = Router();

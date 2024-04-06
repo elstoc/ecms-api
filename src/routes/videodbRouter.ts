@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Logger } from 'winston';
 
-import { ISite } from '../../services';
+import { ISite } from '../services';
 
 export const createVideoDbRouter = (site: ISite, logger: Logger): Router => {
     const router = Router();

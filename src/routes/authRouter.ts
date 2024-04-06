@@ -1,8 +1,8 @@
 import { Response, Router } from 'express';
 import { Logger } from 'winston';
 
-import { IAuth, Tokens } from '../../services';
-import { RequestWithUser } from '../RequestHandler.types';
+import { IAuth, Tokens } from '../services';
+import { RequestWithUser } from '../middleware/RequestHandler.types';
 
 const maxAge = 1000 * 60 * 60 * 24 * 365; // 1 year
 

@@ -1,9 +1,9 @@
 import { NextFunction, Response } from 'express';
 import winston from 'winston';
 
-import { RequestWithUser } from '../RequestHandler.types';
-import { EndpointValidationError, NotFoundError, NotPermittedError } from '../../errors';
-import { ValidationError } from '../../utils/site/IEndpointValidator';
+import { RequestWithUser } from './RequestHandler.types';
+import { EndpointValidationError, NotFoundError, NotPermittedError } from '../errors';
+import { ValidationError } from '../utils/site/IEndpointValidator';
 
 interface ExtraErrors extends Error {
     validationErrors?: ValidationError[],

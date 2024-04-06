@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Logger } from 'winston';
 
-import { ISite, ImageSize } from '../../services';
+import { ISite, ImageSize } from '../services';
 
 export const createGalleryRouter = (site: ISite, logger: Logger): Router => {
     const router = Router();

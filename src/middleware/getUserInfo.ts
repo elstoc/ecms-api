@@ -1,5 +1,5 @@
-import { IAuth } from '../../services';
-import { RequestHandler } from '../RequestHandler.types';
+import { IAuth } from '../services';
+import { RequestHandler } from './RequestHandler.types';
 
 export const createGetUserInfoMiddleware = (auth: IAuth): RequestHandler => async (req, res, next) => {
     try {

@@ -6,7 +6,7 @@ import { Logger } from 'winston';
 
 import { IAuth, ISite } from './services';
 import { createAuthRouter, createGalleryRouter, createMarkdownRouter, createSiteRouter, createVideoDbRouter } from './routes';
-import { createGetUserInfoMiddleware, createErrorHandlerMiddleware, createValidateRequestMiddleware } from './middleware';
+import { createAddUserInfoMiddleware, createErrorHandlerMiddleware, createValidateRequestMiddleware } from './middleware';
 import { Config, EndpointValidator, OASParser } from './utils/site';
 
 export const createApp = async (config: Config, logger: Logger, site: ISite, auth: IAuth): Promise<express.Express> => {
@@ -25,7 +25,7 @@ export const createApp = async (config: Config, logger: Logger, site: ISite, aut
 
     app.use(express.json());
     app.use(createValidateRequestMiddleware(endpointValidator));
-    app.use(createGetUserInfoMiddleware(auth));
+    app.use(createAddUserInfoMiddleware(auth));
     app.use(cookieParser());
 
     app.use('/auth', createAuthRouter(auth, logger));

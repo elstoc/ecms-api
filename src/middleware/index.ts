@@ -1,4 +1,4 @@
 export { createErrorHandlerMiddleware } from './errorHandler';
-export { createGetUserInfoMiddleware } from './getUserInfo';
+export { createAddUserInfoMiddleware } from './addUserInfo';
 export { createValidateRequestMiddleware } from './validateRequests';
 export { RequestHandler, RequestWithUser } from './types';

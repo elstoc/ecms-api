@@ -1,67 +1,36 @@
-import { Router } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { Logger } from 'winston';
 
 import { ISite } from '../services';
 import { RequestWithUser } from '../middleware/RequestHandler.types';
 
 export const createMarkdownRouter = (site: ISite, logger: Logger): Router => {
-    const router = Router();
-
-    router.get('/tree',
-        async (req: RequestWithUser, res, next) => {
-            try {
-                const { path } = req.query;
-                logger.debug(`getting md nav contents ${path}`);
-                const markdown = await site.getMarkdown(path as string);
+    const markdownHandler = async (req: RequestWithUser, res: Response, next: NextFunction, fn: string): Promise<void> => {
+        try {
+            const path = (req.query.path ?? req.body.path) as string;
+            const markdown = await site.getMarkdown(path);
+            if (fn === 'tree') {
                 const mdNavContents = await markdown.getTree(req.user);
                 res.json(mdNavContents);
-            } catch (err: unknown) {
-                next?.(err);
-            }
-        }
-    );
-
-    router.get('/page',
-        async (req: RequestWithUser, res, next) => {
-            try {
-                const { path } = req.query;
-                logger.debug(`getting md page ${path}`);
-                const markdown = await site.getMarkdown(path as string);
-                const mdPage = await markdown.getPage(path as string, req.user);
+            } else if (fn === 'getPage') {
+                const mdPage = await markdown.getPage(path, req.user);
                 res.json(mdPage);
-            } catch (err: unknown) {
-                next?.(err);
-            }
-        }
-    );
-
-    router.put('/page',
-        async (req: RequestWithUser, res, next) => {
-            try {
-                const { path, fileContents } = req.body;
-                logger.debug(`storing md page ${path}`);
-                const markdown = await site.getMarkdown(path);
-                await markdown.writePage(path, fileContents, req.user);
+            } else if (fn === 'putPage') {
+                await markdown.writePage(path, req.body.fileContents, req.user);
                 res.sendStatus(200);
-            } catch (err: unknown) {
-                next?.(err);
-            }
-        }
-    );
-
-    router.delete('/page',
-        async (req: RequestWithUser, res, next) => {
-            try {
-                const { path } = req.query;
-                logger.debug(`deleting md page ${path}`);
-                const markdown = await site.getMarkdown(path as string);
-                await markdown.deletePage(path as string, req.user);
+            } else if (fn === 'deletePage') {
+                await markdown.deletePage(path, req.user);
                 res.sendStatus(200);
-            } catch (err: unknown) {
-                next?.(err);
             }
+        } catch (err: unknown) {
+            next?.(err);
         }
-    );
+    };
 
+    const router = Router();
+    router.get('/tree', async (req, res, next) => markdownHandler(req, res, next, 'tree'));
+    router.get('/page', async (req, res, next) => markdownHandler(req, res, next, 'getPage'));
+    router.put('/page', async (req, res, next) => markdownHandler(req, res, next, 'putPage'));
+    router.delete('/page', async (req, res, next) => markdownHandler(req, res, next, 'deletePage'));
     return router;
 };

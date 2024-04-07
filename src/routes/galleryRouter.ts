@@ -1,35 +1,28 @@
-import { Router } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { Logger } from 'winston';
 
 import { ISite, ImageSize } from '../services';
+import { RequestWithUser } from '../middleware/RequestHandler.types';
 
 export const createGalleryRouter = (site: ISite, logger: Logger): Router => {
-    const router = Router();
-
-    router.get('/contents',
-        async (req, res, next) => {
-            try {
-                const limit = req.query.limit ? parseInt(req.query.limit.toString()) : undefined;
-                const gallery = await site.getGallery(req.query.path as string);
-                const images = await gallery.getContents(limit);
+    const galleryHandler = async (req: RequestWithUser, res: Response, next: NextFunction, fn: string): Promise<void> => {
+        try {
+            const { path, size, limit, timestamp } = req.query;
+            const gallery = await site.getGallery(path as string);
+            if (fn === 'contents') {
+                const images = await gallery.getContents(limit ? parseInt(limit.toString()) : undefined);
                 res.json(images);
-            } catch (err: unknown) {
-                next?.(err);
-            }
-        }
-    );
-    router.get('/image',
-        async (req, res, next) => {
-            const { path, size, timestamp } = req.query;
-            try {
-                const gallery = await site.getGallery(path as string);
+            } else if (fn === 'image') {
                 const imageFileBuf = await gallery.getImageFile(path as string, size as ImageSize, timestamp as string);
                 res.send(imageFileBuf);
-            } catch (err: unknown) {
-                next?.(err);
             }
+        } catch (err: unknown) {
+            next?.(err);
         }
-    );
+    };
 
+    const router = Router();
+    router.get('/contents', async (req, res, next) => galleryHandler(req, res, next, 'contents'));
+    router.get('/image', async (req, res, next) => galleryHandler(req, res, next, 'image'));
     return router;
 };

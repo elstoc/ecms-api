@@ -2,6 +2,7 @@ import { Config, jwtSign, jwtVerify, jwtDecode, hashPassword, verifyPasswordWith
 import { User, Token, Tokens, IAuth } from './IAuth';
 import { JwtPayload } from 'jsonwebtoken';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
+import { AuthenticationError } from '../../errors';
 
 export class Auth implements IAuth {
     private jwtRefreshExpires = '';
@@ -32,7 +33,7 @@ export class Auth implements IAuth {
     public async createUser(id: string, fullName?: string, roles?: string[]): Promise<void> {
         await this.readUsersFromFile();
         if (this.users[id]) {
-            throw new Error('user already exists');
+            throw new AuthenticationError('user already exists');
         }
         this.users[id] = { id, fullName, roles };
         await this.writeUsersToFile();
@@ -59,10 +60,10 @@ export class Auth implements IAuth {
         this.throwIfNoUser(id);
         if (this.users[id].hashedPassword) {
             if (!oldPassword) {
-                throw new Error('old password not entered');
+                throw new AuthenticationError('old password not entered');
             }
             if (!(await this.verifyPassword(id, oldPassword))) {
-                throw new Error('passwords do not match');
+                throw new AuthenticationError('passwords do not match');
             }
         }
         const hashed = await hashPassword(newPassword);
@@ -72,7 +73,7 @@ export class Auth implements IAuth {
 
     private throwIfNoUser(id: string): void {
         if (!this.users[id]) {
-            throw new Error('user does not exist');
+            throw new AuthenticationError('user does not exist');
         }
     }
 
@@ -90,7 +91,7 @@ export class Auth implements IAuth {
         await this.readUsersFromFile();
         this.throwIfNoUser(id);
         if (!(await this.verifyPassword(id, password))) {
-            throw new Error('incorrect password');
+            throw new AuthenticationError('incorrect password');
         }
         return await this.getTokensFromId(id);
     }
@@ -105,7 +106,7 @@ export class Auth implements IAuth {
         const payload = await jwtVerify(token, this.jwtRefreshSecret);
         const { id } = payload as User;
         if (!id) {
-            throw new Error('id not stored in payload');
+            throw new AuthenticationError('id not stored in payload');
         }
         this.throwIfNoUser(id);
         return id;

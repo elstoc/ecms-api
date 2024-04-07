@@ -1,5 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 /* eslint-disable  @typescript-eslint/no-unused-vars */
+import { AuthenticationError } from '../../../src/errors';
 import { Auth } from '../../../src/services';
 import { hashPassword, verifyPasswordWithHash } from '../../../src/utils/auth/hash';
 import { jwtSign, jwtVerify, jwtDecode } from '../../../src/utils/auth/jwt';
@@ -131,7 +132,7 @@ describe('Auth', () => {
                 .mockClear()
                 .mockResolvedValue(Buffer.from('{ "chris": {} }'));
 
-            await expect(auth.createUser('chris')).rejects.toThrow('user already exists');
+            await expect(auth.createUser('chris')).rejects.toThrow(new AuthenticationError('user already exists'));
             expect(mockStorage.storeAdminFile).not.toHaveBeenCalled();
         });
 
@@ -180,7 +181,7 @@ describe('Auth', () => {
         });
 
         it('throws error for a non-existent user', async () => {
-            await expect(auth.setPassword('john', 'Blob')).rejects.toThrow('user does not exist');
+            await expect(auth.setPassword('john', 'Blob')).rejects.toThrow(new AuthenticationError('user does not exist'));
         });
 
         it('runs successfully (attempts to hash password) for an existing user with no password stored and no old password given', async () => {
@@ -198,13 +199,13 @@ describe('Auth', () => {
 
         it('throws error for an existing user with a previous password stored and no old password given', async () => {
             await auth.setPassword('chris', 'some-password');
-            await expect(auth.setPassword('chris', 'some-new-password')).rejects.toThrow('old password not entered');
+            await expect(auth.setPassword('chris', 'some-new-password')).rejects.toThrow(new AuthenticationError('old password not entered'));
         });
 
         it('throws error for an existing user with a previous password stored and incorrect old password given', async () => {
             await auth.setPassword('chris', 'some-password');
             await expect(auth.setPassword('chris', 'some-new-password', 'some-wrong-password'))
-                .rejects.toThrow('passwords do not match');
+                .rejects.toThrow(new AuthenticationError('passwords do not match'));
         });
 
         it('runs successfully for an existing user with a previous password stored and correct old password given', async () => {
@@ -265,12 +266,12 @@ describe('Auth', () => {
         });
 
         it('throws error for a non-existent user', async () => {
-            await expect(auth.getTokensFromPassword('john', 'Blob')).rejects.toThrow('user does not exist');
+            await expect(auth.getTokensFromPassword('john', 'Blob')).rejects.toThrow(new AuthenticationError('user does not exist'));
         });
 
         it('throws error when called with incorrect password', async () => {
             await expect(auth.getTokensFromPassword('chris', 'a-different-password'))
-                .rejects.toThrow('incorrect password');
+                .rejects.toThrow(new AuthenticationError('incorrect password'));
         });
 
         it('returns a pair of jwt tokens (generated with correct params) when called with correct password', async () => {
@@ -369,19 +370,19 @@ describe('Auth', () => {
         });
 
         it('throws an error if jwtVerify throws (e.g. expired/incorrectly-signed token)', async () => {
-            mockJwtVerify.mockRejectedValue(new Error('jwt expired'));
+            mockJwtVerify.mockRejectedValue(new AuthenticationError('jwt expired'));
             await expect(auth.getTokensFromRefreshToken('{ "id": "chris" }'))
-                .rejects.toThrow('jwt expired');
+                .rejects.toThrow(new AuthenticationError('jwt expired'));
         });
 
         it('throws error when called for a token that does not contain an id', async () => {
             await expect(auth.getTokensFromRefreshToken('{ "not-an-id": "chris" }'))
-                .rejects.toThrow('id not stored in payload');
+                .rejects.toThrow(new AuthenticationError('id not stored in payload'));
         });
 
         it('throws error when called for non-existent user', async () => {
             await expect(auth.getTokensFromRefreshToken('{ "id": "not-chris" }'))
-                .rejects.toThrow('user does not exist');
+                .rejects.toThrow(new AuthenticationError('user does not exist'));
         });
 
         it('returns a pair of jwt tokens (generated with correct params) when called with correct refresh token', async () => {
@@ -422,9 +423,9 @@ describe('Auth', () => {
         });
 
         it('throws an error if jwtVerify throws (e.g. expired/incorrectly-signed token)', async () => {
-            mockJwtVerify.mockRejectedValue(new Error('jwt expired'));
+            mockJwtVerify.mockRejectedValue(new AuthenticationError('jwt expired'));
             await expect(auth.getUserInfoFromAuthHeader('Bearer some-bearer-token'))
-                .rejects.toThrow('jwt expired');
+                .rejects.toThrow(new AuthenticationError('jwt expired'));
         });
 
         it('returns appropriate user data when called using a token generated by getTokensFromPassword', async () => {
@@ -455,7 +456,7 @@ describe('Auth', () => {
         it('returns guest user data when called with an incorrect bearer token but authentication is disabled', async () => {
             const newConfig = { ...config, enableAuthentication: false };
             auth = new Auth(newConfig, mockStorage);
-            mockJwtVerify.mockRejectedValue(new Error('jwt expired'));
+            mockJwtVerify.mockRejectedValue(new AuthenticationError('jwt expired'));
 
             const accessPayload = await auth.getUserInfoFromAuthHeader('Bearer some-bearer-token');
 

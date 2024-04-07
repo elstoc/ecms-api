@@ -2,7 +2,7 @@ import { NextFunction, Response } from 'express';
 import winston from 'winston';
 
 import { RequestWithUser } from './types';
-import { EndpointValidationError, NotFoundError, NotPermittedError } from '../errors';
+import { AuthenticationError, EndpointValidationError, NotFoundError, NotPermittedError } from '../errors';
 import { ValidationError } from '../utils/site/IEndpointValidator';
 
 interface ExtraErrors extends Error {
@@ -19,6 +19,8 @@ export const createErrorHandlerMiddleware = (logger: winston.Logger): ErrorHandl
         status = 404;
     } else if (err instanceof NotPermittedError) {
         status = req.user ? 403 : 401;
+    } else if (err instanceof AuthenticationError) {
+        status = 401;
     }
 
     res.status(status).json({

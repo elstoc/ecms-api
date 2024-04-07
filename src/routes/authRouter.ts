@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { Logger } from 'winston';
 
 import { IAuth, Tokens } from '../services';
@@ -12,7 +12,7 @@ const sendTokens = (tokens: Tokens, res: Response): void => {
 };
 
 export const createAuthRouter = (auth: IAuth, logger: Logger): Router => {
-    const authHandler = async (req: RequestWithUser, res: Response, fn: string): Promise<void> => {
+    const authHandler = async (req: RequestWithUser, res: Response, next: NextFunction, fn: string): Promise<void> => {
         try {
             if (fn === 'login') {
                 const tokens = await auth.getTokensFromPassword(req.body.id, req.body.password);
@@ -31,15 +31,15 @@ export const createAuthRouter = (auth: IAuth, logger: Logger): Router => {
                 res.json(req.user);
             }
         } catch (err: unknown) {
-            res.sendStatus(401);
+            next?.(err);
         }
     };
 
     const router = Router();
-    router.post('/login', async (req, res) => authHandler(req, res, 'login'));
-    router.post('/refresh', async (req, res) => authHandler(req, res, 'refresh'));
-    router.post('/changepassword', async (req, res) => authHandler(req, res, 'changePassword'));
-    router.post('/logout', async (req, res) => authHandler(req, res, 'logout'));
-    router.get('/get-user-info', async (req, res) => authHandler(req, res, 'getUserInfo'));
+    router.post('/login', async (req, res, next) => authHandler(req, res, next, 'login'));
+    router.post('/refresh', async (req, res, next) => authHandler(req, res, next, 'refresh'));
+    router.post('/changepassword', async (req, res, next) => authHandler(req, res, next, 'changePassword'));
+    router.post('/logout', async (req, res, next) => authHandler(req, res, next, 'logout'));
+    router.get('/get-user-info', async (req, res, next) => authHandler(req, res, next, 'getUserInfo'));
     return router;
 };

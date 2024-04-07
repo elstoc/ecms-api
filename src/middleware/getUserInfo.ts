@@ -6,7 +6,7 @@ export const createGetUserInfoMiddleware = (auth: IAuth): RequestHandler => asyn
         const user = await auth.getUserInfoFromAuthHeader(req.headers['authorization']);
         req['user'] = user;
         next?.();
-    } catch (e: unknown) {
-        res.sendStatus(401);
+    } catch (err: unknown) {
+        next?.(err);
     }
 };

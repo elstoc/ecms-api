@@ -1,5 +1,7 @@
 import { ValidationError } from './utils/site';
 
+export class AuthenticationError extends Error { }
+
 export class NotFoundError extends Error { }
 
 export class NotPermittedError extends Error { }

@@ -1,5 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { resizeImage } from '../../../src/utils';
+import { resizeImage } from '../../../src/services/gallery/resizeImage';
 import * as gm from 'gm';
 
 jest.mock('gm');
@@ -86,6 +86,6 @@ describe('That resizeImage', () => {
         const resizePromise = resizeImage(fileBuffer, resizeOptions as any);
         const toBufferCallback = toBuffer.mock.calls[0][1];
         toBufferCallback(new Error('something wrong'));
-        expect(resizePromise).rejects.toMatch('Image resize failed: something wrong');
+        expect(resizePromise).rejects.toThrow('Image resize failed: something wrong');
     });
 });

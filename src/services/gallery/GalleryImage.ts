@@ -1,9 +1,12 @@
 import { basename } from 'path';
 
 import { IGalleryImage, ImageMetadata, ImageSize } from './IGalleryImage';
-import { getExif, resizeImage, getImageDimensions, Config } from '../../utils';
+import { Config } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';
+import { getImageDimensions } from './getImageDimensions';
+import { getExif } from './getExif';
+import { resizeImage } from './resizeImage';
 
 export const RESIZE_OPTIONS = {
     thumb: { version: 1, desc: ImageSize.thumb, width: 100000, height: 300, quality: 60, stripExif: true, addBorder: true },

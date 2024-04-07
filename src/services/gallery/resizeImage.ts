@@ -1,5 +1,5 @@
 import gm from 'gm';
-import { ImageSize } from '../../services';
+import { ImageSize } from '..';
 
 export type ResizeConfig = {
     desc: ImageSize;
@@ -24,7 +24,7 @@ export const resizeImage = (sourceImage: Buffer, config: ResizeConfig): Promise<
         return resizedImage.toBuffer(
             'JPG',
             (err, buffer) => {
-                if (err) reject('Image resize failed: ' + err.message);
+                if (err) reject(new Error('Image resize failed: ' + err.message));
                 else resolve(buffer);
             }
         );

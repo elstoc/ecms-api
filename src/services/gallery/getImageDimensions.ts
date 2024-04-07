@@ -1,5 +1,5 @@
 import sizeOf from 'image-size';
-import { Dimensions } from '../../services';
+import { Dimensions } from '..';
 
 export const getImageDimensions = (file: Buffer): Dimensions => {
     const size = sizeOf(file);

@@ -154,7 +154,7 @@ export class OASParser implements IOASParser {
 
     private getObjectValidationSchema(oasObjectSchema: Record<string, unknown>, endpoint: string, fullPath: string): ObjectValidationSchema {
         const objectValidationProperties: { [key: string]: ValidationSchema } = {};
-        const additionalProperties = oasObjectSchema?.['additionalProperties'] === false ? false : true;
+        const additionalProperties = oasObjectSchema?.['additionalProperties'] !== false;
         let oasObjectProperties: Record<string, unknown> = {};
 
         try {

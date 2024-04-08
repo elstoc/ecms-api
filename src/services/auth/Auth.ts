@@ -1,4 +1,6 @@
-import { Config, jwtSign, jwtVerify, jwtDecode, hashPassword, verifyPasswordWithHash } from '../../utils';
+import { Config } from '../../utils';
+import { jwtSign, jwtVerify, jwtDecode } from './jwtUtils';
+import { hashPassword, verifyPasswordWithHash } from './hashUtils';
 import { User, Token, Tokens, IAuth } from './IAuth';
 import { JwtPayload } from 'jsonwebtoken';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';

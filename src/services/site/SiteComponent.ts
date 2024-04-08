@@ -1,7 +1,8 @@
 import YAML from 'yaml';
 import _ from 'lodash';
 
-import { Config, userHasReadAccess } from '../../utils';
+import { Config } from '../../utils';
+import { userHasReadAccess } from '../auth/accessUtils';
 import { Gallery, IGallery } from '../gallery';
 import { IMarkdown, Markdown } from '../markdown';
 import { ISiteComponent, ComponentMetadata, ComponentTypes } from './ISiteComponent';

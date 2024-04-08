@@ -1,4 +1,4 @@
-import { User } from '../../services';
+import { User } from '..';
 
 export const userHasWriteAccess = (user?: User, allowWrite?: string): boolean => {
     const userRoles = user?.roles ?? [];

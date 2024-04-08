@@ -22,12 +22,12 @@ export const createApp = async (config: Config, logger: Logger, site: ISite, aut
     const endpointValidator = new EndpointValidator(endpointValidationSchemas);
 
     const app = express();
-    app.use(cors(corsConfig));
 
+    app.use(cors(corsConfig));
     app.use(express.json());
+    app.use(cookieParser());
     app.use(createValidateRequestMiddleware(endpointValidator));
     app.use(createAddUserInfoMiddleware(auth));
-    app.use(cookieParser());
 
     app.use('/auth', createAuthRouter(auth, logger));
     app.use('/site', createSiteRouter(site, logger));

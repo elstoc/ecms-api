@@ -3,7 +3,7 @@ import winston from 'winston';
 
 import { RequestWithUser } from './types';
 import { AuthenticationError, EndpointValidationError, NotFoundError, NotPermittedError } from '../errors';
-import { ValidationError } from '../utils/site/IEndpointValidator';
+import { ValidationError } from '../api/IEndpointValidator';
 
 interface ExtraErrors extends Error {
     validationErrors?: ValidationError[],

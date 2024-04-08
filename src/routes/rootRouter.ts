@@ -5,7 +5,7 @@ import { Logger } from 'winston';
 import { IAuth, ISite } from '../services';
 import { createAuthRouter, createGalleryRouter, createMarkdownRouter, createSiteRouter, createVideoDbRouter } from '.';
 import { createAddUserInfoMiddleware, createErrorHandlerMiddleware, createValidateRequestMiddleware } from '../middleware';
-import { IEndpointValidator } from '../utils/site';
+import { IEndpointValidator } from '../api/IEndpointValidator';
 
 export const createRootRouter = (logger: Logger, site: ISite, auth: IAuth, endpointValidator: IEndpointValidator): Router => {
     const router = Router();

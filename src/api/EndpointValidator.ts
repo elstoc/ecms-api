@@ -1,7 +1,15 @@
-import { NotFoundError } from '../../errors';
-import { EndpointData, IEndpointValidator, ValidationError } from './IEndpointValidator';
-import { EndpointValidationSchemas, IntegerValidationSchema, ObjectValidationSchema, StringValidationSchema, ValidationSchema } from './IOASParser';
-import { convertToRecord, isEmpty } from '../objectUtils';
+import { NotFoundError } from '../errors';
+import {
+    EndpointValidationSchemas,
+    IntegerValidationSchema,
+    ObjectValidationSchema,
+    StringValidationSchema,
+    ValidationSchema,
+    EndpointData,
+    IEndpointValidator,
+    ValidationError,
+} from './IEndpointValidator';
+import { convertToRecord, isEmpty } from '../utils/objectUtils';
 
 export class EndpointValidator implements IEndpointValidator {
     constructor(

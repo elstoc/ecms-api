@@ -1,9 +1,9 @@
 import RefParser from '@apidevtools/json-schema-ref-parser';
 
-import { OASParsingError } from '../../errors';
-import { convertToRecord, convertToStringArray, getRecordAtPath } from '../objectUtils';
+import { IOASParser } from './IOASParser';
+import { OASParsingError } from '../errors';
+import { convertToRecord, convertToStringArray, getRecordAtPath } from '../utils/objectUtils';
 import {
-    IOASParser,
     StringValidationSchema,
     IntegerValidationSchema,
     ObjectValidationSchema,
@@ -11,7 +11,7 @@ import {
     EndpointValidationSchemas,
     EndpointParameterValidationSchema,
     EndpointRequestBodyValidationSchema,
-} from './IOASParser';
+} from './IEndpointValidator';
 
 export class OASParser implements IOASParser {
     private validationSchemas: { [endpoint: string]: EndpointValidationSchemas } = {};

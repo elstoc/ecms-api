@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NotFoundError } from '../../../src/errors';
-import { EndpointValidator } from '../../../src/utils/site/EndpointValidator';
-import { IEndpointValidator } from '../../../src/utils/site/IEndpointValidator';
-import { ObjectValidationSchema } from '../../../src/utils/site/IOASParser';
+import { NotFoundError } from '../../src/errors';
+import { EndpointValidator, IEndpointValidator, ObjectValidationSchema } from '../../src/api';
 
 describe('EndpointValidator', () => {
     it('throws NotFoundError if the endpoint to be validated does not exist in the specification', () => {

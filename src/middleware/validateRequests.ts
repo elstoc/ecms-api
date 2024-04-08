@@ -1,5 +1,5 @@
 import { EndpointValidationError } from '../errors';
-import { EndpointData, IEndpointValidator } from '../utils/site';
+import { EndpointData, IEndpointValidator } from '../api';
 import { RequestHandler } from './types';
 
 export const createValidateRequestMiddleware = (endpointValidator: IEndpointValidator): RequestHandler => (req, res, next) => {

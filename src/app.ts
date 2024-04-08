@@ -7,7 +7,8 @@ import { Logger } from 'winston';
 import { IAuth, ISite } from './services';
 import { createAuthRouter, createGalleryRouter, createMarkdownRouter, createSiteRouter, createVideoDbRouter } from './routes';
 import { createAddUserInfoMiddleware, createErrorHandlerMiddleware, createValidateRequestMiddleware } from './middleware';
-import { Config, EndpointValidator, OASParser } from './utils/site';
+import { Config } from './utils';
+import { EndpointValidator, OASParser } from './api';
 
 export const createApp = async (config: Config, logger: Logger, site: ISite, auth: IAuth): Promise<express.Express> => {
     const corsConfig = {
@@ -15,7 +16,7 @@ export const createApp = async (config: Config, logger: Logger, site: ISite, aut
         credentials: true
     }; 
 
-    const oasParser = new OASParser(path.join(__dirname, '../api.spec.yaml'));
+    const oasParser = new OASParser(path.join(__dirname, './api/api.spec.yaml'));
     await oasParser.parseAndValidateSchema();
     const endpointValidationSchemas = oasParser.getAllValidationSchemas();
     const endpointValidator = new EndpointValidator(endpointValidationSchemas);

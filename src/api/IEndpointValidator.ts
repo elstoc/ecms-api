@@ -32,8 +32,17 @@ export type EndpointRequestBodyValidationSchema = {
 
 export type EndpointValidationSchemas = EndpointParameterValidationSchema & EndpointRequestBodyValidationSchema;
 
-export interface IOASParser {
-    parseAndValidateSchema(): Promise<void>;
-    getValidationSchemasForEndpoint(endpoint: string): EndpointValidationSchemas;
-    getAllValidationSchemas(): { [endpoint: string]: EndpointValidationSchemas };
+export type EndpointData = {
+    requestBody?: Record<string, unknown>;
+    queryParams?: Record<string, unknown>;
+    pathParams?: Record<string, unknown>;
+}
+
+export type ValidationError = {
+    property: string;
+    error: string;
+}
+
+export interface IEndpointValidator {
+    validateEndpoint(endpoint: string, endpointData: EndpointData): ValidationError[];
 }

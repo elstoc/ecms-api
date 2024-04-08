@@ -1,4 +1,4 @@
-import { ValidationError } from './utils/site';
+import { ValidationError } from './api';
 
 export class AuthenticationError extends Error { }
 

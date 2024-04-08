@@ -2,7 +2,7 @@ import RefParser from '@apidevtools/json-schema-ref-parser';
 
 import { IOASParser } from './IOASParser';
 import { OASParsingError } from '../errors';
-import { convertToRecord, convertToStringArray, getRecordAtPath } from '../utils/objectUtils';
+import { convertToRecord, convertToStringArray, getRecordAtPath } from './objectUtils';
 import {
     StringValidationSchema,
     IntegerValidationSchema,

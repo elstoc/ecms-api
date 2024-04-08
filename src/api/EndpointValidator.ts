@@ -9,7 +9,7 @@ import {
     IEndpointValidator,
     ValidationError,
 } from './IEndpointValidator';
-import { convertToRecord, isEmpty } from '../utils/objectUtils';
+import { convertToRecord, isEmpty } from './objectUtils';
 
 export class EndpointValidator implements IEndpointValidator {
     constructor(

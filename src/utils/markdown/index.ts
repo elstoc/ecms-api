@@ -1,1 +1,0 @@
-export { splitFrontMatter } from './splitFrontMatter';

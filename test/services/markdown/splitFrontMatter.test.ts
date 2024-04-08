@@ -1,4 +1,4 @@
-import { splitFrontMatter } from '../../../src/utils';
+import { splitFrontMatter } from '../../../src/services/markdown/splitFrontMatter';
 
 describe('That splitFrontMatter', () => {
     it('returns entire string as content if there is no frontmatter', () => {

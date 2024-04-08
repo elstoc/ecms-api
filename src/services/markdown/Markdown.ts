@@ -3,7 +3,8 @@ import YAML from 'yaml';
 import _ from 'lodash';
 
 import { IMarkdown, MarkdownPage, MarkdownTree } from './IMarkdown';
-import { Config, sortByWeightAndTitle, splitFrontMatter, splitPath } from '../../utils';
+import { Config, sortByWeightAndTitle, splitPath } from '../../utils';
+import { splitFrontMatter } from './splitFrontMatter';
 import { userHasReadAccess, userHasWriteAccess, userIsAdmin } from '../auth/accessUtils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';

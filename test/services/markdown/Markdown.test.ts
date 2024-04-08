@@ -1,13 +1,13 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { Markdown } from '../../../src/services/markdown/Markdown';
 import YAML from 'yaml';
-import { splitFrontMatter } from '../../../src/utils/markdown/splitFrontMatter';
+import { splitFrontMatter } from '../../../src/services/markdown/splitFrontMatter';
 import { NotFoundError, NotPermittedError } from '../../../src/errors';
 import { IMarkdown } from '../../../src/services';
 import path from 'path';
 
 jest.mock('yaml');
-jest.mock('../../../src/utils/markdown/splitFrontMatter');
+jest.mock('../../../src/services/markdown/splitFrontMatter');
 
 const config = {
     dataDir: '/path/to/data',

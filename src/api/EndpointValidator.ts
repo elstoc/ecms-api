@@ -20,7 +20,7 @@ export class EndpointValidator implements IEndpointValidator {
         const errors: ValidationError[] = [];
 
         if (!this.validationSchemas[endpoint.replace(/\/$/, '')]) {
-            throw new NotFoundError(`no validation schema for ${endpoint}`);
+            throw new NotFoundError(`${endpoint} not found`);
         }
 
         const { requestBody, pathParams, queryParams } = endpointData;

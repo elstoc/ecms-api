@@ -6,7 +6,7 @@ describe('EndpointValidator', () => {
     it('throws NotFoundError if the endpoint to be validated does not exist in the specification', () => {
         const validator = new EndpointValidator({ '/some/path': {} });
 
-        expect(() => validator.validateEndpoint('/some/other/path', {})).toThrow(new NotFoundError('no validation schema for /some/other/path'));
+        expect(() => validator.validateEndpoint('/some/other/path', {})).toThrow(new NotFoundError('/some/other/path not found'));
     });
 
     describe('fails validation when', () => {

@@ -16,15 +16,13 @@ export class EndpointValidator implements IEndpointValidator {
         private validationSchemas: { [endpoint: string]: EndpointValidationSchemas } = {}
     ) { }
 
-    public validateEndpoint(endpoint: string, endpointData: EndpointData): ValidationError[] {
+    public validateEndpoint(method: string, path: string, data: EndpointData): ValidationError[] {
         const errors: ValidationError[] = [];
 
-        if (!this.validationSchemas[endpoint.replace(/\/$/, '')]) {
-            throw new NotFoundError(`${endpoint} not found`);
-        }
+        const { endpoint } = this.getEndpointAndPathParams(`${method.toLowerCase()}:${path}`);
 
-        const { requestBody, pathParams, queryParams } = endpointData;
-        const { requestBodyRequired, requestBodySchema, pathParamsSchema, queryParamsSchema } = this.validationSchemas[endpoint.replace(/\/$/, '')];
+        const { requestBody, pathParams, queryParams } = data;
+        const { requestBodyRequired, requestBodySchema, pathParamsSchema, queryParamsSchema } = this.validationSchemas[endpoint];
 
         if (requestBodyRequired && isEmpty(requestBody)) {
             this.pushError(errors, 'requestBody', 'required but not present');
@@ -37,7 +35,16 @@ export class EndpointValidator implements IEndpointValidator {
         return errors;
     }
 
-    validateEndpointObject(errors: ValidationError[], obj: unknown, schema: ObjectValidationSchema | undefined, objectDescription: string) {
+    private getEndpointAndPathParams(fullPath: string): { endpoint: string, pathParams: Record<string, unknown> } {
+        const endpoint = fullPath.replace(/\/$/, '');
+        const pathParams = {};
+        if (this.validationSchemas[endpoint]) {
+            return { endpoint, pathParams };
+        }
+        throw new NotFoundError(`${fullPath} not found`);
+    }
+
+    private validateEndpointObject(errors: ValidationError[], obj: unknown, schema: ObjectValidationSchema | undefined, objectDescription: string) {
         if (schema) {
             this.validateObject(errors, obj ?? {}, schema);
         } else if (!isEmpty(obj)) {

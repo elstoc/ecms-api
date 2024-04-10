@@ -44,5 +44,5 @@ export type ValidationError = {
 }
 
 export interface IEndpointValidator {
-    validateEndpoint(endpoint: string, endpointData: EndpointData): ValidationError[];
+    validateEndpoint(method: string, path: string, data: EndpointData): ValidationError[];
 }

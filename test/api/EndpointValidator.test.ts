@@ -4,9 +4,9 @@ import { EndpointValidator, IEndpointValidator, ObjectValidationSchema } from '.
 
 describe('EndpointValidator', () => {
     it('throws NotFoundError if the endpoint to be validated does not exist in the specification', () => {
-        const validator = new EndpointValidator({ '/some/path': {} });
+        const validator = new EndpointValidator({ 'put:/some/path': {} });
 
-        expect(() => validator.validateEndpoint('/some/other/path', {})).toThrow(new NotFoundError('/some/other/path not found'));
+        expect(() => validator.validateEndpoint('get', '/some/path', {})).toThrow(new NotFoundError('get:/some/path not found'));
     });
 
     describe('fails validation when', () => {
@@ -15,18 +15,18 @@ describe('EndpointValidator', () => {
             ['an empty object', {}]
         ])('request body is required but not present (%s)', (desc, requestBody) => {
             const requestBodySchema = { } as any;
-            const validator = new EndpointValidator({ '/some/path': { requestBodyRequired: true, requestBodySchema } });
+            const validator = new EndpointValidator({ 'put:/some/path': { requestBodyRequired: true, requestBodySchema } });
 
-            const errors = validator.validateEndpoint('/some/path', { requestBody });
+            const errors = validator.validateEndpoint('put', '/some/path', { requestBody });
 
             expect(errors).toContainEqual({ property: 'requestBody', error: 'required but not present' });
         });
 
         it('path, query and requestBody objects exist but have no validation schema', () => {
-            const validator = new EndpointValidator({ '/some/path': {} });
+            const validator = new EndpointValidator({ 'put:/some/path': {} });
             const requestBody = { 'a': 'b' }, pathParams = { 'a': 'b' }, queryParams = { 'a': 'b' };
 
-            const errors = validator.validateEndpoint('/some/path', { requestBody, pathParams, queryParams });
+            const errors = validator.validateEndpoint('put', '/some/path', { requestBody, pathParams, queryParams });
 
             expect(errors).toContainEqual({ property: 'requestBody', error: 'unexpected requestBody' });
             expect(errors).toContainEqual({ property: 'pathParams', error: 'unexpected pathParams' });
@@ -56,17 +56,17 @@ describe('EndpointValidator', () => {
                     additionalProperties: false
                 };
 
-                validator = new EndpointValidator({ '/some/path': { requestBodySchema } });
+                validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema } });
             });
 
             it('is not an object', () => {
-                const errors = validator.validateEndpoint('/some/path', { requestBody: 'not-an-object' } as any);
+                const errors = validator.validateEndpoint('put', '/some/path', { requestBody: 'not-an-object' } as any);
     
                 expect(errors).toContainEqual({ property: 'requestBody', error: 'invalid data type - object expected' });
             });
 
             it('has required fields that are not present', () => {
-                const errors = validator.validateEndpoint('/some/path', { requestBody: { field1: 'something' } } as any);
+                const errors = validator.validateEndpoint('put', '/some/path', { requestBody: { field1: 'something' } } as any);
     
                 expect(errors).toContainEqual({ property: 'requestBody.field2', error: 'required field is not present' });
                 expect(errors).toContainEqual({ property: 'requestBody.field3', error: 'required field is not present' });
@@ -76,7 +76,7 @@ describe('EndpointValidator', () => {
                 const requestBody = {
                     field1: 'something', field2: 'something', field3: 'something', fieldX: 'something', fieldY: 'something'
                 };
-                const errors = validator.validateEndpoint('/some/path', { requestBody } as any);
+                const errors = validator.validateEndpoint('put', '/some/path', { requestBody } as any);
     
                 expect(errors).toContainEqual({ property: 'requestBody.fieldX', error: 'field is not permitted' });
                 expect(errors).toContainEqual({ property: 'requestBody.fieldY', error: 'field is not permitted' });
@@ -88,7 +88,7 @@ describe('EndpointValidator', () => {
                         field1: 'something', field2: 'something', field3: 'something',
                         field4: 2
                     };
-                    const errors = validator.validateEndpoint('/some/path', { requestBody } as any);
+                    const errors = validator.validateEndpoint('put', '/some/path', { requestBody } as any);
 
                     expect(errors).toContainEqual({ property: 'requestBody.field4', error: 'invalid data type - string expected' });
                 });
@@ -98,7 +98,7 @@ describe('EndpointValidator', () => {
                         field1: 'something', field2: 'something', field3: 'something',
                         field4: 'Z'
                     };
-                    const errors = validator.validateEndpoint('/some/path', { requestBody } as any);
+                    const errors = validator.validateEndpoint('put', '/some/path', { requestBody } as any);
 
                     expect(errors).toContainEqual({ property: 'requestBody.field4', error: 'value must be one of [X,Y]' });
                 });
@@ -110,7 +110,7 @@ describe('EndpointValidator', () => {
                         field1: 'something', field2: 'something', field3: 'something',
                         field5: 'Z'
                     };
-                    const errors = validator.validateEndpoint('/some/path', { requestBody } as any);
+                    const errors = validator.validateEndpoint('put', '/some/path', { requestBody } as any);
 
                     expect(errors).toContainEqual({ property: 'requestBody.field5', error: 'invalid data type - integer expected' });
                 });
@@ -120,7 +120,7 @@ describe('EndpointValidator', () => {
                         field1: 'something', field2: 'something', field3: 'something',
                         field5: 3.14159265
                     };
-                    const errors = validator.validateEndpoint('/some/path', { requestBody } as any);
+                    const errors = validator.validateEndpoint('put', '/some/path', { requestBody } as any);
 
                     expect(errors).toContainEqual({ property: 'requestBody.field5', error: 'invalid data type - integer expected' });
                 });
@@ -130,7 +130,7 @@ describe('EndpointValidator', () => {
                         field1: 'something', field2: 'something', field3: 'something',
                         field6: 9
                     };
-                    const errors = validator.validateEndpoint('/some/path', { requestBody } as any);
+                    const errors = validator.validateEndpoint('put', '/some/path', { requestBody } as any);
 
                     expect(errors).toContainEqual({ property: 'requestBody.field6', error: 'integer must be less than 10' });
                 });
@@ -142,7 +142,7 @@ describe('EndpointValidator', () => {
                         field1: 'something', field2: 'something', field3: 'something',
                         field7: 9
                     };
-                    const errors = validator.validateEndpoint('/some/path', { requestBody } as any);
+                    const errors = validator.validateEndpoint('put', '/some/path', { requestBody } as any);
 
                     expect(errors).toContainEqual({ property: 'requestBody.field7', error: 'invalid data type - object expected' });
                 });
@@ -152,7 +152,7 @@ describe('EndpointValidator', () => {
                         field1: 'something', field2: 'something', field3: 'something',
                         field7: { field8: 'X' }
                     };
-                    const errors = validator.validateEndpoint('/some/path', { requestBody } as any);
+                    const errors = validator.validateEndpoint('put', '/some/path', { requestBody } as any);
 
                     expect(errors).toContainEqual({ property: 'requestBody.field7.field8', error: 'invalid data type - integer expected' });
                 });
@@ -162,9 +162,9 @@ describe('EndpointValidator', () => {
 
     describe('passes validation (returns no errors) when', () => {
         it('there are no endpoint (path, query, requestBody) objects and no schemas for them', () => {
-            const validator = new EndpointValidator({ '/some/path': {} });
+            const validator = new EndpointValidator({ 'put:/some/path': {} });
 
-            const errors = validator.validateEndpoint('/some/path', {});
+            const errors = validator.validateEndpoint('put', '/some/path', {});
 
             expect(errors).toEqual([]);
         });
@@ -207,9 +207,9 @@ describe('EndpointValidator', () => {
             const pathParams = { fieldX: 'some-string' } as any;
             const queryParams = pathParams;
 
-            const validator = new EndpointValidator({ '/some/path': { requestBodySchema, pathParamsSchema, queryParamsSchema} });
+            const validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema, pathParamsSchema, queryParamsSchema} });
 
-            const errors = validator.validateEndpoint('/some/path', { requestBody, pathParams, queryParams });
+            const errors = validator.validateEndpoint('put', '/some/path', { requestBody, pathParams, queryParams });
 
             expect(errors).toEqual([]);
         });

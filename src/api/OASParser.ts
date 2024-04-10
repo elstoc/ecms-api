@@ -12,6 +12,7 @@ import {
     EndpointParameterValidationSchema,
     EndpointRequestBodyValidationSchema,
 } from './IEndpointValidator';
+import { splitPath } from '../utils';
 
 export class OASParser implements IOASParser {
     private validationSchemas: { [endpoint: string]: EndpointValidationSchemas } = {};
@@ -54,17 +55,46 @@ export class OASParser implements IOASParser {
             validationParams = this.getRequestBodyValidationSchema(oasRequestBody, endpoint);
         }
 
-        if (oasEndpointDetails.parameters) {
+        const pathParamsFromEndpoint = this.parseEndpointPathAndGetParams(endpoint);
+        if ((new Set(pathParamsFromEndpoint)).size !== pathParamsFromEndpoint.length) {
+            throw new OASParsingError(`repeated path parameters in endpoint ${endpoint}`);
+        }
+
+        if (oasEndpointDetails.parameters || pathParamsFromEndpoint.length > 0) {
             if (!Array.isArray(oasEndpointDetails.parameters) || oasEndpointDetails.parameters.length == 0) {
                 throw new OASParsingError(`bad parameter list at endpoint ${endpoint}`);
             }
             validationParams = {
                 ...validationParams,
-                ...this.getParameterValidationSchemas(oasEndpointDetails.parameters, endpoint)
+                ...this.getParameterValidationSchemas(oasEndpointDetails.parameters, endpoint, pathParamsFromEndpoint)
             };
         }
 
         return validationParams;
+    }
+
+    private parseEndpointPathAndGetParams(endpoint: string): string[] {
+        const pathParams: string[] = [];
+        const validPathChars = /^[a-zA-Z0-9}{/_-]+$/;
+        const matchPathParam = /^\{(.*?)\}$/;
+        const pathParsingError = new OASParsingError(`invalid path name for endpoint ${endpoint}`);
+
+        const endpointPath = endpoint.split(':')[1];
+        if (!validPathChars.exec(endpointPath)) {
+            throw pathParsingError;
+        }
+
+        splitPath(endpointPath).forEach((element) => {
+            if (element.includes('{') || element.includes('}')) {
+                const pathParam = matchPathParam.exec(element);
+                if (pathParam?.[1]) {
+                    pathParams.push(pathParam[1]);
+                } else {
+                    throw pathParsingError;
+                }
+            }
+        });
+        return pathParams;
     }
 
     private getRequestBodyValidationSchema(requestBody: Record<string, unknown>, endpoint: string): EndpointRequestBodyValidationSchema {
@@ -80,7 +110,7 @@ export class OASParser implements IOASParser {
         return validationParams;
     }
 
-    private getParameterValidationSchemas(oasParameters: unknown[], endpoint: string): EndpointParameterValidationSchema {
+    private getParameterValidationSchemas(oasParameters: unknown[], endpoint: string, pathParamsFromEndpoint: string[]): EndpointParameterValidationSchema {
         const validationSchemas: EndpointParameterValidationSchema = {};
         const oasPathParameters: unknown[] = [];
         const oasQueryParameters: unknown[] = [];
@@ -97,8 +127,21 @@ export class OASParser implements IOASParser {
             }
         });
 
-        if (oasPathParameters.length > 0) {
+        if (oasPathParameters.length > 0 || pathParamsFromEndpoint.length > 0) {
             validationSchemas.pathParamsSchema = this.createObjectValidationSchemaFromOasParameters(oasPathParameters, endpoint, 'path');
+            const pathParamsFromValidationSchema = Object.keys(validationSchemas.pathParamsSchema.properties);
+
+            pathParamsFromValidationSchema.forEach((schemaPathParam) => {
+                if (!pathParamsFromEndpoint.includes(schemaPathParam)) {
+                    throw new OASParsingError(`path parameter ${schemaPathParam} is defined in the OAS parameter list but not in the endpoint name (${endpoint})`);
+                }
+            });
+
+            pathParamsFromEndpoint.forEach((endpointPathParam) => {
+                if (!pathParamsFromValidationSchema.includes(endpointPathParam)) {
+                    throw new OASParsingError(`path parameter ${endpointPathParam} is defined in endpoint name (${endpoint}) but not in the OAS parameter list`);
+                }
+            });
         }
         if (oasQueryParameters.length > 0) {
             validationSchemas.queryParamsSchema = this.createObjectValidationSchemaFromOasParameters(oasQueryParameters, endpoint, 'query');
@@ -121,6 +164,9 @@ export class OASParser implements IOASParser {
             const name = oasParameterRecord?.name;
             if (typeof name !== 'string' || name === '') {
                 throw new OASParsingError(`missing or invalid name for one or more ${pathOrQuery} parameters in endpoint ${endpoint}`);
+            }
+            if (returnVal.properties[name]) {
+                throw new OASParsingError(`duplicate ${pathOrQuery} parameter ${name} in endpoint ${endpoint}`);
             }
             const oasSchema = this.convertToRecordOrThrow(oasParameterRecord?.schema, `no schema for ${name} in ${pathOrQuery} parameters in endpoint ${endpoint}`);
             if (oasSchema?.type === 'object') {

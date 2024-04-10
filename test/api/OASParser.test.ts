@@ -45,6 +45,19 @@ describe('OASParser.parseAndValidateSchema', () => {
                     .rejects.toThrow(new OASParsingError('no API paths in /path/to/api.spec.yaml'));
             });
         
+            it.each([
+                ['contains invalid character', '/path/to/som£/thing'],
+                ['contains invalid character', '/path/to/som*/thing'],
+                ['contains unclosed curly bracket', '/path/to/{some/thing'],
+                ['contains unopened curly bracket', '/path/to/some}/thing']
+            ])('a path has an invalid name (%s)', async (desc, path) => {
+                const dereferencedSchema = { paths: { [path]: { 'get': { description: 'foo' } } } };
+                dereferenceMock.mockResolvedValue(dereferencedSchema);
+
+                await expect(oasParser.parseAndValidateSchema())
+                    .rejects.toThrow(new OASParsingError(`invalid path name for endpoint get:${path}`));
+            });
+
             it('a path has no methods', async () => {
                 const dereferencedSchema = { paths: { '/some/path': {} } };
                 dereferenceMock.mockResolvedValue(dereferencedSchema);
@@ -159,6 +172,15 @@ describe('OASParser.parseAndValidateSchema', () => {
                     .rejects.toThrow(new OASParsingError(`missing or invalid name for one or more ${inParam} parameters in endpoint put:/some/path`));
             });
 
+            it('has a repeated name', async () => {
+                const fooProp = { in: inParam, name: 'foo', schema: { type: 'string' } };
+                const dereferencedSchema = { paths: { '/some/path': { 'put': { parameters: [fooProp, fooProp] } } } };
+                dereferenceMock.mockResolvedValue(dereferencedSchema);
+
+                await expect(oasParser.parseAndValidateSchema())
+                    .rejects.toThrow(new OASParsingError(`duplicate ${inParam} parameter foo in endpoint put:/some/path`));
+            });
+
             it('has no schema', async () => {
                 const dereferencedSchema = { paths: { '/some/path': { 'put': { parameters: [{ in: inParam, name: 'some-name' }] } } } };
                 dereferenceMock.mockResolvedValue(dereferencedSchema);
@@ -181,6 +203,32 @@ describe('OASParser.parseAndValidateSchema', () => {
 
                 await expect(oasParser.parseAndValidateSchema())
                     .rejects.toThrow(new OASParsingError(`object-type schema is defined for some-name in ${inParam} parameters in endpoint put:/some/path`));
+            });
+        });
+
+        describe('a path parameter', () => {
+            it('is repeated by name within the endpoint path', async () => {
+                const dereferencedSchema = { paths: { '/some/{somename}/path/{somename}': { 'put': { parameters: [{ in: 'path', name: 'somename', schema: { type: 'string' } }] } } } };
+                dereferenceMock.mockResolvedValue(dereferencedSchema);
+
+                await expect(oasParser.parseAndValidateSchema())
+                    .rejects.toThrow(new OASParsingError('repeated path parameters in endpoint put:/some/{somename}/path/{somename}'));
+            });
+
+            it('exists in the endpoint path but not in the OAS parameter list', async () => {
+                const dereferencedSchema = { paths: { '/some/path/{somename}': { 'put': { parameters: [{ in: 'query', name: 'somename', schema: { type: 'string' } }] } } } };
+                dereferenceMock.mockResolvedValue(dereferencedSchema);
+
+                await expect(oasParser.parseAndValidateSchema())
+                    .rejects.toThrow(new OASParsingError('path parameter somename is defined in endpoint name (put:/some/path/{somename}) but not in the OAS parameter list'));
+            });
+
+            it('exists in the OAS parameter list but not in the endpoint path', async () => {
+                const dereferencedSchema = { paths: { '/some/path': { 'put': { parameters: [{ in: 'path', name: 'somename', schema: { type: 'string' } }] } } } };
+                dereferenceMock.mockResolvedValue(dereferencedSchema);
+
+                await expect(oasParser.parseAndValidateSchema())
+                    .rejects.toThrow(new OASParsingError('path parameter somename is defined in the OAS parameter list but not in the endpoint name (put:/some/path)'));
             });
         });
 
@@ -344,11 +392,11 @@ describe('OASParser.parseAndValidateSchema', () => {
                 { name: 'field3', description: 'some-description', in: 'path', required: true, schema: { type: 'integer',  minimum: 0 } },
                 { name: 'field4', description: 'some-description', in: 'path', schema: { type: 'integer' } }
             ];
-            const dereferencedSchema = buildOASSchema('/some/path', 'get', parameters, undefined);
+            const dereferencedSchema = buildOASSchema('/some/{field1}/path/{field2}/{field3}/{field4}', 'get', parameters, undefined);
             dereferenceMock.mockResolvedValue(dereferencedSchema);
 
             await oasParser.parseAndValidateSchema();
-            const { queryParamsSchema, pathParamsSchema } = oasParser.getValidationSchemasForEndpoint('get:/some/path');
+            const { queryParamsSchema, pathParamsSchema } = oasParser.getValidationSchemasForEndpoint('get:/some/{field1}/path/{field2}/{field3}/{field4}');
 
             const expectedPathParams = {
                 type: 'object',
@@ -382,11 +430,11 @@ describe('OASParser.parseAndValidateSchema', () => {
                 { name: 'field4', description: 'some-description', in: 'path', schema: { type: 'integer' } }
             ];
             const oasRequestBody = { content: { 'application/json': { schema: oasBodySchema } } };
-            const dereferencedSchema = buildOASSchema('/some/path', 'put', oasParameters, oasRequestBody);
+            const dereferencedSchema = buildOASSchema('/some/path/{field3}/{field4}', 'put', oasParameters, oasRequestBody);
             dereferenceMock.mockResolvedValue(dereferencedSchema);
 
             await oasParser.parseAndValidateSchema();
-            const { requestBodySchema, requestBodyRequired, queryParamsSchema, pathParamsSchema } = oasParser.getValidationSchemasForEndpoint('put:/some/path');
+            const { requestBodySchema, requestBodyRequired, queryParamsSchema, pathParamsSchema } = oasParser.getValidationSchemasForEndpoint('put:/some/path/{field3}/{field4}');
 
             const expectedBodyValidationSchema = {
                 type: 'object',

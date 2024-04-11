@@ -12,14 +12,19 @@ import {
 import { convertToRecord, isEmpty } from './objectUtils';
 
 export class EndpointValidator implements IEndpointValidator {
+    private endpointsWithPathParams: string[] = [];
+
     constructor(
         private validationSchemas: { [endpoint: string]: EndpointValidationSchemas } = {}
-    ) { }
+    ) {
+        const endpoints = Object.keys(validationSchemas);
+        this.endpointsWithPathParams = endpoints.filter((endpoint) => endpoint.includes('{'));
+    }
 
     public validateEndpoint(method: string, path: string, data: EndpointData): ValidationError[] {
         const errors: ValidationError[] = [];
 
-        const { endpoint } = this.getEndpointAndPathParams(`${method.toLowerCase()}:${path}`);
+        const { endpoint } = this.getEndpointAndPathParams(method.toLowerCase(), path);
 
         const { requestBody, pathParams, queryParams } = data;
         const { requestBodyRequired, requestBodySchema, pathParamsSchema, queryParamsSchema } = this.validationSchemas[endpoint];
@@ -35,13 +40,71 @@ export class EndpointValidator implements IEndpointValidator {
         return errors;
     }
 
-    private getEndpointAndPathParams(fullPath: string): { endpoint: string, pathParams: Record<string, unknown> } {
-        const endpoint = fullPath.replace(/\/$/, '');
-        const pathParams = {};
-        if (this.validationSchemas[endpoint]) {
-            return { endpoint, pathParams };
+    public getEndpointAndPathParams(method: string, path: string): { endpoint: string, pathParams: Record<string, unknown> } {
+        const pathWithoutFinalSlash = path.replace(/\/$/, '');
+        const methodAndPath = `${method.toLowerCase()}:${pathWithoutFinalSlash}`;
+
+        if (this.validationSchemas[methodAndPath]) {
+            return {
+                endpoint: methodAndPath,
+                pathParams: {}
+            };
         }
-        throw new NotFoundError(`${fullPath} not found`);
+
+        // if the endpoint exists it must contain path parameters
+        // split the called path into its elements
+        const calledPathElements = pathWithoutFinalSlash.split('/');
+        let matchedEndpoint = '';
+        let pathParams: Record<string, unknown> = {};
+
+        // loop through all endpoints that contain path parameters
+        for (const endpoint of this.endpointsWithPathParams) {
+            const [endpointMethod, endpointPath] = endpoint.split(':');
+            if (endpointMethod !== method.toLowerCase()) {
+                continue;
+            }
+
+            const endpointPathElements = endpointPath.split('/');
+            if (calledPathElements.length !== endpointPathElements.length) {
+                continue;
+            }
+
+            pathParams = {};
+            // compare the elements of the called path and endpoint
+            for (let i = 0; i < calledPathElements.length; i++) {
+                if (calledPathElements[i] === endpointPathElements[i]) {
+                    // not a parameter element
+                } else if (endpointPathElements[i].includes('{')) {
+                    // parameter element found: store it
+                    const matchPathParam = /^\{(.*?)\}$/;
+                    const parameterName = matchPathParam.exec(endpointPathElements[i])?.[1];
+                    if (parameterName) {
+                        pathParams[parameterName] = calledPathElements[i];
+                    } else {
+                        throw new NotFoundError(`${methodAndPath} not found`);
+                    }
+                } else {
+                    // this element does not match, skip this endpoint
+                    break;
+                }
+                if (i === endpointPathElements.length - 1) {
+                    // all elements match! endpoint found
+                    matchedEndpoint = endpoint;
+                }
+            }
+            if (matchedEndpoint) {
+                break;
+            }
+        }
+
+        if (matchedEndpoint) {
+            return {
+                endpoint: matchedEndpoint,
+                pathParams
+            };
+        }
+
+        throw new NotFoundError(`${methodAndPath} not found`);
     }
 
     private validateEndpointObject(errors: ValidationError[], obj: unknown, schema: ObjectValidationSchema | undefined, objectDescription: string) {

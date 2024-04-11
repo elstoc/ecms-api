@@ -45,4 +45,5 @@ export type ValidationError = {
 
 export interface IEndpointValidator {
     validateEndpoint(method: string, path: string, data: EndpointData): ValidationError[];
+    getEndpointAndPathParams(method: string, path: string): { endpoint: string, pathParams: Record<string, unknown> }
 }

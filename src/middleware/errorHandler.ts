@@ -1,5 +1,4 @@
 import { NextFunction, Response } from 'express';
-import winston from 'winston';
 
 import { RequestWithUser } from './types';
 import { AuthenticationError, EndpointValidationError, NotFoundError, NotPermittedError } from '../errors';
@@ -11,7 +10,7 @@ interface ExtraErrors extends Error {
 
 export type ErrorHandler = (err: ExtraErrors, req: RequestWithUser, res: Response, next?: NextFunction) => void;
 
-export const createErrorHandlerMiddleware = (logger: winston.Logger): ErrorHandler => (err, req, res, next) => {
+export const createErrorHandlerMiddleware = (): ErrorHandler => (err, req, res, next) => {
     let status = 500;
     if (err instanceof EndpointValidationError) {
         status = 400;
@@ -23,12 +22,13 @@ export const createErrorHandlerMiddleware = (logger: winston.Logger): ErrorHandl
         status = 401;
     }
 
-    res.status(status).json({
-      message: err.message,
-      errors: err.validationErrors,
-    });
+    if (err.validationErrors) {
+        res.status(status).json({
+          errors: err.validationErrors,
+        });
+    } else {
+        res.sendStatus(status);
+    }
     
-    logger.info(err instanceof Error ? err?.message : 'an error occurred');
-
     next?.();
 };

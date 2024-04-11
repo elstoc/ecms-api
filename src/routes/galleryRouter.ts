@@ -1,10 +1,9 @@
 import { Router, Response, NextFunction } from 'express';
-import { Logger } from 'winston';
 
 import { ISite, ImageSize } from '../services';
 import { RequestWithUser } from '../middleware';
 
-export const createGalleryRouter = (site: ISite, logger: Logger): Router => {
+export const createGalleryRouter = (site: ISite): Router => {
     const galleryHandler = async (req: RequestWithUser, res: Response, next: NextFunction, fn: string): Promise<void> => {
         try {
             const { path, size, limit, timestamp } = req.query;

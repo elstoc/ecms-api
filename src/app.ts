@@ -2,7 +2,6 @@ import path from 'path';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import { Logger } from 'winston';
 
 import { IAuth, ISite } from './services';
 import { createAuthRouter, createGalleryRouter, createMarkdownRouter, createSiteRouter, createVideoDbRouter } from './routes';
@@ -10,7 +9,7 @@ import { createAddUserInfoMiddleware, createErrorHandlerMiddleware, createValida
 import { Config } from './utils';
 import { EndpointValidator, OASParser } from './api';
 
-export const createApp = async (config: Config, logger: Logger, site: ISite, auth: IAuth): Promise<express.Express> => {
+export const createApp = async (config: Config, site: ISite, auth: IAuth): Promise<express.Express> => {
     const corsConfig = {
         origin: [config.uiUrl],
         credentials: true
@@ -28,13 +27,13 @@ export const createApp = async (config: Config, logger: Logger, site: ISite, aut
     app.use(createValidateRequestMiddleware(endpointValidator));
     app.use(createAddUserInfoMiddleware(auth));
 
-    app.use('/auth', createAuthRouter(auth, logger));
-    app.use('/site', createSiteRouter(site, logger));
-    app.use('/gallery', createGalleryRouter(site, logger));
-    app.use('/markdown', createMarkdownRouter(site, logger));
-    app.use('/videodb', createVideoDbRouter(site, logger));
+    app.use('/auth', createAuthRouter(auth));
+    app.use('/site', createSiteRouter(site));
+    app.use('/gallery', createGalleryRouter(site));
+    app.use('/markdown', createMarkdownRouter(site));
+    app.use('/videodb', createVideoDbRouter(site));
 
-    app.use(createErrorHandlerMiddleware(logger));
+    app.use(createErrorHandlerMiddleware());
 
     return app;
 };

@@ -15,7 +15,7 @@ export class EndpointValidator implements IEndpointValidator {
     private endpointsWithPathParams: string[] = [];
 
     constructor(
-        private validationSchemas: { [endpoint: string]: EndpointValidationSchemas } = {}
+        private validationSchemas: { [endpoint: string]: EndpointValidationSchemas }
     ) {
         const endpoints = Object.keys(validationSchemas);
         this.endpointsWithPathParams = endpoints.filter((endpoint) => endpoint.includes('{'));

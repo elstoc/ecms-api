@@ -10,7 +10,9 @@ describe('EndpointValidator', () => {
             'get:/path/to/something': { },
             'post:/path/to/something/{param1}': { },
             'post:/another/path/{param1}/boo/{param2}': { },
+            'put:/another/path/{param1}/boo/{param2}': { },
             'post:/another/path/{param1}/boo': { },
+            'put:/another/path/{param1}/boo': { },
         };
 
         let validator: IEndpointValidator;
@@ -178,7 +180,7 @@ describe('EndpointValidator', () => {
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
-                        expect(errors).toContainEqual({ property: 'requestBody.field6', error: 'integer must be less than 10' });
+                        expect(errors).toContainEqual({ property: 'requestBody.field6', error: 'integer must not be less than 10' });
                     });
                 });
     

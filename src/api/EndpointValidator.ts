@@ -21,6 +21,52 @@ export class EndpointValidator implements IEndpointValidator {
         this.endpointsWithPathParams = endpoints.filter((endpoint) => endpoint.includes('{'));
     }
 
+    public getEndpointAndPathParams(method: string, path: string): { endpoint: string, pathParams: Record<string, unknown> } {
+        const trimmedPath = path.replace(/\/$/, ''); // remove any trailing slash
+        const methodLower = method.toLowerCase();
+        const methodAndPath = `${methodLower}:${trimmedPath}`;
+
+        if (this.validationSchemas[methodAndPath]) {
+            return { endpoint: methodAndPath, pathParams: {} };
+        }
+
+        const pathElements = trimmedPath.split('/');
+
+        for (const endpoint of this.endpointsWithPathParams) {
+            const [endpointMethod, endpointPath] = endpoint.split(':');
+            const endpointPathElements = endpointPath.split('/');
+
+            if (endpointMethod !== methodLower || pathElements.length !== endpointPathElements.length) {
+                continue;
+            }
+
+            const pathParams: Record<string, unknown> = {};
+
+            for (let i = 0; i < pathElements.length; i++) {
+                const pathElement = pathElements[i];
+                const endpointPathElement = endpointPathElements[i];
+                const parameterName = this.getPathParamFromElement(endpointPathElement);
+
+                if (parameterName) {
+                    pathParams[parameterName] = pathElements[i];
+                } else if ( pathElement !== endpointPathElement) {
+                    break;
+                }
+
+                if (i === endpointPathElements.length - 1) {
+                    return { endpoint, pathParams };
+                }
+            }
+        }
+
+        throw new NotFoundError(`${methodAndPath} not found`);
+    }
+
+    private getPathParamFromElement(element: string): string | undefined {
+        const matchPathParamRx = /^\{(.*?)\}$/;
+        return matchPathParamRx.exec(element)?.[1];
+    }
+
     public validateEndpoint(endpoint: string, data: EndpointData): ValidationError[] {
         if (!this.validationSchemas[endpoint]) {
             throw new NotFoundError(`${endpoint} not found`);
@@ -41,64 +87,11 @@ export class EndpointValidator implements IEndpointValidator {
         return errors;
     }
 
-    public getEndpointAndPathParams(method: string, path: string): { endpoint: string, pathParams: Record<string, unknown> } {
-        const pathWithoutFinalSlash = path.replace(/\/$/, '');
-        const methodAndPath = `${method.toLowerCase()}:${pathWithoutFinalSlash}`;
-
-        if (this.validationSchemas[methodAndPath]) {
-            return {
-                endpoint: methodAndPath,
-                pathParams: {}
-            };
-        }
-
-        const pathElements = pathWithoutFinalSlash.split('/');
-        const matchPathParamRx = /^\{(.*?)\}$/;
-
-        for (const endpoint of this.endpointsWithPathParams) {
-            const [endpointMethod, endpointPath] = endpoint.split(':');
-            const endpointPathElements = endpointPath.split('/');
-
-            if (endpointMethod !== method.toLowerCase() || pathElements.length !== endpointPathElements.length) {
-                continue;
-            }
-
-            const pathParams: Record<string, unknown> = {};
-
-            for (let i = 0; i < pathElements.length; i++) {
-                const parameterName = matchPathParamRx.exec(endpointPathElements[i])?.[1];
-                if (parameterName) {
-                    pathParams[parameterName] = pathElements[i];
-                } else if (pathElements[i] !== endpointPathElements[i]) {
-                    break;
-                }
-                if (i === endpointPathElements.length - 1) {
-                    return {
-                        endpoint,
-                        pathParams
-                    };
-                }
-            }
-        }
-
-        throw new NotFoundError(`${methodAndPath} not found`);
-    }
-
     private validateEndpointObject(errors: ValidationError[], obj: unknown, schema: ObjectValidationSchema | undefined, objectDescription: string) {
         if (schema) {
             this.validateObject(errors, obj ?? {}, schema);
         } else if (!isEmpty(obj)) {
             this.pushError(errors, objectDescription, `unexpected ${objectDescription}`);
-        }
-    }
-
-    private validateValue(errors: ValidationError[], value: unknown, validationSchema: ValidationSchema) {
-        if (validationSchema.type === 'string') {
-            this.validateString(errors, value, validationSchema);
-        } else if (validationSchema.type === 'integer') {
-            this.validateInteger(errors, value, validationSchema);
-        } else if (validationSchema.type == 'object') {
-            this.validateObject(errors, value, validationSchema);
         }
     }
 
@@ -128,32 +121,38 @@ export class EndpointValidator implements IEndpointValidator {
         }
     }
 
+    private validateValue(errors: ValidationError[], value: unknown, validationSchema: ValidationSchema) {
+        if (validationSchema.type === 'string') {
+            this.validateString(errors, value, validationSchema);
+        } else if (validationSchema.type === 'integer') {
+            this.validateInteger(errors, value, validationSchema);
+        } else if (validationSchema.type == 'object') {
+            this.validateObject(errors, value, validationSchema);
+        }
+    }
+
     private validateString(errors: ValidationError[], value: unknown, validationSchema: StringValidationSchema): void {
-        const { enum: stringEnum } = validationSchema;
+        const stringEnum = validationSchema.enum;
 
         if (typeof value !== 'string') {
             this.pushError(errors, validationSchema.fullPath, 'invalid data type - string expected');
-            return;
-        }
-        if (stringEnum) {
-            if (!stringEnum.includes(value)) {
-                this.pushError(errors, validationSchema.fullPath, `value must be one of [${stringEnum.join(',')}]`);
-            }
+        } else if (stringEnum && !stringEnum.includes(value)) {
+            this.pushError(errors, validationSchema.fullPath, `value must be one of [${stringEnum.join(',')}]`);
         }
     }
 
     private validateInteger(errors: ValidationError[], value: unknown, validationSchema: IntegerValidationSchema): void {
         const { minimum } = validationSchema;
+
         let valueToCheck = value;
         if (typeof value === 'string' && parseInt(value).toString() === value) {
             valueToCheck = parseInt(value);
         }
+
         if (typeof valueToCheck !== 'number' || !Number.isInteger(valueToCheck)) {
             this.pushError(errors, validationSchema.fullPath, 'invalid data type - integer expected');
-            return;
-        }
-        if (typeof minimum === 'number' && valueToCheck < minimum) {
-            this.pushError(errors, validationSchema.fullPath, `integer must be less than ${minimum}`);
+        } else if (minimum !== undefined && valueToCheck < minimum) {
+            this.pushError(errors, validationSchema.fullPath, `integer must not be less than ${minimum}`);
         }
     }
 

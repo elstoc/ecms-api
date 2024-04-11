@@ -17,8 +17,7 @@ export const createApp = async (config: Config, logger: Logger, site: ISite, aut
     }; 
 
     const oasParser = new OASParser(path.join(__dirname, './api/api.spec.yaml'));
-    await oasParser.parseAndValidateSchema();
-    const endpointValidationSchemas = oasParser.getAllValidationSchemas();
+    const endpointValidationSchemas = await oasParser.parseOAS();
     const endpointValidator = new EndpointValidator(endpointValidationSchemas);
 
     const app = express();

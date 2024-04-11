@@ -52,57 +52,33 @@ export class EndpointValidator implements IEndpointValidator {
             };
         }
 
-        // if the endpoint exists it must contain path parameters
-        // split the called path into its elements
-        const calledPathElements = pathWithoutFinalSlash.split('/');
-        let matchedEndpoint = '';
-        let pathParams: Record<string, unknown> = {};
+        const pathElements = pathWithoutFinalSlash.split('/');
+        const matchPathParamRx = /^\{(.*?)\}$/;
 
-        // loop through all endpoints that contain path parameters
         for (const endpoint of this.endpointsWithPathParams) {
             const [endpointMethod, endpointPath] = endpoint.split(':');
-            if (endpointMethod !== method.toLowerCase()) {
-                continue;
-            }
-
             const endpointPathElements = endpointPath.split('/');
-            if (calledPathElements.length !== endpointPathElements.length) {
+
+            if (endpointMethod !== method.toLowerCase() || pathElements.length !== endpointPathElements.length) {
                 continue;
             }
 
-            pathParams = {};
-            // compare the elements of the called path and endpoint
-            for (let i = 0; i < calledPathElements.length; i++) {
-                if (calledPathElements[i] === endpointPathElements[i]) {
-                    // not a parameter element
-                } else if (endpointPathElements[i].includes('{')) {
-                    // parameter element found: store it
-                    const matchPathParam = /^\{(.*?)\}$/;
-                    const parameterName = matchPathParam.exec(endpointPathElements[i])?.[1];
-                    if (parameterName) {
-                        pathParams[parameterName] = calledPathElements[i];
-                    } else {
-                        throw new NotFoundError(`${methodAndPath} not found`);
-                    }
-                } else {
-                    // this element does not match, skip this endpoint
+            const pathParams: Record<string, unknown> = {};
+
+            for (let i = 0; i < pathElements.length; i++) {
+                const parameterName = matchPathParamRx.exec(endpointPathElements[i])?.[1];
+                if (parameterName) {
+                    pathParams[parameterName] = pathElements[i];
+                } else if (pathElements[i] !== endpointPathElements[i]) {
                     break;
                 }
                 if (i === endpointPathElements.length - 1) {
-                    // all elements match! endpoint found
-                    matchedEndpoint = endpoint;
+                    return {
+                        endpoint,
+                        pathParams
+                    };
                 }
             }
-            if (matchedEndpoint) {
-                break;
-            }
-        }
-
-        if (matchedEndpoint) {
-            return {
-                endpoint: matchedEndpoint,
-                pathParams
-            };
         }
 
         throw new NotFoundError(`${methodAndPath} not found`);
@@ -172,7 +148,6 @@ export class EndpointValidator implements IEndpointValidator {
         if (typeof value === 'string' && parseInt(value).toString() === value) {
             valueToCheck = parseInt(value);
         }
-        //TODO: coerce string to integer if string contains only an integer
         if (typeof valueToCheck !== 'number' || !Number.isInteger(valueToCheck)) {
             this.pushError(errors, validationSchema.fullPath, 'invalid data type - integer expected');
             return;

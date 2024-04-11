@@ -11,7 +11,6 @@ export const createValidateRequestMiddleware = (endpointValidator: IEndpointVali
     };
     const errors = endpointValidator.validateEndpoint(endpoint, data);
     if (errors.length > 0) {
-        console.log(JSON.stringify(errors));
         throw new EndpointValidationError('endpoint validation failed', errors);
     }
     next?.();

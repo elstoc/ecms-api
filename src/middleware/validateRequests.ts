@@ -3,12 +3,13 @@ import { EndpointData, IEndpointValidator } from '../api';
 import { RequestHandler } from './types';
 
 export const createValidateRequestMiddleware = (endpointValidator: IEndpointValidator): RequestHandler => (req, res, next) => {
+    const { endpoint, pathParams } = endpointValidator.getEndpointAndPathParams(req.method, req.path);
     const data: EndpointData = {
         requestBody: req.body,
-        pathParams: req.params,
+        pathParams,
         queryParams: req.query
     };
-    const errors = endpointValidator.validateEndpoint(req.method, req.path, data);
+    const errors = endpointValidator.validateEndpoint(endpoint, data);
     if (errors.length > 0) {
         console.log(JSON.stringify(errors));
         throw new EndpointValidationError('endpoint validation failed', errors);

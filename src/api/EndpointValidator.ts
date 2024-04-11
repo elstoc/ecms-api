@@ -21,11 +21,12 @@ export class EndpointValidator implements IEndpointValidator {
         this.endpointsWithPathParams = endpoints.filter((endpoint) => endpoint.includes('{'));
     }
 
-    public validateEndpoint(method: string, path: string, data: EndpointData): ValidationError[] {
+    public validateEndpoint(endpoint: string, data: EndpointData): ValidationError[] {
+        if (!this.validationSchemas[endpoint]) {
+            throw new NotFoundError(`${endpoint} not found`);
+        }
+
         const errors: ValidationError[] = [];
-
-        const { endpoint } = this.getEndpointAndPathParams(method.toLowerCase(), path);
-
         const { requestBody, pathParams, queryParams } = data;
         const { requestBodyRequired, requestBodySchema, pathParamsSchema, queryParamsSchema } = this.validationSchemas[endpoint];
 

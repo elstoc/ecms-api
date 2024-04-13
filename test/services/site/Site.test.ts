@@ -10,19 +10,6 @@ const config = {
 
 const mockStorage = {
     listContentChildren: jest.fn() as jest.Mock,
-    contentFileExists: jest.fn() as jest.Mock,
-    getContentFullPath: jest.fn() as jest.Mock,
-    getContentFile: jest.fn() as jest.Mock,
-    getGeneratedFile: jest.fn() as jest.Mock,
-    storeGeneratedFile: jest.fn() as jest.Mock,
-    generatedFileIsOlder: jest.fn() as jest.Mock,
-    getContentFileModifiedTime: jest.fn() as jest.Mock,
-    contentDirectoryExists: jest.fn() as jest.Mock,
-    getAdminFile: jest.fn() as jest.Mock,
-    storeAdminFile: jest.fn() as jest.Mock,
-    getAdminFileModifiedTime: jest.fn() as jest.Mock,
-    storeContentFile: jest.fn() as jest.Mock,
-    deleteContentFile: jest.fn() as jest.Mock
 };
 const mockSiteComponent = SiteComponent as jest.Mock;
 
@@ -44,7 +31,7 @@ describe('Site', () => {
                 ].filter(fileMatcher);
             });
 
-            site = new Site(config, mockStorage);
+            site = new Site(config, mockStorage as any);
             const actualComponentList = await site.listComponents();
 
             const expectedComponentList = [
@@ -75,7 +62,7 @@ describe('Site', () => {
                 'component04.yaml',
             ]);
 
-            site = new Site(config, mockStorage);
+            site = new Site(config, mockStorage as any);
             const actualComponentList1 = await site.listComponents();
             const actualComponentList2 = await site.listComponents();
 
@@ -110,7 +97,7 @@ describe('Site', () => {
                 'component03.yaml',
             ]);
 
-            site = new Site(config, mockStorage);
+            site = new Site(config, mockStorage as any);
             const actualComponentList1 = await site.listComponents();
             const actualComponentList2 = await site.listComponents();
 
@@ -145,7 +132,7 @@ describe('Site', () => {
                 'componentG.yaml',
             ]);
 
-            site = new Site(config, mockStorage);
+            site = new Site(config, mockStorage as any);
             const actualNavData = await site.listComponents();
 
             const expectedNavData = [
@@ -174,7 +161,7 @@ describe('Site', () => {
                 ].filter(fileMatcher);
             });
 
-            site = new Site(config, mockStorage);
+            site = new Site(config, mockStorage as any);
             const actualComponentList = await site.listComponents();
 
             const expectedComponentList = [
@@ -188,7 +175,7 @@ describe('Site', () => {
 
     describe('getGallery', () => {
         it('gets the appropriate gallery object', async () => {
-            const site = new Site(config, mockStorage);
+            const site = new Site(config, mockStorage as any);
             mockSiteComponent.mockImplementation((_, inputFilePath) => ({
                 getGallery: () => inputFilePath
             }));
@@ -200,7 +187,7 @@ describe('Site', () => {
 
     describe('getMarkdown', () => {
         it('gets the appropriate markdown object', async () => {
-            const site = new Site(config, mockStorage);
+            const site = new Site(config, mockStorage as any);
             mockSiteComponent.mockImplementation((_, inputFilePath) => ({
                 getMarkdown: () => inputFilePath
             }));
@@ -212,7 +199,7 @@ describe('Site', () => {
 
     describe('getVideoDb', () => {
         it('gets the appropriate videodb object', async () => {
-            const site = new Site(config, mockStorage);
+            const site = new Site(config, mockStorage as any);
             mockSiteComponent.mockImplementation((_, inputFilePath) => ({
                 getVideoDb: () => inputFilePath
             }));
@@ -237,7 +224,7 @@ describe('Site', () => {
                 ].filter(fileMatcher);
             });
 
-            const site = new Site(config, mockStorage);
+            const site = new Site(config, mockStorage as any);
             await site.listComponents(); // required to create the components to be shut down
 
             await site.shutdown();
@@ -250,7 +237,7 @@ describe('Site', () => {
         it('returns true & footer text if enableAuthentication is true', () => {
             const newConfig = { ...config, enableAuthentication: true, footerText: 'some-footer-text' };
 
-            const site = new Site(newConfig, mockStorage);
+            const site = new Site(newConfig, mockStorage as any);
 
             expect(site.getConfig()).toStrictEqual({ authEnabled: true, footerText: 'some-footer-text' });
         });
@@ -258,7 +245,7 @@ describe('Site', () => {
         it('returns false & footer text if enableAuthentication is false', () => {
             const newConfig = { ...config, enableAuthentication: false, footerText: 'some-other-footer-text' };
 
-            const site = new Site(newConfig, mockStorage);
+            const site = new Site(newConfig, mockStorage as any);
 
             expect(site.getConfig()).toStrictEqual({ authEnabled: false, footerText: 'some-other-footer-text' });
         });

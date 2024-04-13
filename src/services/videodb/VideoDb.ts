@@ -2,7 +2,6 @@ import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
 import { IVideoDb, LookupRow, LookupValues, LookupTables, Video } from './IVideoDb';
 import { Config } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
-import { SQLiteDatabaseAdapter } from '../../adapters';
 import { dbVersionSql } from './dbVersionSql';
 import path from 'path';
 
@@ -23,15 +22,10 @@ export class VideoDb implements IVideoDb {
     public async initialise(): Promise<void> {
         if (!this.database) {
             const dbContentPath = path.join(this.apiPath, 'data.db');
-            const dbFullPath = this.storage.getContentFullPath(dbContentPath);
-
             if (!this.storage.contentFileExists(dbContentPath)) {
                 this.dbVersion = 0;
-                await this.storage.storeContentFile(dbContentPath, Buffer.from(''));
             }
-
-            this.database = new SQLiteDatabaseAdapter(dbFullPath);
-            await this.database.initialise();
+            this.database = await this.storage.getContentDb(dbContentPath);
             await this.database.exec('PRAGMA foreign_keys = ON');
             await this.upgradeDb();
         }

@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { VideoDb, IVideoDb } from '../../../src/services/videodb';
 import { Config } from '../../../src/utils';
-import { SQLiteDatabaseAdapter } from '../../../src/adapters';
 import { LookupTables } from '../../../src/services/videodb/IVideoDb';
-const mockSQLiteDatabaseAdapter = jest.mocked(SQLiteDatabaseAdapter);
 
 jest.mock('../../../src/adapters');
 jest.mock('../../../src/services/videodb/dbVersionSql', () => ({
@@ -12,15 +10,12 @@ jest.mock('../../../src/services/videodb/dbVersionSql', () => ({
 
 const mockStorage = {
     contentFileExists: jest.fn() as jest.Mock,
-    getContentFullPath: jest.fn() as jest.Mock,
-    storeContentFile: jest.fn() as jest.Mock,
+    getContentDb: jest.fn() as jest.Mock,
 };
 
 const versionSql = ['SQL v1', 'SQL v2', 'SQL v3', 'SQL v4'];
 const apiPath = 'videos';
 const apiDbPath = 'videos/data.db';
-const dbFullPath = '/path/to/content/videos/data.db';
-const emptyBuffer = Buffer.from('');
 const config = {} as Config;
 
 describe('VideoDb', () => {
@@ -32,48 +27,28 @@ describe('VideoDb', () => {
     const mockClose = jest.fn();
     const mockRunWithParams = jest.fn();
 
+    const mockDb = {
+        initialise: mockInit,
+        get: mockGet,
+        getAll: mockGetAll,
+        exec: mockExec,
+        close: mockClose,
+        runWithParams: mockRunWithParams
+    };
+
     beforeEach(() => {
+        mockStorage.getContentDb.mockResolvedValue(mockDb);
         videoDb = new VideoDb(apiPath, config, mockStorage as any);
-        mockSQLiteDatabaseAdapter.mockClear();
-        mockSQLiteDatabaseAdapter.mockImplementation(() => ({
-            initialise: mockInit,
-            get: mockGet,
-            getAll: mockGetAll,
-            exec: mockExec,
-            close: mockClose,
-            runWithParams: mockRunWithParams
-        } as any));
-        mockStorage.getContentFullPath.mockReturnValue(dbFullPath);
     });
 
     describe('initialise', () => {
-        it('attempts to create an empty file if no db exists (so that permissions are set)', async () => {
+        it('gets the database with the correct path', async () => {
             mockStorage.contentFileExists.mockReturnValue(false);
 
             await videoDb.initialise();
 
-            expect(mockStorage.contentFileExists).toHaveBeenCalledWith(apiDbPath);
-            expect(mockStorage.storeContentFile).toHaveBeenCalledWith(apiDbPath, emptyBuffer);
-        });
-
-        it('does not attempt to create an empty file if db already exists', async () => {
-            mockStorage.contentFileExists.mockReturnValue(true);
-            mockGet.mockResolvedValue({ ver: 4 });
-
-            await videoDb.initialise();
-
-            expect(mockStorage.contentFileExists).toHaveBeenCalledWith(apiDbPath);
-            expect(mockStorage.storeContentFile).not.toHaveBeenCalled();
-        });
-
-        it('initialises the database with the correct path', async () => {
-            mockStorage.contentFileExists.mockReturnValue(false);
-
-            await videoDb.initialise();
-
-            expect(mockSQLiteDatabaseAdapter).toHaveBeenCalledTimes(1);
-            expect(mockSQLiteDatabaseAdapter).toHaveBeenCalledWith(dbFullPath);
-            expect(mockInit).toHaveBeenCalledTimes(1);
+            expect(mockStorage.getContentDb).toHaveBeenCalledTimes(1);
+            expect(mockStorage.getContentDb).toHaveBeenCalledWith(apiDbPath);
         });
 
         it('runs all upgrade SQL on a new database, updates but does not attempt to retrieve version', async () => {
@@ -121,9 +96,8 @@ describe('VideoDb', () => {
             await videoDb.initialise();
             await videoDb.initialise();
 
-            expect(mockStorage.getContentFullPath).toHaveBeenCalledTimes(1);
             expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(1);
-            expect(mockInit).toHaveBeenCalledTimes(1);
+            expect(mockStorage.getContentDb).toHaveBeenCalledTimes(1);
             expect(mockGet).toHaveBeenCalledTimes(1);
             expect(mockExec).toHaveBeenCalledTimes(3);
         });
@@ -157,7 +131,7 @@ describe('VideoDb', () => {
         beforeEach(async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
-            videoDb.initialise();
+            await videoDb.initialise();
         });
 
         it('throws an error if passed an invalid table suffix', async () => {
@@ -206,7 +180,8 @@ describe('VideoDb', () => {
         it('runs sql with appropriate parameters', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
-            videoDb.initialise();
+
+            await videoDb.initialise();
 
             const video = {
                 name: 'some-name',

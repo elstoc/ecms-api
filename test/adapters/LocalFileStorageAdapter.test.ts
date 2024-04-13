@@ -1,8 +1,13 @@
-import fs from 'fs';
-import { LocalFileStorageAdapter } from '../../src/adapters/LocalFileStorageAdapter';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import fs from '../../src/adapters/fs';
+import { LocalFileStorageAdapter } from '../../src/adapters';
+import { SQLiteDatabaseAdapter } from '../../src/adapters';
 import { IStorageAdapter } from '../../src/adapters/IStorageAdapter';
+const mockSQLiteDatabaseAdapter = jest.mocked(SQLiteDatabaseAdapter);
 
-jest.mock('fs', () => ({
+jest.mock('../../src/adapters/SQLiteDatabaseAdapter');
+
+jest.mock('../../src/adapters/fs', () => ({
     existsSync: jest.fn(),
     statSync: jest.fn(),
     mkdirSync: jest.fn(),
@@ -28,6 +33,7 @@ const dataDir = '/path/to/data';
 
 describe('LocalFileStorageAdapter', () => {
     let storage: IStorageAdapter;
+    const mockInit = jest.fn();
     const fileMatcher = (fileName: string) => {
         return fileName.includes('match');
     };
@@ -37,6 +43,10 @@ describe('LocalFileStorageAdapter', () => {
         statsyncMock.mockReturnValue({ isDirectory: () => true });
         storage = new LocalFileStorageAdapter(dataDir);
         jest.resetAllMocks();
+        mockSQLiteDatabaseAdapter.mockClear();
+        mockSQLiteDatabaseAdapter.mockImplementation(() => ({
+            initialise: mockInit,
+        } as any));
     });
 
     describe('constructor', () => {
@@ -622,6 +632,45 @@ describe('LocalFileStorageAdapter', () => {
             await expect(storage.deleteContentFile('path/to/file')).rejects.toThrow();
 
             expect(existsSyncMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
+        });
+    });
+
+    describe('getContentDb', () => {
+        it('creates the database file with an empty buffer if it does not exist', async () => {
+            existsSyncMock.mockImplementation((path) => !path.endsWith('file'));
+            statsyncMock.mockImplementation((path) => ({
+                isFile: () => false,
+                isDirectory: () => !path.endsWith('file')
+            }));
+
+            await storage.getContentDb('path/to/file');
+
+            expect(promiseWriteFileMock).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`, Buffer.from(''));
+        });
+
+        it('does not create the database file with an empty buffer if it does exist', async () => {
+            existsSyncMock.mockReturnValue(true);
+            statsyncMock.mockImplementation((path) => ({
+                isFile: () => path.endsWith('file'),
+                isDirectory: () => !path.endsWith('file')
+            }));
+
+            await storage.getContentDb('path/to/file');
+
+            expect(promiseWriteFileMock).not.toHaveBeenCalled();
+        });
+
+        it('creates and initialises a sqlite database adapter instance with the correct path', async () => {
+            existsSyncMock.mockReturnValue(true);
+            statsyncMock.mockImplementation((path) => ({
+                isFile: () => path.endsWith('file'),
+                isDirectory: () => !path.endsWith('file')
+            }));
+
+            await storage.getContentDb('path/to/file');
+
+            expect(mockSQLiteDatabaseAdapter).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
+            expect(mockInit).toHaveBeenCalled();
         });
     });
 });

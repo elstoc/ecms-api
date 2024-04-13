@@ -17,20 +17,10 @@ const config = {
 } as any;
 
 const mockStorage = {
-    listContentChildren: jest.fn() as jest.Mock,
     contentFileExists: jest.fn() as jest.Mock,
-    getContentFullPath: jest.fn() as jest.Mock,
     getContentFile: jest.fn() as jest.Mock,
-    getGeneratedFile: jest.fn() as jest.Mock,
-    storeGeneratedFile: jest.fn() as jest.Mock,
-    generatedFileIsOlder: jest.fn() as jest.Mock,
     getContentFileModifiedTime: jest.fn() as jest.Mock,
     contentDirectoryExists: jest.fn() as jest.Mock,
-    getAdminFile: jest.fn() as jest.Mock,
-    storeAdminFile: jest.fn() as jest.Mock,
-    getAdminFileModifiedTime: jest.fn() as jest.Mock,
-    storeContentFile: jest.fn() as jest.Mock,
-    deleteContentFile: jest.fn() as jest.Mock
 };
 
 const mockGallery = Gallery as jest.Mock;
@@ -43,7 +33,7 @@ describe('SiteComponent', () => {
     let component: SiteComponent;
 
     beforeEach(() => {
-        component = new SiteComponent(config, 'my-component', mockStorage);
+        component = new SiteComponent(config, 'my-component', mockStorage as any);
     });
 
     describe('getMetadata', () => {
@@ -276,7 +266,7 @@ describe('SiteComponent', () => {
                 });
                 const newConfig = { ...config, enableAuthentication: false };
     
-                component = new SiteComponent(newConfig, 'my-component', mockStorage);
+                component = new SiteComponent(newConfig, 'my-component', mockStorage as any);
                 const actualMetadata = await component.getMetadata({ roles: ['role1', 'role2'] } as any);
     
                 expect(actualMetadata).toBeDefined();

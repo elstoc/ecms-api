@@ -1,7 +1,9 @@
 import path from 'path';
-import fs from 'fs';
+import fs from './fs';
 
 import { IStorageAdapter } from './IStorageAdapter';
+import { IDatabaseAdapter } from './IDatabaseAdapter';
+import { SQLiteDatabaseAdapter } from './SQLiteDatabaseAdapter';
 
 export class LocalFileStorageAdapter implements IStorageAdapter {
     public constructor(
@@ -51,6 +53,15 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
         }
         const dir = await fs.promises.readdir(fullPath);
         return dir.filter(fileMatcher);
+    }
+
+    public async getContentDb(contentPath: string): Promise<IDatabaseAdapter> {
+        if (!this.contentFileExists(contentPath)) {
+            await this.storeContentFile(contentPath, Buffer.from(''));
+        }
+        const db = new SQLiteDatabaseAdapter(this.getContentFullPath(contentPath));
+        await db.initialise();
+        return db;
     }
 
     public async getContentFile(contentPath: string): Promise<Buffer> {

@@ -19,21 +19,13 @@ const config = {
 } as any;
 
 const mockStorage = {
-    listContentChildren: jest.fn() as jest.Mock,
     contentFileExists: jest.fn() as jest.Mock,
-    getContentFullPath: jest.fn() as jest.Mock,
     getContentFile: jest.fn() as jest.Mock,
     getGeneratedFile: jest.fn() as jest.Mock,
     storeGeneratedFile: jest.fn() as jest.Mock,
     generatedFileIsOlder: jest.fn() as jest.Mock,
     getContentFileModifiedTime: jest.fn() as jest.Mock,
-    contentDirectoryExists: jest.fn() as jest.Mock,
-    getAdminFile: jest.fn() as jest.Mock,
-    storeAdminFile: jest.fn() as jest.Mock,
-    getAdminFileModifiedTime: jest.fn() as jest.Mock,
-    storeContentFile: jest.fn() as jest.Mock,
-    deleteContentFile: jest.fn() as jest.Mock
-};
+} as any;
 
 const getExifMock = getExif as jest.Mock;
 const resizeImageMock = resizeImage as jest.Mock;

@@ -3,20 +3,7 @@ import { Gallery, GalleryImage, ImageSize } from '../../../src/services';
 
 const mockStorage = {
     listContentChildren: jest.fn() as jest.Mock,
-    contentFileExists: jest.fn() as jest.Mock,
-    getContentFullPath: jest.fn() as jest.Mock,
-    getContentFile: jest.fn() as jest.Mock,
-    getGeneratedFile: jest.fn() as jest.Mock,
-    storeGeneratedFile: jest.fn() as jest.Mock,
-    generatedFileIsOlder: jest.fn() as jest.Mock,
-    getContentFileModifiedTime: jest.fn() as jest.Mock,
-    contentDirectoryExists: jest.fn() as jest.Mock,
-    getAdminFile: jest.fn() as jest.Mock,
-    storeAdminFile: jest.fn() as jest.Mock,
-    getAdminFileModifiedTime: jest.fn() as jest.Mock,
-    storeContentFile: jest.fn() as jest.Mock,
-    deleteContentFile: jest.fn() as jest.Mock
-};
+} as any;
 
 jest.mock('../../../src/services/gallery/GalleryImage');
 
@@ -45,8 +32,8 @@ describe('Gallery', () => {
     describe('getContents', () => {
         beforeEach(() => {
             gallery = new Gallery('gallery', config, mockStorage);
-            mockStorage.listContentChildren.mockImplementation(async (_, fileMatcher) => {
-                return imageFiles.filter(fileMatcher);
+            mockStorage.listContentChildren.mockImplementation(async (_: any, fileMatcher: any) => {
+                return imageFiles.filter(fileMatcher as any);
             });
         });
     

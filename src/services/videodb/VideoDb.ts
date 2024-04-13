@@ -26,7 +26,6 @@ export class VideoDb implements IVideoDb {
                 this.dbVersion = 0;
             }
             this.database = await this.storage.getContentDb(dbContentPath);
-            await this.database.exec('PRAGMA foreign_keys = ON');
             await this.upgradeDb();
         }
     }

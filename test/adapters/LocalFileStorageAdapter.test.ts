@@ -34,6 +34,7 @@ const dataDir = '/path/to/data';
 describe('LocalFileStorageAdapter', () => {
     let storage: IStorageAdapter;
     const mockInit = jest.fn();
+    const mockExec = jest.fn();
     const fileMatcher = (fileName: string) => {
         return fileName.includes('match');
     };
@@ -46,6 +47,7 @@ describe('LocalFileStorageAdapter', () => {
         mockSQLiteDatabaseAdapter.mockClear();
         mockSQLiteDatabaseAdapter.mockImplementation(() => ({
             initialise: mockInit,
+            exec: mockExec
         } as any));
     });
 
@@ -671,6 +673,7 @@ describe('LocalFileStorageAdapter', () => {
 
             expect(mockSQLiteDatabaseAdapter).toHaveBeenCalledWith(`${dataDir}/content/path/to/file`);
             expect(mockInit).toHaveBeenCalled();
+            expect(mockExec).toHaveBeenCalledWith('PRAGMA foreign_keys = ON');
         });
     });
 });

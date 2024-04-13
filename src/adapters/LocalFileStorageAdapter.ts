@@ -61,6 +61,7 @@ export class LocalFileStorageAdapter implements IStorageAdapter {
         }
         const db = new SQLiteDatabaseAdapter(this.getContentFullPath(contentPath));
         await db.initialise();
+        await db.exec('PRAGMA foreign_keys = ON');
         return db;
     }
 

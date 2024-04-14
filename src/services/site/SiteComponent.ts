@@ -92,7 +92,7 @@ export class SiteComponent implements ISiteComponent {
 
     public async getMarkdown(): Promise<IMarkdown> {
         await this.checkComponentExistsHere(ComponentTypes.markdown);
-        this.markdown ??= new Markdown(this.contentDir, this.config, this.storage, true);
+        this.markdown ??= new Markdown(this.contentDir, this.config, this.storage, this.logger, true);
         return this.markdown;
     }
 

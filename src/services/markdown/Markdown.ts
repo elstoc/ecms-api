@@ -9,6 +9,7 @@ import { userHasReadAccess, userHasWriteAccess, userIsAdmin } from '../auth/acce
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';
 import { User } from '../auth';
+import { Logger } from 'winston';
 
 export class Markdown implements IMarkdown {
     private contentPath: string;
@@ -21,6 +22,7 @@ export class Markdown implements IMarkdown {
         private apiPath: string,
         private config: Config,
         private storage: IStorageAdapter,
+        private logger: Logger,
         private isRoot = false
     ) {
         this.contentPath = this.isRoot
@@ -182,7 +184,7 @@ export class Markdown implements IMarkdown {
     }
 
     private getChild(childApiPath: string): IMarkdown {
-        this.children[childApiPath] ??= new Markdown(childApiPath, this.config, this.storage);
+        this.children[childApiPath] ??= new Markdown(childApiPath, this.config, this.storage, this.logger);
         return this.children[childApiPath];
     }
 

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { VideoDb, IVideoDb } from '../../../src/services/videodb';
-import { Config } from '../../../src/utils';
 import { LookupTables } from '../../../src/services/videodb/IVideoDb';
 
 jest.mock('../../../src/adapters');
@@ -16,7 +15,11 @@ const mockStorage = {
 const versionSql = ['SQL v1', 'SQL v2', 'SQL v3', 'SQL v4'];
 const apiPath = 'videos';
 const apiDbPath = 'videos/data.db';
-const config = {} as Config;
+const mockLogger = {
+    debug: jest.fn(),
+    info: jest.fn(),
+    error: jest.fn()
+} as any;
 
 describe('VideoDb', () => {
     let videoDb: IVideoDb;
@@ -38,7 +41,7 @@ describe('VideoDb', () => {
 
     beforeEach(() => {
         mockStorage.getContentDb.mockResolvedValue(mockDb);
-        videoDb = new VideoDb(apiPath, config, mockStorage as any);
+        videoDb = new VideoDb(apiPath, mockLogger, mockStorage as any);
     });
 
     describe('initialise', () => {

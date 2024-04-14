@@ -98,7 +98,7 @@ export class SiteComponent implements ISiteComponent {
 
     public async getVideoDb(): Promise<IVideoDb> {
         await this.checkComponentExistsHere(ComponentTypes.videodb);
-        this.videoDb ??= new VideoDb(this.contentDir, this.config, this.storage);
+        this.videoDb ??= new VideoDb(this.contentDir, this.logger, this.storage);
         await this.videoDb.initialise();
         return this.videoDb;
     }

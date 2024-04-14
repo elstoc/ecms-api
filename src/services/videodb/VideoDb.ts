@@ -1,9 +1,9 @@
 import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
 import { IVideoDb, LookupRow, LookupValues, LookupTables, Video } from './IVideoDb';
-import { Config } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { dbVersionSql } from './dbVersionSql';
 import path from 'path';
+import { Logger } from 'winston';
 
 export class VideoDb implements IVideoDb {
     private apiPath: string;
@@ -13,7 +13,7 @@ export class VideoDb implements IVideoDb {
 
     public constructor(
         apiPath: string,
-        private config: Config,
+        private logger: Logger,
         private storage: IStorageAdapter,
     ) {
         this.apiPath = apiPath.replace(/^\//, '');

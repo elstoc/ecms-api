@@ -21,6 +21,7 @@ export class VideoDb implements IVideoDb {
 
     public async initialise(): Promise<void> {
         if (!this.database) {
+            this.logger.info(`initialising database at ${this.apiPath}`);
             const dbContentPath = path.join(this.apiPath, 'data.db');
             if (!this.storage.contentFileExists(dbContentPath)) {
                 this.dbVersion = 0;

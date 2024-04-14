@@ -36,6 +36,7 @@ export class Markdown implements IMarkdown {
         this.throwIfNoReadAccess(user);
 
         if (targetApiPath === this.apiPath) {
+            this.logger.info(`getting markdown page ${targetApiPath}`);
             let content = await this.getContentFile();
             if (!this.hasFrontMatter) {
                 const [, markdown] = splitFrontMatter(content);
@@ -98,6 +99,7 @@ export class Markdown implements IMarkdown {
         this.throwIfNoReadAccess(user);
 
         if (targetApiPath === this.apiPath) {
+            this.logger.info(`writing markdown page ${targetApiPath}`);
             this.throwIfNoWriteAccess(user);
             await this.storage.storeContentFile(this.contentPath, Buffer.from(fileContent));
         } else {
@@ -157,6 +159,7 @@ export class Markdown implements IMarkdown {
             if (children.length > 0) {
                 throw new NotPermittedError('cannot delete markdown files which have children');
             }
+            this.logger.info(`deleting markdown page ${targetApiPath}`);
             this.storage.deleteContentFile(this.contentPath);
         } else {
             const nextChild = this.getNextChildInTargetPath(targetApiPath);
@@ -227,6 +230,9 @@ export class Markdown implements IMarkdown {
                 throw new NotPermittedError();
             }
             return undefined;
+        }
+        if (this.isRoot) {
+            this.logger.info(`getting markdown tree at ${this.apiPath}`);
         }
         const childObjects = await this.getChildren();
         const childStructPromises = childObjects.map((child) => child.getTree(user));

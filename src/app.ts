@@ -8,8 +8,9 @@ import { createAuthRouter, createGalleryRouter, createMarkdownRouter, createSite
 import { createAddUserInfoMiddleware, createErrorHandlerMiddleware, createValidateRequestMiddleware } from './middleware';
 import { Config } from './utils';
 import { EndpointValidator, OASParser } from './api';
+import { Logger } from 'winston';
 
-export const createApp = async (config: Config, site: ISite, auth: IAuth): Promise<express.Express> => {
+export const createApp = async (config: Config, site: ISite, auth: IAuth, logger: Logger): Promise<express.Express> => {
     const corsConfig = {
         origin: [config.uiUrl],
         credentials: true
@@ -33,7 +34,7 @@ export const createApp = async (config: Config, site: ISite, auth: IAuth): Promi
     app.use('/markdown', createMarkdownRouter(site));
     app.use('/videodb', createVideoDbRouter(site));
 
-    app.use(createErrorHandlerMiddleware());
+    app.use(createErrorHandlerMiddleware(logger));
 
     return app;
 };

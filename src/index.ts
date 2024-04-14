@@ -21,7 +21,7 @@ const storageAdapter = new LocalFileStorageAdapter(config.dataDir, config.storag
 const site = new Site(config, storageAdapter, logger);
 const auth = new Auth(config, storageAdapter, logger);
 
-createApp(config, site, auth).then((app) => {
+createApp(config, site, auth, logger).then((app) => {
     const server = app.listen(config.apiPort, () => {
         logger.info(`app started, listening on port ${config.apiPort}`);
     });

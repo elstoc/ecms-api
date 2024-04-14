@@ -3,6 +3,7 @@ import { NextFunction, Response } from 'express';
 import { RequestWithUser } from './types';
 import { AuthenticationError, EndpointValidationError, NotFoundError, NotPermittedError } from '../errors';
 import { ValidationError } from '../api/IEndpointValidator';
+import { Logger } from 'winston';
 
 interface ExtraErrors extends Error {
     validationErrors?: ValidationError[],
@@ -10,7 +11,7 @@ interface ExtraErrors extends Error {
 
 export type ErrorHandler = (err: ExtraErrors, req: RequestWithUser, res: Response, next?: NextFunction) => void;
 
-export const createErrorHandlerMiddleware = (): ErrorHandler => (err, req, res, next) => {
+export const createErrorHandlerMiddleware = (logger: Logger): ErrorHandler => (err, req, res, next) => {
     let status = 500;
     if (err instanceof EndpointValidationError) {
         status = 400;
@@ -22,7 +23,11 @@ export const createErrorHandlerMiddleware = (): ErrorHandler => (err, req, res, 
         status = 401;
     }
 
+    logger.error(err?.message);
+    logger.info(`sending status ${status}`);
+
     if (err.validationErrors) {
+        logger.info(JSON.stringify(err.validationErrors));
         res.status(status).json({
           errors: err.validationErrors,
         });

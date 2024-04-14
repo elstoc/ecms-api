@@ -3,6 +3,7 @@ import { GalleryImage } from './GalleryImage';
 import { ImageMetadata, ImageSize } from './IGalleryImage';
 import { Config } from '../../utils';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
+import { Logger } from 'winston';
 
 export class Gallery implements IGallery {
     private apiPath: string;
@@ -11,7 +12,8 @@ export class Gallery implements IGallery {
     public constructor(
         apiPath: string,
         private config: Config,
-        private storage: IStorageAdapter
+        private storage: IStorageAdapter,
+        private logger: Logger
     ) {
         this.apiPath = apiPath.replace(/^\//, '');
     }
@@ -42,7 +44,7 @@ export class Gallery implements IGallery {
     private getGalleryImage(apiPath: string): GalleryImage {
         let image = this.imageCache[apiPath];
         if (!image) {
-            image = new GalleryImage(this.config, apiPath, this.storage);
+            image = new GalleryImage(this.config, apiPath, this.storage, this.logger);
             this.imageCache[apiPath] = image;
         }
         return image;

@@ -7,6 +7,7 @@ import { NotFoundError, NotPermittedError } from '../../errors';
 import { getImageDimensions } from './getImageDimensions';
 import { getExif } from './getExif';
 import { resizeImage } from './resizeImage';
+import { Logger } from 'winston';
 
 export const RESIZE_OPTIONS = {
     thumb: { version: 1, desc: ImageSize.thumb, width: 100000, height: 300, quality: 60, stripExif: true, addBorder: true },
@@ -22,7 +23,8 @@ export class GalleryImage implements IGalleryImage {
     public constructor(
         private config: Config,
         private contentPath: string,
-        private storage: IStorageAdapter
+        private storage: IStorageAdapter,
+        private logger: Logger
     ) { }
     
     public async getImageMetadata(): Promise<ImageMetadata> {

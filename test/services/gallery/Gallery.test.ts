@@ -5,6 +5,12 @@ const mockStorage = {
     listContentChildren: jest.fn() as jest.Mock,
 } as any;
 
+const mockLogger = {
+    debug: jest.fn(),
+    info: jest.fn(),
+    error: jest.fn()
+} as any;
+
 jest.mock('../../../src/services/gallery/GalleryImage');
 
 const config = { } as any;
@@ -31,7 +37,7 @@ describe('Gallery', () => {
     
     describe('getContents', () => {
         beforeEach(() => {
-            gallery = new Gallery('gallery', config, mockStorage);
+            gallery = new Gallery('gallery', config, mockStorage, mockLogger);
             mockStorage.listContentChildren.mockImplementation(async (_: any, fileMatcher: any) => {
                 return imageFiles.filter(fileMatcher as any);
             });
@@ -94,7 +100,7 @@ describe('Gallery', () => {
     
     describe('sendImageFile', () => {
         beforeEach(() => {
-            gallery = new Gallery('gallery', config, mockStorage);
+            gallery = new Gallery('gallery', config, mockStorage, mockLogger);
         });
     
         it('creates a new image object and calls image.getFile the first time it is called', async () => {

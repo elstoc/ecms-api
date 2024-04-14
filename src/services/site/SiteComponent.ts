@@ -86,7 +86,7 @@ export class SiteComponent implements ISiteComponent {
 
     public async getGallery(): Promise<IGallery> {
         await this.checkComponentExistsHere(ComponentTypes.gallery);
-        this.gallery ??= new Gallery(this.contentDir, this.config, this.storage);
+        this.gallery ??= new Gallery(this.contentDir, this.config, this.storage, this.logger);
         return this.gallery;
     }
 

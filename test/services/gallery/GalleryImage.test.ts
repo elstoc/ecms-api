@@ -27,6 +27,12 @@ const mockStorage = {
     getContentFileModifiedTime: jest.fn() as jest.Mock,
 } as any;
 
+const mockLogger = {
+    debug: jest.fn(),
+    info: jest.fn(),
+    error: jest.fn()
+} as any;
+
 const getExifMock = getExif as jest.Mock;
 const resizeImageMock = resizeImage as jest.Mock;
 const getImageDimensionsMock = getImageDimensions as jest.Mock;
@@ -36,7 +42,7 @@ describe('GalleryImage', () => {
 
     beforeEach(() => {
         mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
-        galleryImage = new GalleryImage(config, imagePath, mockStorage);
+        galleryImage = new GalleryImage(config, imagePath, mockStorage, mockLogger);
     });
 
     describe('getFile', () => {

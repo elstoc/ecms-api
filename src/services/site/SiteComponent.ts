@@ -10,6 +10,7 @@ import { IStorageAdapter } from '../../adapters';
 import { NotFoundError } from '../../errors';
 import { User } from '../auth';
 import { IVideoDb, VideoDb } from '../videodb';
+import { Logger } from 'winston';
 
 export class SiteComponent implements ISiteComponent {
     private contentYamlPath: string;
@@ -22,7 +23,8 @@ export class SiteComponent implements ISiteComponent {
     public constructor(
         private config: Config,
         private contentDir: string,
-        private storage: IStorageAdapter
+        private storage: IStorageAdapter,
+        private logger: Logger
     ) {
         this.contentYamlPath = contentDir + '.yaml';
     }

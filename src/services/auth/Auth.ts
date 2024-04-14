@@ -5,6 +5,7 @@ import { User, Token, Tokens, IAuth } from './IAuth';
 import { JwtPayload } from 'jsonwebtoken';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { AuthenticationError } from '../../errors';
+import { Logger } from 'winston';
 
 export class Auth implements IAuth {
     private jwtRefreshExpires = '';
@@ -17,7 +18,8 @@ export class Auth implements IAuth {
 
     public constructor(
         private config: Config,
-        private storage: IStorageAdapter
+        private storage: IStorageAdapter,
+        private logger: Logger
     ) {
         if (!this.config.enableAuthentication)
             return;
@@ -33,6 +35,7 @@ export class Auth implements IAuth {
     }
 
     public async createUser(id: string, fullName?: string, roles?: string[]): Promise<void> {
+        this.logger.info(`Auth.createUser(${id}, ${fullName})`);
         await this.readUsersFromFile();
         if (this.users[id]) {
             throw new AuthenticationError('user already exists');
@@ -58,6 +61,7 @@ export class Auth implements IAuth {
     }
 
     public async setPassword(id: string, newPassword: string, oldPassword?: string): Promise<void> {
+        this.logger.info(`Set password ${id}`);
         await this.readUsersFromFile();
         this.throwIfNoUser(id);
         if (this.users[id].hashedPassword) {
@@ -90,6 +94,7 @@ export class Auth implements IAuth {
     }
 
     public async getTokensFromPassword(id: string, password: string): Promise<Tokens> {
+        this.logger.info(`Log in ${id}`);
         await this.readUsersFromFile();
         this.throwIfNoUser(id);
         if (!(await this.verifyPassword(id, password))) {
@@ -101,6 +106,7 @@ export class Auth implements IAuth {
     public async getTokensFromRefreshToken(refreshToken: string): Promise<Tokens> {
         await this.readUsersFromFile();
         const id = await this.verifyRefreshTokenAndGetId(refreshToken);
+        this.logger.info(`Refresh tokens ${id}`);
         return await this.getTokensFromId(id);
     }
 

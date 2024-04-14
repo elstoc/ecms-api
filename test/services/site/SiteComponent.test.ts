@@ -22,6 +22,11 @@ const mockStorage = {
     getContentFileModifiedTime: jest.fn() as jest.Mock,
     contentDirectoryExists: jest.fn() as jest.Mock,
 };
+const mockLogger = {
+    debug: jest.fn(),
+    info: jest.fn(),
+    error: jest.fn()
+} as any;
 
 const mockGallery = Gallery as jest.Mock;
 const mockMarkdown = Markdown as jest.Mock;
@@ -33,7 +38,7 @@ describe('SiteComponent', () => {
     let component: SiteComponent;
 
     beforeEach(() => {
-        component = new SiteComponent(config, 'my-component', mockStorage as any);
+        component = new SiteComponent(config, 'my-component', mockStorage as any, mockLogger);
     });
 
     describe('getMetadata', () => {
@@ -266,7 +271,7 @@ describe('SiteComponent', () => {
                 });
                 const newConfig = { ...config, enableAuthentication: false };
     
-                component = new SiteComponent(newConfig, 'my-component', mockStorage as any);
+                component = new SiteComponent(newConfig, 'my-component', mockStorage as any, mockLogger);
                 const actualMetadata = await component.getMetadata({ roles: ['role1', 'role2'] } as any);
     
                 expect(actualMetadata).toBeDefined();

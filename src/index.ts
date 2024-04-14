@@ -18,8 +18,8 @@ const logger = winston.createLogger({
 });
 
 const storageAdapter = new LocalFileStorageAdapter(config.dataDir, config.storageWriteUid, config.storageWriteUid);
-const site = new Site(config, storageAdapter);
-const auth = new Auth(config, storageAdapter);
+const site = new Site(config, storageAdapter, logger);
+const auth = new Auth(config, storageAdapter, logger);
 
 createApp(config, site, auth).then((app) => {
     const server = app.listen(config.apiPort, () => {

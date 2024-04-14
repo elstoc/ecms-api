@@ -8,13 +8,15 @@ import { IStorageAdapter } from '../../adapters';
 import { User } from '../auth';
 import { IMarkdown } from '../markdown/IMarkdown';
 import { IVideoDb } from '../videodb';
+import { Logger } from 'winston';
 
 export class Site implements ISite {
     private components: { [key: string]: ISiteComponent } = {};
 
     constructor(
         private config: Config,
-        private storage: IStorageAdapter
+        private storage: IStorageAdapter,
+        private logger: Logger
     ) { }
 
     private async listComponentYamlFiles(): Promise<string[]> {
@@ -22,11 +24,12 @@ export class Site implements ISite {
     }
 
     private getComponent(apiPath: string): ISiteComponent {
-        this.components[apiPath] ??= new SiteComponent(this.config, apiPath, this.storage);
+        this.components[apiPath] ??= new SiteComponent(this.config, apiPath, this.storage, this.logger);
         return this.components[apiPath];
     }
 
     public async listComponents(user?: User): Promise<ComponentMetadata[]> {
+        this.logger.debug(`Site.listComponents(${user})`);
         const componentPromises = (await this.listComponentYamlFiles()).map(async (file) => (
             this.getComponentMetadata(path.basename(file, '.yaml'), user)
         ));
@@ -42,14 +45,17 @@ export class Site implements ISite {
     }
 
     public async getGallery(apiPath: string): Promise<IGallery> {
+        this.logger.debug(`Site.getGallery(${apiPath})`);
         return await this.getRootComponent(apiPath).getGallery();
     }
 
     public async getMarkdown(apiPath: string): Promise<IMarkdown> {
+        this.logger.debug(`Site.getMarkdown(${apiPath})`);
         return await this.getRootComponent(apiPath).getMarkdown();
     }
 
     public async getVideoDb(apiPath: string): Promise<IVideoDb> {
+        this.logger.debug(`Site.getVideoDb(${apiPath})`);
         return await this.getRootComponent(apiPath).getVideoDb();
     }
 
@@ -59,6 +65,7 @@ export class Site implements ISite {
     }
 
     public getConfig(): SiteConfig {
+        this.logger.debug('Site.getConfig()');
         return {
             authEnabled: this.config.enableAuthentication,
             footerText: this.config.footerText
@@ -66,6 +73,7 @@ export class Site implements ISite {
     }
 
     public async shutdown(): Promise<void> {
+        this.logger.debug('Site.shutdown()');
         for (const component of Object.values(this.components)) {
             await component.shutdown();
         }

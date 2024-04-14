@@ -11,6 +11,11 @@ const config = {
 const mockStorage = {
     listContentChildren: jest.fn() as jest.Mock,
 };
+const mockLogger = {
+    debug: jest.fn(),
+    info: jest.fn(),
+    error: jest.fn()
+} as any;
 const mockSiteComponent = SiteComponent as jest.Mock;
 
 describe('Site', () => {
@@ -31,7 +36,7 @@ describe('Site', () => {
                 ].filter(fileMatcher);
             });
 
-            site = new Site(config, mockStorage as any);
+            site = new Site(config, mockStorage as any, mockLogger);
             const actualComponentList = await site.listComponents();
 
             const expectedComponentList = [
@@ -40,9 +45,9 @@ describe('Site', () => {
                 { uiPath: 'component03' },
             ];
             expect(mockSiteComponent).toHaveBeenCalledTimes(3);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component01', mockStorage);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component02', mockStorage);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component03', mockStorage);
+            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component01', mockStorage, mockLogger);
+            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component02', mockStorage, mockLogger);
+            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component03', mockStorage, mockLogger);
 
             expect(actualComponentList).toStrictEqual(expectedComponentList);
         });
@@ -62,7 +67,7 @@ describe('Site', () => {
                 'component04.yaml',
             ]);
 
-            site = new Site(config, mockStorage as any);
+            site = new Site(config, mockStorage as any, mockLogger);
             const actualComponentList1 = await site.listComponents();
             const actualComponentList2 = await site.listComponents();
 
@@ -73,10 +78,10 @@ describe('Site', () => {
             ];
             const expectedComponentList2 = [...expectedComponentList1, { uiPath: 'component04' }];
             expect(mockSiteComponent).toHaveBeenCalledTimes(4);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component01', mockStorage);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component02', mockStorage);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component03', mockStorage);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component04', mockStorage);
+            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component01', mockStorage, mockLogger);
+            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component02', mockStorage, mockLogger);
+            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component03', mockStorage, mockLogger);
+            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component04', mockStorage, mockLogger);
 
             expect(actualComponentList1).toStrictEqual(expectedComponentList1);
             expect(actualComponentList2).toStrictEqual(expectedComponentList2);
@@ -97,7 +102,7 @@ describe('Site', () => {
                 'component03.yaml',
             ]);
 
-            site = new Site(config, mockStorage as any);
+            site = new Site(config, mockStorage as any, mockLogger);
             const actualComponentList1 = await site.listComponents();
             const actualComponentList2 = await site.listComponents();
 
@@ -132,7 +137,7 @@ describe('Site', () => {
                 'componentG.yaml',
             ]);
 
-            site = new Site(config, mockStorage as any);
+            site = new Site(config, mockStorage as any, mockLogger);
             const actualNavData = await site.listComponents();
 
             const expectedNavData = [
@@ -161,7 +166,7 @@ describe('Site', () => {
                 ].filter(fileMatcher);
             });
 
-            site = new Site(config, mockStorage as any);
+            site = new Site(config, mockStorage as any, mockLogger);
             const actualComponentList = await site.listComponents();
 
             const expectedComponentList = [
@@ -175,7 +180,7 @@ describe('Site', () => {
 
     describe('getGallery', () => {
         it('gets the appropriate gallery object', async () => {
-            const site = new Site(config, mockStorage as any);
+            const site = new Site(config, mockStorage as any, mockLogger);
             mockSiteComponent.mockImplementation((_, inputFilePath) => ({
                 getGallery: () => inputFilePath
             }));
@@ -187,7 +192,7 @@ describe('Site', () => {
 
     describe('getMarkdown', () => {
         it('gets the appropriate markdown object', async () => {
-            const site = new Site(config, mockStorage as any);
+            const site = new Site(config, mockStorage as any, mockLogger);
             mockSiteComponent.mockImplementation((_, inputFilePath) => ({
                 getMarkdown: () => inputFilePath
             }));
@@ -199,7 +204,7 @@ describe('Site', () => {
 
     describe('getVideoDb', () => {
         it('gets the appropriate videodb object', async () => {
-            const site = new Site(config, mockStorage as any);
+            const site = new Site(config, mockStorage as any, mockLogger);
             mockSiteComponent.mockImplementation((_, inputFilePath) => ({
                 getVideoDb: () => inputFilePath
             }));
@@ -224,7 +229,7 @@ describe('Site', () => {
                 ].filter(fileMatcher);
             });
 
-            const site = new Site(config, mockStorage as any);
+            const site = new Site(config, mockStorage as any, mockLogger);
             await site.listComponents(); // required to create the components to be shut down
 
             await site.shutdown();
@@ -237,7 +242,7 @@ describe('Site', () => {
         it('returns true & footer text if enableAuthentication is true', () => {
             const newConfig = { ...config, enableAuthentication: true, footerText: 'some-footer-text' };
 
-            const site = new Site(newConfig, mockStorage as any);
+            const site = new Site(newConfig, mockStorage as any, mockLogger);
 
             expect(site.getConfig()).toStrictEqual({ authEnabled: true, footerText: 'some-footer-text' });
         });
@@ -245,7 +250,7 @@ describe('Site', () => {
         it('returns false & footer text if enableAuthentication is false', () => {
             const newConfig = { ...config, enableAuthentication: false, footerText: 'some-other-footer-text' };
 
-            const site = new Site(newConfig, mockStorage as any);
+            const site = new Site(newConfig, mockStorage as any, mockLogger);
 
             expect(site.getConfig()).toStrictEqual({ authEnabled: false, footerText: 'some-other-footer-text' });
         });

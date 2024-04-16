@@ -19,7 +19,7 @@ export class Gallery implements IGallery {
     }
 
     public async getContents(limit?: number): Promise<GalleryContents> {
-        this.logger.info(`getting contents of ${this.apiPath}`);
+        this.logger.debug(`getting contents of ${this.apiPath}`);
         const imageFileNames = (await this.getJpegFileNames()).sort().reverse();
         const imageCount = imageFileNames.length;
 

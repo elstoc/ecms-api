@@ -36,7 +36,7 @@ export class Markdown implements IMarkdown {
         this.throwIfNoReadAccess(user);
 
         if (targetApiPath === this.apiPath) {
-            this.logger.info(`getting markdown page ${targetApiPath}`);
+            this.logger.debug(`getting markdown page ${targetApiPath}`);
             let content = await this.getContentFile();
             if (!this.hasFrontMatter) {
                 const [, markdown] = splitFrontMatter(content);
@@ -232,7 +232,7 @@ export class Markdown implements IMarkdown {
             return undefined;
         }
         if (this.isRoot) {
-            this.logger.info(`getting markdown tree at ${this.apiPath}`);
+            this.logger.debug(`getting markdown tree at ${this.apiPath}`);
         }
         const childObjects = await this.getChildren();
         const childStructPromises = childObjects.map((child) => child.getTree(user));

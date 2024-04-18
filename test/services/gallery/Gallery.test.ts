@@ -29,6 +29,20 @@ const imageFiles = [
     'image11.jpg',
     'notimage.txt'
 ];
+const filteredSortedImageFiles = [
+    'image12.jpg',
+    'image11.jpg',
+    'image10.jpg',
+    'image09.jpg',
+    'image08.jpg',
+    'image07.jpg',
+    'image06.jpg',
+    'image05.jpg',
+    'image04.jpg',
+    'image03.jpg',
+    'image02.jpg',
+    'image01.jpg',
+];
 
 const GalleryImageMock = GalleryImage as jest.Mock;
 
@@ -59,7 +73,7 @@ describe('Gallery', () => {
             }));
     
             const expectedReturnData = {
-                imageCount: 12,
+                allImageFiles: filteredSortedImageFiles,
                 images: [
                     { filePath: 'gallery/image12.jpg' },
                     { filePath: 'gallery/image11.jpg' },
@@ -76,7 +90,7 @@ describe('Gallery', () => {
             }));
     
             const expectedReturnData = {
-                imageCount: 12,
+                allImageFiles: filteredSortedImageFiles,
                 images: [
                     { filePath: 'gallery/image12.jpg' },
                     { filePath: 'gallery/image11.jpg' },

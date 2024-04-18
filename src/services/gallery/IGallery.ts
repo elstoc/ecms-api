@@ -1,8 +1,8 @@
 import { ImageMetadata, ImageSize } from './IGalleryImage';
 
 export type GalleryContents = {
-    imageCount: number;
     images: ImageMetadata[];
+    allImageFiles?: string[];
 }
 
 export interface IGallery {

@@ -19,17 +19,16 @@ export class Gallery implements IGallery {
     }
 
     public async getContents(limit?: number): Promise<GalleryContents> {
-        this.logger.debug(`getting contents of ${this.apiPath}`);
-        const imageFileNames = (await this.getJpegFileNames()).sort().reverse();
-        const imageCount = imageFileNames.length;
+        this.logger.debug(`getting contents of ${this.apiPath} (limit ${limit})`);
+        const allImageFiles = (await this.getJpegFileNames()).sort().reverse();
 
         const images = await Promise.all(
-            imageFileNames
+            allImageFiles
                 .slice(0, limit)
                 .map((fileName) => this.getImageMetadata(`${this.apiPath}/${fileName}`))
         );
 
-        return { imageCount, images };
+        return { images, allImageFiles };
     }
 
     private async getImageMetadata(apiPath: string): Promise<ImageMetadata> {

@@ -78,9 +78,10 @@ export class EndpointValidator implements IEndpointValidator {
 
         if (requestBodyRequired && isEmpty(requestBody)) {
             this.pushError(errors, 'requestBody', 'required but not present');
+        } else {
+            this.validateEndpointObject(errors, requestBody, requestBodySchema, 'requestBody');
         }
 
-        this.validateEndpointObject(errors, requestBody, requestBodySchema, 'requestBody');
         this.validateEndpointObject(errors, pathParams, pathParamsSchema, 'pathParams');
         this.validateEndpointObject(errors, queryParams, queryParamsSchema, 'queryParams');
 

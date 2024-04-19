@@ -134,11 +134,14 @@ export class EndpointValidator implements IEndpointValidator {
 
     private validateString(errors: ValidationError[], value: unknown, validationSchema: StringValidationSchema): void {
         const stringEnum = validationSchema.enum;
+        const stringMinLength = validationSchema.minLength;
 
         if (typeof value !== 'string') {
             this.pushError(errors, validationSchema.fullPath, 'invalid data type - string expected');
         } else if (stringEnum && !stringEnum.includes(value)) {
             this.pushError(errors, validationSchema.fullPath, `value must be one of [${stringEnum.join(',')}]`);
+        } else if (stringMinLength && value.length < stringMinLength) {
+            this.pushError(errors, validationSchema.fullPath, `invalid length - expected at least ${stringMinLength} ${stringMinLength === 1 ? 'character' : 'characters'}`);
         }
     }
 

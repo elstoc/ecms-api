@@ -10,6 +10,7 @@ export type StringValidationSchema = {
     type: 'string';
     fullPath: string;
     enum?: string[];
+    minLength?: number;
 }
 
 export type IntegerValidationSchema = {

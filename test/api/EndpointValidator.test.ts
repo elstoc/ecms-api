@@ -92,7 +92,7 @@ describe('EndpointValidator', () => {
                         properties: {
                             field1: { type: 'string', fullPath: 'requestBody.field1' },
                             field2: { type: 'string', fullPath: 'requestBody.field2' },
-                            field3: { type: 'string', fullPath: 'requestBody.field3' },
+                            field3: { type: 'string', fullPath: 'requestBody.field3', minLength: 2 },
                             field4: { type: 'string', fullPath: 'requestBody.field4', enum: ['X','Y'] },
                             field5: { type: 'integer', fullPath: 'requestBody.field5' },
                             field6: { type: 'integer', fullPath: 'requestBody.field6', minimum: 10 },
@@ -149,6 +149,16 @@ describe('EndpointValidator', () => {
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
                         expect(errors).toContainEqual({ property: 'requestBody.field4', error: 'value must be one of [X,Y]' });
+                    });
+
+                    it('that has a length below the defined minimum', () => {
+                        const requestBody = {
+                            field1: 'something', field2: 'something', field3: 's',
+                            field4: 'X'
+                        };
+                        const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
+    
+                        expect(errors).toContainEqual({ property: 'requestBody.field3', error: 'invalid length - expected at least 2 characters' });
                     });
                 });
     
@@ -225,7 +235,7 @@ describe('EndpointValidator', () => {
                     properties: {
                         field1: { type: 'string', fullPath: 'requestBody.field1', enum: ['X','Y'] },
                         field2: { type: 'integer', fullPath: 'requestBody.field2', minimum: 10 },
-                        field3: { type: 'string', fullPath: 'requestBody.field3' },
+                        field3: { type: 'string', fullPath: 'requestBody.field3', minLength: 1 },
                         field4: {
                             type: 'object', fullPath: 'requestBody.field4', additionalProperties: true,
                             properties: { field5: { type: 'integer', fullPath: 'requestBody.field4.field5' } }

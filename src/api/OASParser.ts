@@ -238,6 +238,14 @@ export class OASParser implements IOASParser {
             const enumArray = this.toStringArrayOrThrow(oasStringSchema.enum, `string at ${fullPath} for endpoint ${endpoint} has an invalid enum`);
             validationSchema.enum = enumArray;
         }
+        if (oasStringSchema.minLength !== undefined) {
+            if (typeof oasStringSchema.minLength !== 'number' || !Number.isInteger(oasStringSchema.minLength)) {
+                throw new OASParsingError(`string at ${fullPath} for endpoint ${endpoint} has a non-integer minLength`);
+            } else if (oasStringSchema.minLength < 0) {
+                throw new OASParsingError(`string at ${fullPath} for endpoint ${endpoint} has a negative minLength`);
+            }
+            validationSchema.minLength = oasStringSchema.minLength;
+        }
 
         return validationSchema;
     }

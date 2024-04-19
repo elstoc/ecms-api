@@ -244,6 +244,19 @@ describe('OASParser.parseAndValidateSchema', () => {
                 await expect(oasParser.parseOAS())
                     .rejects.toThrow(new OASParsingError('string at query.some-name for endpoint put:/some/path has an invalid enum'));
             });
+
+            it.each([
+                ['has a non-numeric minLength', 'test', 'non-integer minLength'],
+                ['has a non-integer minLength', 1.3, 'non-integer minLength'],
+                ['has a negative minLength', -1, 'negative minLength']
+            ])('%s', async (desc, minLength, error) => {
+                const parameters = [{ in: 'query', name: 'some-name', schema: { type: 'string', minLength } }];
+                const dereferencedSchema = buildOASSchema('/some/path', 'put', parameters, undefined);
+                dereferenceMock.mockResolvedValue(dereferencedSchema);
+
+                await expect(oasParser.parseOAS())
+                    .rejects.toThrow(new OASParsingError(`string at query.some-name for endpoint put:/some/path has a ${error}`));
+            });
         });
 
         describe('an integer schema', () => {
@@ -312,7 +325,7 @@ describe('OASParser.parseAndValidateSchema', () => {
                 additionalProperties: false,
                 description: 'some-description',
                 properties: {
-                    field1: { type: 'string', description: 'some-description' },
+                    field1: { type: 'string', description: 'some-description', minLength: 1 },
                     field2: { type: 'integer', description: 'some-description' },
                     field3: {
                         type: 'object',
@@ -336,7 +349,7 @@ describe('OASParser.parseAndValidateSchema', () => {
                 additionalProperties: false,
                 fullPath: 'requestBody',
                 properties: {
-                    field1: { type: 'string', fullPath: 'requestBody.field1' },
+                    field1: { type: 'string', fullPath: 'requestBody.field1', minLength: 1 },
                     field2: { type: 'integer', fullPath: 'requestBody.field2' },
                     field3: {
                         type: 'object',
@@ -358,7 +371,7 @@ describe('OASParser.parseAndValidateSchema', () => {
         it('creates a query validation object from query parameters', async () => {
             const parameters = [
                 { name: 'field1', description: 'some-description', in: 'query', required: true, schema: { type: 'string', enum: ['value1'] } },
-                { name: 'field2', description: 'some-description', in: 'query', schema: { type: 'string' } },
+                { name: 'field2', description: 'some-description', in: 'query', schema: { type: 'string', minLength: 1 } },
                 { name: 'field3', description: 'some-description', in: 'query', required: true, schema: { type: 'integer', minimum: 0 } },
                 { name: 'field4', description: 'some-description', in: 'query', schema: { type: 'integer' } }
             ];
@@ -374,7 +387,7 @@ describe('OASParser.parseAndValidateSchema', () => {
                 required: ['field1', 'field3'],
                 properties: {
                     field1: { type: 'string', fullPath: 'query.field1', enum: ['value1'] },
-                    field2: { type: 'string', fullPath: 'query.field2' },
+                    field2: { type: 'string', fullPath: 'query.field2', minLength: 1 },
                     field3: { type: 'integer', fullPath: 'query.field3', minimum: 0 },
                     field4: { type: 'integer', fullPath: 'query.field4' } }
             };

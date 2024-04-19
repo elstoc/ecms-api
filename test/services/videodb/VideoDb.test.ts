@@ -234,7 +234,7 @@ describe('VideoDb', () => {
         it('throws error if video id does not exist', async () => {
             mockGet.mockResolvedValue({ video_exists: 0 });
 
-            await expect(videoDb.updateVideo(video)).rejects.toThrow(new NotFoundError('attempted to update a non-existent video id'));
+            await expect(videoDb.updateVideo(video)).rejects.toThrow(new NotFoundError('video id 1 does not exist'));
             expect(mockGet).toHaveBeenCalledWith('SELECT COUNT() AS video_exists FROM videos WHERE id=1');
         });
 
@@ -263,6 +263,33 @@ describe('VideoDb', () => {
             await videoDb.updateVideo(video);
 
             expect(mockRunWithParams).toHaveBeenCalledWith(sql, videoParameters);
+        });
+    });
+
+    describe('getVideo', () => {
+        beforeEach(async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValue({ ver: 4 });
+            await videoDb.initialise();
+        });
+
+        it('throws error if video id does not exist', async () => {
+            mockGet.mockResolvedValue({ video_exists: 0 });
+
+            await expect(videoDb.getVideo(12)).rejects.toThrow(new NotFoundError('video id 12 does not exist'));
+            expect(mockGet).toHaveBeenCalledWith('SELECT COUNT() AS video_exists FROM videos WHERE id=12');
+        });
+
+        it('attempts to get video', async () => {
+            mockGet.mockResolvedValueOnce({ video_exists: 1 })
+                .mockResolvedValue('video');
+
+            const sql = 'SELECT id, name, category, director, length_mins, to_watch_priority, progress FROM videos WHERE id = 12';
+
+            const video = await videoDb.getVideo(12);
+
+            expect(mockGet).toHaveBeenCalledWith(sql);
+            expect(video).toBe('video');
         });
     });
 

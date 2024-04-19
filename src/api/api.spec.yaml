@@ -197,6 +197,19 @@ paths:
         '200':
           description: OK
   /videodb/video:
+    get:
+      description: Get a video from the database
+      parameters:
+        - $ref: '#/components/parameters/ComponentPath'
+        - in: query
+          name: id
+          description: The video id
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: OK
     post:
       description: Add a new video to the database
       requestBody:

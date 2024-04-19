@@ -34,5 +34,6 @@ export interface IVideoDb {
     getVersion(): Promise<number>;
     getLookupValues(tableName: string): Promise<LookupValues>;
     addVideo(video: Video): Promise<void>;
-    updateVideo(video: Video): Promise<void>;
+    updateVideo(video: VideoWithId): Promise<void>;
+    getVideo(id: number): Promise<VideoWithId>;
 }

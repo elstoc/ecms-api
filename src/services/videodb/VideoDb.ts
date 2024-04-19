@@ -100,10 +100,8 @@ export class VideoDb implements IVideoDb {
     }
 
     public async updateVideo(video: VideoWithId): Promise<void> {
-        const videoExists = await this.videoExists(video.id);
-        if (!videoExists) {
-            throw new NotFoundError('attempted to update a non-existent video id');
-        }
+        await this.throwIfNoVideo(video.id);
+
         const sql = `UPDATE videos
                      SET name = $name,
                          category = $category,
@@ -122,13 +120,22 @@ export class VideoDb implements IVideoDb {
         await this.database?.runWithParams(sql, params);
     }
 
-    private async videoExists(id: number): Promise<boolean> {
+    public async getVideo(id: number): Promise<VideoWithId> {
+        await this.throwIfNoVideo(id);
+        const sql = `SELECT id, name, category, director, length_mins, to_watch_priority, progress FROM videos WHERE id = ${id}`;
+        const result = await this.database?.get<VideoWithId>(sql);
+        if (!result) {
+            throw new Error(`Unexpected error getting video ${id}`);
+        }
+        return result;
+    }
+
+    private async throwIfNoVideo(id: number): Promise<void> {
         const sql = `SELECT COUNT() AS video_exists FROM videos WHERE id=${id}`;
         const result = await this.database?.get<{ video_exists: number }>(sql);
-        if (result && result.video_exists === 1) {
-            return true;
+        if (!result || result.video_exists === 0) {
+            throw new NotFoundError(`video id ${id} does not exist`);
         }
-        return false;
     }
 
     private async storeVersion(version: number): Promise<void> {

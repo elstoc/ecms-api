@@ -36,4 +36,5 @@ export interface IVideoDb {
     addVideo(video: Video): Promise<void>;
     updateVideo(video: VideoWithId): Promise<void>;
     getVideo(id: number): Promise<VideoWithId>;
+    queryVideos(): Promise<VideoWithId[]>;
 }

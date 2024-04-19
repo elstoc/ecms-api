@@ -252,6 +252,14 @@ paths:
       responses:
         '200':
           description: OK
+  /videodb/videos:
+    get:
+      description: Get a list of videos from the database
+      parameters:
+        - $ref: '#/components/parameters/ComponentPath'
+      responses:
+        '200':
+          description: OK
 components:
   parameters:
     ComponentPath:

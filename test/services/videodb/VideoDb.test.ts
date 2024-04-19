@@ -293,6 +293,21 @@ describe('VideoDb', () => {
         });
     });
 
+    describe('queryVideos', () => {
+        it('runs the correct sql to retrieve all videos', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValueOnce({ ver: 4 });
+            await videoDb.initialise();
+            const sql = 'SELECT id, name, category, director, length_mins, to_watch_priority, progress FROM videos';
+
+            mockGetAll.mockResolvedValue('videos');
+            const videos = await videoDb.queryVideos();
+
+            expect(mockGetAll).toHaveBeenCalledWith(sql);
+            expect(videos).toBe('videos');
+        });
+    });
+
     describe('shutdown', () => {
         it('closes the database', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);

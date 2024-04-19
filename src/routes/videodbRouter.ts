@@ -23,6 +23,9 @@ export const createVideoDbRouter = (site: ISite): Router => {
             } else if (fn === 'getVideo') {
                 const video = await videoDb.getVideo(parseInt(req.query.id as string));
                 res.json(video);
+            } else if (fn === 'getVideos') {
+                const videos = await videoDb.queryVideos();
+                res.json(videos);
             }
         } catch (err: unknown) {
             next?.(err);
@@ -35,5 +38,6 @@ export const createVideoDbRouter = (site: ISite): Router => {
     router.post('/video', async (req, res, next) => videoDbHandler(req, res, next, 'postVideo'));
     router.put('/video', async (req, res, next) => videoDbHandler(req, res, next, 'putVideo'));
     router.get('/video', async (req, res, next) => videoDbHandler(req, res, next, 'getVideo'));
+    router.get('/videos', async (req, res, next) => videoDbHandler(req, res, next, 'getVideos'));
     return router;
 };

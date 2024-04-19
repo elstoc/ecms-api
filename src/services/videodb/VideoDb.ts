@@ -130,6 +130,15 @@ export class VideoDb implements IVideoDb {
         return result;
     }
 
+    public async queryVideos(): Promise<VideoWithId[]> {
+        const sql = 'SELECT id, name, category, director, length_mins, to_watch_priority, progress FROM videos';
+        const result = await this.database?.getAll<VideoWithId>(sql);
+        if (!result) {
+            throw new Error('Unexpected error querying videos');
+        }
+        return result;
+    }
+
     private async throwIfNoVideo(id: number): Promise<void> {
         const sql = `SELECT COUNT() AS video_exists FROM videos WHERE id=${id}`;
         const result = await this.database?.get<{ video_exists: number }>(sql);

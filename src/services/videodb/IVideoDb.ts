@@ -7,6 +7,12 @@ export type Video = {
     progress: string;
 }
 
+type videoIdOnly = {
+    id: number;
+}
+
+export type VideoWithId = Video & videoIdOnly;
+
 export enum LookupTables {
     video_category = 'l_categories',
     video_media_type = 'l_media_types',
@@ -28,4 +34,5 @@ export interface IVideoDb {
     getVersion(): Promise<number>;
     getLookupValues(tableName: string): Promise<LookupValues>;
     addVideo(video: Video): Promise<void>;
+    updateVideo(video: Video): Promise<void>;
 }

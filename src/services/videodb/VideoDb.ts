@@ -1,9 +1,10 @@
 import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
-import { IVideoDb, LookupRow, LookupValues, LookupTables, Video } from './IVideoDb';
+import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId } from './IVideoDb';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { dbVersionSql } from './dbVersionSql';
 import path from 'path';
 import { Logger } from 'winston';
+import { NotFoundError } from '../../errors';
 
 export class VideoDb implements IVideoDb {
     private apiPath: string;
@@ -96,6 +97,38 @@ export class VideoDb implements IVideoDb {
             params[`$${key}`] = video[key];
         }
         await this.database?.runWithParams(sql, params);
+    }
+
+    public async updateVideo(video: VideoWithId): Promise<void> {
+        const videoExists = await this.videoExists(video.id);
+        if (!videoExists) {
+            throw new NotFoundError('attempted to update a non-existent video id');
+        }
+        const sql = `UPDATE videos
+                     SET name = $name,
+                         category = $category,
+                         director = $director,
+                         length_mins = $length_mins,
+                         to_watch_priority = $to_watch_priority,
+                         progress = $progress
+                     WHERE id = $id`;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const params: any = {};
+        let key: keyof VideoWithId;
+        // prefix all column names with $
+        for (key in video) {
+            params[`$${key}`] = video[key];
+        }
+        await this.database?.runWithParams(sql, params);
+    }
+
+    private async videoExists(id: number): Promise<boolean> {
+        const sql = `SELECT COUNT() AS video_exists FROM videos WHERE id=${id}`;
+        const result = await this.database?.get<{ video_exists: number }>(sql);
+        if (result && result.video_exists === 1) {
+            return true;
+        }
+        return false;
     }
 
     private async storeVersion(version: number): Promise<void> {

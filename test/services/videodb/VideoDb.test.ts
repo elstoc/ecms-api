@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { NotFoundError } from '../../../src/errors';
 import { VideoDb, IVideoDb } from '../../../src/services/videodb';
 import { LookupTables } from '../../../src/services/videodb/IVideoDb';
 
@@ -208,6 +209,58 @@ describe('VideoDb', () => {
             };
 
             await videoDb.addVideo(video);
+
+            expect(mockRunWithParams).toHaveBeenCalledWith(sql, videoParameters);
+        });
+    });
+
+    describe('updateVideo', () => {
+        const video = {
+            id: 1,
+            name: 'some-name',
+            category: 'some-category',
+            director: 'some-director',
+            length_mins: 1234,
+            to_watch_priority: 1,
+            progress: 'some-progress'
+        };
+
+        beforeEach(async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValue({ ver: 4 });
+            await videoDb.initialise();
+        });
+
+        it('throws error if video id does not exist', async () => {
+            mockGet.mockResolvedValue({ video_exists: 0 });
+
+            await expect(videoDb.updateVideo(video)).rejects.toThrow(new NotFoundError('attempted to update a non-existent video id'));
+            expect(mockGet).toHaveBeenCalledWith('SELECT COUNT() AS video_exists FROM videos WHERE id=1');
+        });
+
+        it('runs update SQL with correct parameters if video exists', async () => {
+            mockGet.mockResolvedValue({ video_exists: 1 });
+            const sql = `UPDATE videos
+                     SET name = $name,
+                         category = $category,
+                         director = $director,
+                         length_mins = $length_mins,
+                         to_watch_priority = $to_watch_priority,
+                         progress = $progress
+                     WHERE id = $id`;
+
+            const videoParameters = {
+                $id: 1,
+                $name: 'some-name',
+                $category: 'some-category',
+                $director: 'some-director',
+                $length_mins: 1234,
+                $to_watch_priority: 1,
+                $progress: 'some-progress'
+            };
+
+
+            await videoDb.updateVideo(video);
 
             expect(mockRunWithParams).toHaveBeenCalledWith(sql, videoParameters);
         });

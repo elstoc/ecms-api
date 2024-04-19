@@ -218,6 +218,27 @@ paths:
       responses:
         '200':
           description: OK
+    put:
+      description: Update a video in the database
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - path
+                - video
+              properties:
+                path:
+                  type: string
+                  description: The path of the videodb component
+                video:
+                  $ref: '#/components/schemas/VideoWithId'
+      responses:
+        '200':
+          description: OK
 components:
   parameters:
     ComponentPath:
@@ -248,6 +269,7 @@ components:
       properties:
         name:
           type: string
+          minLength: 1
         category:
           type: string
           enum:
@@ -265,11 +287,36 @@ components:
         progress:
           type: string
     VideoWithId:
-      allOf:
-        - $ref: '#/components/schemas/Video'
-        - type: object
-          required:
-            - id
-          properties:
-            id:
-              type: string
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - name
+        - category
+        - director
+        - length_mins
+        - to_watch_priority
+        - progress
+      properties:
+        id:
+          type: integer
+          minimum: 0
+        name:
+          type: string
+          minLength: 1
+        category:
+          type: string
+          enum:
+            - TV
+            - TVD
+            - MOV
+            - MOVD
+            - MUS
+        director:
+          type: string
+        length_mins:
+          type: integer
+        to_watch_priority:
+          type: integer
+        progress:
+          type: string

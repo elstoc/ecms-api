@@ -222,4 +222,42 @@ describe('SQLiteDatabaseAdapter', () => {
             await expect(runWithParamsPromise).rejects.toThrow(executionError);
         });
     });
+
+    describe('getAllWithParams', () => {
+        beforeEach(async () => {
+            const initPromise = adapter.initialise();
+            const initCb = mockDatabase.mock.calls[0][1] as any;
+            initCb(null);
+            await initPromise;
+        });
+
+        it('attempts to get all (with params) from the database and returns the rows if there is no error', async () => {
+            const createdDbInstance = mockDatabase.mock.instances[0];
+            const allCall = createdDbInstance.all as jest.Mock;
+
+            const allPromise = adapter.getAllWithParams('sql', 'params');
+            expect(createdDbInstance.all).toHaveBeenCalled();
+            const [allSql, params, allCb] = allCall.mock.calls[0];
+            allCb(null, ['returnVal']);
+
+            expect(allSql).toBe('sql');
+            expect(params).toBe('params');
+            await expect(allPromise).resolves.toEqual(['returnVal']);
+        });
+
+        it('attempts to get all from the database and rejects if there is an error', async () => {
+            const executionError = new Error('get all failed');
+            const createdDbInstance = mockDatabase.mock.instances[0];
+            const allCall = createdDbInstance.all as jest.Mock;
+
+            const allPromise = adapter.getAllWithParams('sql', 'params');
+            expect(createdDbInstance.all).toHaveBeenCalled();
+            const [allSql, params, allCb] = allCall.mock.calls[0];
+            allCb(executionError);
+
+            expect(allSql).toBe('sql');
+            expect(params).toBe('params');
+            await expect(allPromise).rejects.toThrow(executionError);
+        });
+    });
 });

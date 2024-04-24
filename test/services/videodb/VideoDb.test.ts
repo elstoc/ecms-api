@@ -2,6 +2,7 @@
 import { NotFoundError } from '../../../src/errors';
 import { VideoDb, IVideoDb } from '../../../src/services/videodb';
 import { LookupTables } from '../../../src/services/videodb/IVideoDb';
+import { stripWhiteSpace } from '../../../src/utils';
 
 jest.mock('../../../src/adapters');
 jest.mock('../../../src/services/videodb/dbVersionSql', () => ({
@@ -30,6 +31,7 @@ describe('VideoDb', () => {
     const mockInit = jest.fn();
     const mockClose = jest.fn();
     const mockRunWithParams = jest.fn();
+    const mockGetAllWithParams = jest.fn();
 
     const mockDb = {
         initialise: mockInit,
@@ -37,7 +39,8 @@ describe('VideoDb', () => {
         getAll: mockGetAll,
         exec: mockExec,
         close: mockClose,
-        runWithParams: mockRunWithParams
+        runWithParams: mockRunWithParams,
+        getAllWithParams: mockGetAllWithParams
     };
 
     beforeEach(() => {
@@ -194,12 +197,12 @@ describe('VideoDb', () => {
                 progress: 'some-progress'
             };
 
-            const sql = `INSERT INTO videos
-                     (name, category, director, length_mins, to_watch_priority, progress)
-                     VALUES
-                     ($name, $category, $director, $length_mins, $to_watch_priority, $progress)`;
+            const expectedSql = `INSERT INTO videos
+                                 (name, category, director, length_mins, to_watch_priority, progress)
+                                 VALUES
+                                 ($name, $category, $director, $length_mins, $to_watch_priority, $progress)`;
 
-            const videoParameters = {
+            const expectedVideoParameters = {
                 $name: 'some-name',
                 $category: 'some-category',
                 $director: 'some-director',
@@ -210,7 +213,10 @@ describe('VideoDb', () => {
 
             await videoDb.addVideo(video);
 
-            expect(mockRunWithParams).toHaveBeenCalledWith(sql, videoParameters);
+            expect(mockRunWithParams).toHaveBeenCalled();
+            const [sql, videoParameters] = mockRunWithParams.mock.calls[0];
+            expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
+            expect(videoParameters).toEqual(expectedVideoParameters);
         });
     });
 
@@ -240,16 +246,16 @@ describe('VideoDb', () => {
 
         it('runs update SQL with correct parameters if video exists', async () => {
             mockGet.mockResolvedValue({ video_exists: 1 });
-            const sql = `UPDATE videos
-                     SET name = $name,
-                         category = $category,
-                         director = $director,
-                         length_mins = $length_mins,
-                         to_watch_priority = $to_watch_priority,
-                         progress = $progress
-                     WHERE id = $id`;
+            const expectedSql = `UPDATE videos
+                                 SET name = $name,
+                                     category = $category,
+                                     director = $director,
+                                     length_mins = $length_mins,
+                                     to_watch_priority = $to_watch_priority,
+                                     progress = $progress
+                                 WHERE id = $id`;
 
-            const videoParameters = {
+            const expectedVideoParameters = {
                 $id: 1,
                 $name: 'some-name',
                 $category: 'some-category',
@@ -259,10 +265,12 @@ describe('VideoDb', () => {
                 $progress: 'some-progress'
             };
 
-
             await videoDb.updateVideo(video);
 
-            expect(mockRunWithParams).toHaveBeenCalledWith(sql, videoParameters);
+            expect(mockRunWithParams).toHaveBeenCalled();
+            const [sql, videoParameters] = mockRunWithParams.mock.calls[0];
+            expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
+            expect(videoParameters).toEqual(expectedVideoParameters);
         });
     });
 
@@ -294,16 +302,52 @@ describe('VideoDb', () => {
     });
 
     describe('queryVideos', () => {
-        it('runs the correct sql to retrieve all videos', async () => {
+        it('runs the correct sql to retrieve all videos when no query params are defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const sql = 'SELECT id, name, category, director, length_mins, to_watch_priority, progress FROM videos';
+            const expectedSql = 'SELECT id, name, category, director, length_mins, to_watch_priority, progress FROM videos';
 
-            mockGetAll.mockResolvedValue('videos');
+            mockGetAllWithParams.mockResolvedValue('videos');
             const videos = await videoDb.queryVideos();
 
-            expect(mockGetAll).toHaveBeenCalledWith(sql);
+            expect(mockGetAllWithParams).toHaveBeenCalled();
+            const [sql, params] = mockGetAllWithParams.mock.calls[0];
+            expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
+            expect(params).toEqual({});
+            expect(videos).toBe('videos');
+        });
+
+        it('runs the correct sql to retrieve all videos when empty query params object is defined', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValueOnce({ ver: 4 });
+            await videoDb.initialise();
+            const expectedSql = 'SELECT id, name, category, director, length_mins, to_watch_priority, progress FROM videos';
+
+            mockGetAllWithParams.mockResolvedValue('videos');
+            const videos = await videoDb.queryVideos({});
+
+            expect(mockGetAllWithParams).toHaveBeenCalled();
+            const [sql, params] = mockGetAllWithParams.mock.calls[0];
+            expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
+            expect(params).toEqual({});
+            expect(videos).toBe('videos');
+        });
+
+        it('runs the correct sql with query params when maxLength query param is defined', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValueOnce({ ver: 4 });
+            await videoDb.initialise();
+            const expectedSql = 'SELECT id, name, category, director, length_mins, to_watch_priority, progress FROM videos WHERE length_mins <= $maxLength';
+            const expectedParams = { '$maxLength': 3 };
+
+            mockGetAllWithParams.mockResolvedValue('videos');
+            const videos = await videoDb.queryVideos({ maxLength: 3 });
+
+            expect(mockGetAllWithParams).toHaveBeenCalled();
+            const [sql, params] = mockGetAllWithParams.mock.calls[0];
+            expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
+            expect(params).toEqual(expectedParams);
             expect(videos).toBe('videos');
         });
     });

@@ -257,6 +257,13 @@ paths:
       description: Get a list of videos from the database
       parameters:
         - $ref: '#/components/parameters/ComponentPath'
+        - in: query
+          name: maxLength
+          required: false
+          description: The maximum video length
+          schema:
+            type: integer
+            minimum: 0
       responses:
         '200':
           description: OK

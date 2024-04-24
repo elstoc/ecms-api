@@ -1,5 +1,5 @@
 import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
-import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId } from './IVideoDb';
+import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoQueryParams } from './IVideoDb';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { dbVersionSql } from './dbVersionSql';
 import path from 'path';
@@ -130,9 +130,18 @@ export class VideoDb implements IVideoDb {
         return result;
     }
 
-    public async queryVideos(): Promise<VideoWithId[]> {
-        const sql = 'SELECT id, name, category, director, length_mins, to_watch_priority, progress FROM videos';
-        const result = await this.database?.getAll<VideoWithId>(sql);
+    public async queryVideos(queryParams?: VideoQueryParams): Promise<VideoWithId[]> {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const params: any = {};
+        let sql = `SELECT id, name, category, director, length_mins, to_watch_priority, progress
+                     FROM videos`;
+
+        if (queryParams?.maxLength) {
+            sql += '\nWHERE length_mins <= $maxLength';
+            params['$maxLength'] = queryParams.maxLength;
+        }
+
+        const result = await this.database?.getAllWithParams<VideoWithId>(sql, params);
         if (!result) {
             throw new Error('Unexpected error querying videos');
         }

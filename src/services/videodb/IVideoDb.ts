@@ -28,6 +28,10 @@ export type LookupValues = {
     [key: string]: string;
 }
 
+export type VideoQueryParams = {
+   maxLength?: number;
+}
+
 export interface IVideoDb {
     shutdown(): Promise<void>;
     initialise(): Promise<void>;
@@ -36,5 +40,5 @@ export interface IVideoDb {
     addVideo(video: Video): Promise<void>;
     updateVideo(video: VideoWithId): Promise<void>;
     getVideo(id: number): Promise<VideoWithId>;
-    queryVideos(): Promise<VideoWithId[]>;
+    queryVideos(queryParams?: VideoQueryParams): Promise<VideoWithId[]>;
 }

@@ -270,6 +270,56 @@ describe('OASParser.parseAndValidateSchema', () => {
             });
         });
 
+        describe('an array schema', () => {
+            it.each([
+                ['is a string', 'a-string'],
+                ['is undefined', undefined]
+            ])('has a non-object items entry (%s)', async (desc, items) => {
+                const schema = { type: 'object', properties: { aProp: { type: 'array', items } } };
+                const requestBody = { content: { 'application/json': { schema } } };
+                const dereferencedSchema = buildOASSchema('/some/path', 'put', undefined, requestBody);
+                dereferenceMock.mockResolvedValue(dereferencedSchema);
+
+                await expect(oasParser.parseOAS())
+                    .rejects.toThrow(new OASParsingError('array requestBody.aProp at endpoint put:/some/path has no items defined'));
+            });
+
+            it.each([
+                ['is a string', 'a-string'],
+                ['is a decimal', 4.2],
+                ['is zero', 0],
+                ['is less than zero', -1]
+            ])('has an invalid minItems value (%s)', async (desc, minItems) => {
+                const schema = { type: 'object', properties: { aProp: { type: 'array', items: { type: 'string' }, minItems } } };
+                const requestBody = { content: { 'application/json': { schema } } };
+                const dereferencedSchema = buildOASSchema('/some/path', 'put', undefined, requestBody);
+                dereferenceMock.mockResolvedValue(dereferencedSchema);
+
+                await expect(oasParser.parseOAS())
+                    .rejects.toThrow(new OASParsingError('array requestBody.aProp at endpoint put:/some/path has a bad minItems value'));
+            });
+
+            it('has an items entry with no type', async () => {
+                const schema = { type: 'object', properties: { aProp: { type: 'array', items: { description: 'boo' } } } };
+                const requestBody = { content: { 'application/json': { schema } } };
+                const dereferencedSchema = buildOASSchema('/some/path', 'put', undefined, requestBody);
+                dereferenceMock.mockResolvedValue(dereferencedSchema);
+
+                await expect(oasParser.parseOAS())
+                    .rejects.toThrow(new OASParsingError('invalid type for requestBody.aProp.items at endpoint put:/some/path'));
+            });
+
+            it('has an items entry with an invalid type', async () => {
+                const schema = { type: 'object', properties: { aProp: { type: 'array', items: { description: 'boo', type: 'invalid-type' } } } };
+                const requestBody = { content: { 'application/json': { schema } } };
+                const dereferencedSchema = buildOASSchema('/some/path', 'put', undefined, requestBody);
+                dereferenceMock.mockResolvedValue(dereferencedSchema);
+
+                await expect(oasParser.parseOAS())
+                    .rejects.toThrow(new OASParsingError('invalid type for requestBody.aProp.items at endpoint put:/some/path'));
+            });
+        });
+
         describe('an object schema (e.g. requestBody)', () => {
             it.each([
                 ['does not have any properties', { type: 'object', additionalProperties: false }],

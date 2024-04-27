@@ -6,6 +6,13 @@ export type ObjectValidationSchema = {
     additionalProperties: boolean;
 }
 
+export type ArrayValidationSchema = {
+    type: 'array';
+    fullPath: string;
+    items: ValidationSchema;
+    minItems?: number;
+}
+
 export type StringValidationSchema = {
     type: 'string';
     fullPath: string;
@@ -19,7 +26,7 @@ export type IntegerValidationSchema = {
     minimum?: number;
 }
 
-export type ValidationSchema = ObjectValidationSchema | StringValidationSchema | IntegerValidationSchema;
+export type ValidationSchema = ObjectValidationSchema | ArrayValidationSchema | StringValidationSchema | IntegerValidationSchema;
 
 export type EndpointParameterValidationSchema = {
     pathParamsSchema?: ObjectValidationSchema;

@@ -11,6 +11,7 @@ import {
     EndpointValidationSchemas,
     EndpointParameterValidationSchema,
     EndpointRequestBodyValidationSchema,
+    ArrayValidationSchema,
 } from './IEndpointValidator';
 import { splitPath } from '../utils';
 
@@ -184,11 +185,32 @@ export class OASParser implements IOASParser {
             return this.parseOASString(oasSchema, endpoint, fullPath);
         } else if (type === 'integer') {
             return this.parseOASInteger(oasSchema, endpoint, fullPath);
+        } else if (type === 'array') {
+            return this.parseOASArray(oasSchema, endpoint, fullPath);
         } else if (type === 'object') {
             return this.parseOASObject(oasSchema, endpoint, fullPath);
         } else {
             throw new OASParsingError(`invalid type for ${fullPath} at endpoint ${endpoint}`);
         }
+    }
+
+    private parseOASArray(oasArraySchema: Record<string, unknown>, endpoint: string, fullPath: string): ArrayValidationSchema {
+        const { minItems } = oasArraySchema;
+        if (minItems !== undefined) {
+            if (typeof minItems !== 'number' || !Number.isInteger(minItems) || minItems <= 0) {
+                throw new OASParsingError(`array ${fullPath} at endpoint ${endpoint} has a bad minItems value`);
+            }
+        }
+
+        const itemsOasSchema = this.toRecordOrThrow(oasArraySchema.items, `array ${fullPath} at endpoint ${endpoint} has no items defined`);
+        const itemsValidationSchema = this.parseOASByType(itemsOasSchema, endpoint, `${fullPath}.items`);
+
+        return {
+            type: 'array',
+            fullPath,
+            items: itemsValidationSchema,
+            minItems
+        };
     }
 
     private parseOASObject(oasObjectSchema: Record<string, unknown>, endpoint: string, fullPath: string): ObjectValidationSchema {

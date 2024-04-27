@@ -385,7 +385,9 @@ describe('OASParser.parseAndValidateSchema', () => {
                             field5: { type: 'integer', minimum: 4, description: 'some-description' },
                             field6: { type: 'object', additionalProperties: true }
                         }
-                    }
+                    },
+                    field7: { type: 'array', items: { type: 'string' } },
+                    field8: { type: 'array', items: { type: 'integer' }, minItems: 1 },
                 }
             };
             const oasRequestBody = { required: true, content: { 'application/json': { schema: oasSchema } } };
@@ -411,7 +413,9 @@ describe('OASParser.parseAndValidateSchema', () => {
                             field5: { type: 'integer', minimum: 4, fullPath: 'requestBody.field3.field5' },
                             field6: { type: 'object', fullPath: 'requestBody.field3.field6', additionalProperties: true, properties: {} }
                         }
-                    }
+                    },
+                    field7: { type: 'array', fullPath: 'requestBody.field7', items: { type: 'string', fullPath: 'requestBody.field7.items' } },
+                    field8: { type: 'array', fullPath: 'requestBody.field8', items: { type: 'integer', fullPath: 'requestBody.field8.items' }, minItems: 1 },
                 }
             };
             expect(requestBodySchema).toEqual(expectedValidationSchema);

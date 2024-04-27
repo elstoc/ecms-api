@@ -195,22 +195,22 @@ export class OASParser implements IOASParser {
     }
 
     private parseOASArray(oasArraySchema: Record<string, unknown>, endpoint: string, fullPath: string): ArrayValidationSchema {
+        const itemsOasSchema = this.toRecordOrThrow(oasArraySchema.items, `array ${fullPath} at endpoint ${endpoint} has no items defined`);
+        const returnData: ArrayValidationSchema = {
+            type: 'array',
+            fullPath,
+            items: this.parseOASByType(itemsOasSchema, endpoint, `${fullPath}.items`)
+        };
+
         const { minItems } = oasArraySchema;
         if (minItems !== undefined) {
             if (typeof minItems !== 'number' || !Number.isInteger(minItems) || minItems <= 0) {
                 throw new OASParsingError(`array ${fullPath} at endpoint ${endpoint} has a bad minItems value`);
             }
+            returnData.minItems = minItems;
         }
 
-        const itemsOasSchema = this.toRecordOrThrow(oasArraySchema.items, `array ${fullPath} at endpoint ${endpoint} has no items defined`);
-        const itemsValidationSchema = this.parseOASByType(itemsOasSchema, endpoint, `${fullPath}.items`);
-
-        return {
-            type: 'array',
-            fullPath,
-            items: itemsValidationSchema,
-            minItems
-        };
+        return returnData;
     }
 
     private parseOASObject(oasObjectSchema: Record<string, unknown>, endpoint: string, fullPath: string): ObjectValidationSchema {

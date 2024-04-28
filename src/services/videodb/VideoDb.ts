@@ -131,14 +131,27 @@ export class VideoDb implements IVideoDb {
     }
 
     public async queryVideos(queryParams?: VideoQueryParams): Promise<VideoWithId[]> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const params: any = {};
+        let params: { [key: string]: unknown } = {};
+        const whereClauses: string[] = [];
         let sql = `SELECT id, name, category, director, length_mins, to_watch_priority, progress
                      FROM videos`;
 
-        if (queryParams?.maxLength) {
-            sql += '\nWHERE length_mins <= $maxLength';
-            params['$maxLength'] = queryParams.maxLength;
+        const { maxLength, categories } = queryParams || {};
+        if (maxLength) {
+            whereClauses.push('length_mins <= $maxLength');
+            params['$maxLength'] = maxLength;
+        }
+        if (categories) {
+            const categoryParams: { [key: string]: string } = {};
+            categories.forEach((category, index) => {
+                categoryParams['$category' + index.toString()] = category;
+            });
+            whereClauses.push(`category IN (${Object.keys(categoryParams).join(', ')})`);
+            params = { ...params, ...categoryParams };
+        }
+
+        if (whereClauses.length > 0) {
+            sql += ` WHERE (${whereClauses.join(') AND (')})`;
         }
 
         const result = await this.database?.getAllWithParams<VideoWithId>(sql, params);

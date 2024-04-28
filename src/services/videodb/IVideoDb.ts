@@ -31,6 +31,7 @@ export type LookupValues = {
 export type VideoQueryParams = {
     maxLength?: number;
     categories?: string[];
+    titleLike?: string;
 }
 
 export interface IVideoDb {

@@ -265,6 +265,13 @@ paths:
             type: integer
             minimum: 0
         - in: query
+          name: titleLike
+          required: false
+          description: Case insensitive like clause for video title (percent is wildcard)
+          schema:
+            type: string
+            minLength: 1
+        - in: query
           name: categories
           required: false
           description: A list of categories

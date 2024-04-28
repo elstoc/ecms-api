@@ -136,18 +136,22 @@ export class VideoDb implements IVideoDb {
         let sql = `SELECT id, name, category, director, length_mins, to_watch_priority, progress
                      FROM videos`;
 
-        const { maxLength, categories } = queryParams || {};
-        if (maxLength) {
+        const { maxLength, categories, titleLike } = queryParams || {};
+        if (maxLength !== undefined) {
             whereClauses.push('length_mins <= $maxLength');
             params['$maxLength'] = maxLength;
         }
-        if (categories) {
+        if (categories !== undefined) {
             const categoryParams: { [key: string]: string } = {};
             categories.forEach((category, index) => {
                 categoryParams['$category' + index.toString()] = category;
             });
             whereClauses.push(`category IN (${Object.keys(categoryParams).join(', ')})`);
             params = { ...params, ...categoryParams };
+        }
+        if (titleLike !== undefined) {
+            whereClauses.push('LOWER(name) LIKE $titleLike');
+            params['$titleLike'] = titleLike.toLowerCase();
         }
 
         if (whereClauses.length > 0) {

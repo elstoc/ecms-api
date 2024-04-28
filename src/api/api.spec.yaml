@@ -264,6 +264,17 @@ paths:
           schema:
             type: integer
             minimum: 0
+        - in: query
+          name: categories
+          required: false
+          description: A list of categories
+          explode: false
+          style: pipeDelimited
+          schema:
+            type: array
+            minItems: 1
+            items:
+              $ref: '#/components/schemas/category'
       responses:
         '200':
           description: OK
@@ -299,13 +310,7 @@ components:
           type: string
           minLength: 1
         category:
-          type: string
-          enum:
-            - TV
-            - TVD
-            - MOV
-            - MOVD
-            - MUS
+          $ref: '#/components/schemas/category'
         director:
           type: string
         length_mins:
@@ -333,13 +338,7 @@ components:
           type: string
           minLength: 1
         category:
-          type: string
-          enum:
-            - TV
-            - TVD
-            - MOV
-            - MOVD
-            - MUS
+          $ref: '#/components/schemas/category'
         director:
           type: string
         length_mins:
@@ -348,3 +347,11 @@ components:
           type: integer
         progress:
           type: string
+    category:
+      type: string
+      enum:
+        - TV
+        - TVD
+        - MOV
+        - MOVD
+        - MUS

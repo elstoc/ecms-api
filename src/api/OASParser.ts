@@ -169,16 +169,17 @@ export class OASParser implements IOASParser {
             } else if (oasSchema?.type === 'array') {
                 if (pathOrQuery === 'path') {
                     throw new OASParsingError(`array-type schema is not allowed for ${name} in path parameters in endpoint ${endpoint}`);
-                } else if (oasSchema?.explode !== false || oasSchema?.style !== 'pipeDelimited') {
+                } else if (oasParameterRecord?.explode !== false || oasParameterRecord?.style !== 'pipeDelimited') {
                     throw new OASParsingError(`array-type schema for ${name} in query parameters for endpoint ${endpoint} must have explode=false and style='pipeDelimited'`);
                 }
+                returnVal.properties[name] = this.parseOASArray(oasSchema, endpoint, `${pathOrQuery}.${name}`, true);
+            } else {
+                returnVal.properties[name] = this.parseOASByType(oasSchema, endpoint, `${pathOrQuery}.${name}`);
             }
 
             if (oasParameterRecord?.required === true) {
                 requiredParams.push(name);
             }
-
-            returnVal.properties[name] = this.parseOASByType(oasSchema, endpoint, `${pathOrQuery}.${name}`);
         });
 
         if (requiredParams.length > 0) {
@@ -203,7 +204,7 @@ export class OASParser implements IOASParser {
         }
     }
 
-    private parseOASArray(oasArraySchema: Record<string, unknown>, endpoint: string, fullPath: string): ArrayValidationSchema {
+    private parseOASArray(oasArraySchema: Record<string, unknown>, endpoint: string, fullPath: string, pipeDelimited?: boolean): ArrayValidationSchema {
         const itemsOasSchema = this.toRecordOrThrow(oasArraySchema.items, `array ${fullPath} at endpoint ${endpoint} has no items defined`);
         const returnData: ArrayValidationSchema = {
             type: 'array',
@@ -211,14 +212,14 @@ export class OASParser implements IOASParser {
             itemSchema: this.parseOASByType(itemsOasSchema, endpoint, `${fullPath}.items`)
         };
 
-        const { minItems, explode, style } = oasArraySchema;
+        const { minItems } = oasArraySchema;
         if (minItems !== undefined) {
             if (typeof minItems !== 'number' || !Number.isInteger(minItems) || minItems <= 0) {
                 throw new OASParsingError(`array ${fullPath} at endpoint ${endpoint} has a bad minItems value`);
             }
             returnData.minItems = minItems;
         }
-        if (explode === false && style === 'pipeDelimited') {
+        if (pipeDelimited) {
             returnData.pipeDelimitedString = true;
         }
         return returnData;

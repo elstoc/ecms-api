@@ -242,12 +242,12 @@ describe('OASParser.parseAndValidateSchema', () => {
 
         describe('a query parameter has an array-type schema', () => {
             it.each([
-                ['explode true', { type: 'array', explode: true, style: 'pipeDelimited' }],
-                ['explode not present', { type: 'array', style: 'pipeDelimited' }],
-                ['style not pipeDelimited', { type: 'array', explode: true, style: 'notPipeDelimited' }],
-                ['style not present', { type: 'array', explode: true }],
-            ])('with incorrect OAS explode/style parameters (%s)', async (desc, items) => {
-                const dereferencedSchema = { paths: { '/some/path': { 'put': { parameters: [{ in: 'query', name: 'somename', schema: { type: 'array', items } }] } } } };
+                ['explode true', true, 'pipeDelimited'],
+                ['explode undefined', undefined, 'pipeDelimited'],
+                ['style not pipeDelimited', true, 'notPipeDelimited'],
+                ['style undefined', true, undefined],
+            ])('with incorrect OAS explode/style parameters (%s)', async (desc, style, explode) => {
+                const dereferencedSchema = { paths: { '/some/path': { 'put': { parameters: [{ in: 'query', name: 'somename', style, explode, schema: { type: 'array', items: { type: 'string '} } }] } } } };
                 dereferenceMock.mockResolvedValue(dereferencedSchema);
 
                 await expect(oasParser.parseOAS())
@@ -255,7 +255,7 @@ describe('OASParser.parseAndValidateSchema', () => {
             });
 
             it('with (for example) no items definition', async () => {
-                const dereferencedSchema = { paths: { '/some/path': { 'put': { parameters: [{ in: 'query', name: 'somename', schema: { type: 'array', explode: false, style: 'pipeDelimited' } }] } } } };
+                const dereferencedSchema = { paths: { '/some/path': { 'put': { parameters: [{ in: 'query', name: 'somename', explode: false, style: 'pipeDelimited', schema: { type: 'array' } }] } } } };
                 dereferenceMock.mockResolvedValue(dereferencedSchema);
 
                 await expect(oasParser.parseOAS())
@@ -459,7 +459,7 @@ describe('OASParser.parseAndValidateSchema', () => {
                 { name: 'field2', description: 'some-description', in: 'query', schema: { type: 'string', minLength: 1 } },
                 { name: 'field3', description: 'some-description', in: 'query', required: true, schema: { type: 'integer', minimum: 0 } },
                 { name: 'field4', description: 'some-description', in: 'query', schema: { type: 'integer' } },
-                { name: 'field5', description: 'some-description', in: 'query', schema: { type: 'array', explode: false, style: 'pipeDelimited', minItems: 1, items: { type: 'string' } } }
+                { name: 'field5', description: 'some-description', in: 'query', explode: false, style: 'pipeDelimited', schema: { type: 'array', minItems: 1, items: { type: 'string' } } }
             ];
             const dereferencedSchema = buildOASSchema('/some/path', 'get', parameters, undefined);
             dereferenceMock.mockResolvedValue(dereferencedSchema);

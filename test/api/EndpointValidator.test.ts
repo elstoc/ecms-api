@@ -99,6 +99,18 @@ describe('EndpointValidator', () => {
                             field7: {
                                 type: 'object', fullPath: 'requestBody.field7', additionalProperties: false,
                                 properties: { field8: { type: 'integer', fullPath: 'requestBody.field7.field8' } }
+                            },
+                            field9: {
+                                type: 'array', fullPath: 'requestBody.field9',
+                                itemSchema: { type: 'string', fullPath: 'requestBody.field9.items' }
+                            },
+                            field10: {
+                                type: 'array', fullPath: 'requestBody.field10', minItems: 1,
+                                itemSchema: { type: 'integer', fullPath: 'requestBody.field10.items' }
+                            },
+                            field11: {
+                                type: 'array', fullPath: 'requestBody.field11', minItems: 2,
+                                itemSchema: { type: 'integer', fullPath: 'requestBody.field11.items' }
                             }
                         },
                         additionalProperties: false
@@ -215,6 +227,52 @@ describe('EndpointValidator', () => {
                         expect(errors).toContainEqual({ property: 'requestBody.field7.field8', error: 'invalid data type - integer expected' });
                     });
                 });
+
+                describe('expects a field to be an array', () => {
+                    it.each([
+                        ['string', 'string'],
+                        ['number', 3],
+                        ['undefined', undefined]
+                    ])('that is not an array (%s)', (desc, arrayContent) => {
+                        const requestBody = {
+                            field1: 'something', field2: 'something', field3: 'something',
+                            field10: arrayContent
+                        };
+                        const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
+    
+                        expect(errors).toContainEqual({ property: 'requestBody.field10', error: 'invalid data type - array expected' });
+                    });
+
+                    it('that has element(s) with an incorrect format', () => {
+                        const requestBody = {
+                            field1: 'something', field2: 'something', field3: 'something',
+                            field11: [1, 'two', 3]
+                        };
+                        const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
+    
+                        expect(errors).toContainEqual({ property: 'requestBody.field11.1', error: 'invalid data type - integer expected' });
+                    });
+
+                    it('that has fewer elements than the defined minimum length (singular)', () => {
+                        const requestBody = {
+                            field1: 'something', field2: 'something', field3: 'something',
+                            field10: []
+                        };
+                        const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
+    
+                        expect(errors).toContainEqual({ property: 'requestBody.field10', error: 'array must contain at least 1 item' });
+                    });
+
+                    it('that has fewer elements than the defined minimum length (plural)', () => {
+                        const requestBody = {
+                            field1: 'something', field2: 'something', field3: 'something',
+                            field11: ['item']
+                        };
+                        const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
+    
+                        expect(errors).toContainEqual({ property: 'requestBody.field11', error: 'array must contain at least 2 items' });
+                    });
+                });
             });
         });
     
@@ -239,6 +297,10 @@ describe('EndpointValidator', () => {
                         field4: {
                             type: 'object', fullPath: 'requestBody.field4', additionalProperties: true,
                             properties: { field5: { type: 'integer', fullPath: 'requestBody.field4.field5' } }
+                        },
+                        field6: {
+                            type: 'array', fullPath: 'requestBody.field6', minItems: 2,
+                            itemSchema: { fullPath: 'requestBody.field6.items', type: 'string' }
                         }
                     },
                     additionalProperties: false
@@ -260,7 +322,8 @@ describe('EndpointValidator', () => {
                     field3: 'test',
                     field4: {
                         field5: 99
-                    }
+                    },
+                    field6: ['item1', 'item2']
                 } as any;
                 const pathParams = { fieldX: 'some-string' } as any;
                 const queryParams = pathParams;

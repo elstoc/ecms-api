@@ -414,8 +414,8 @@ describe('OASParser.parseAndValidateSchema', () => {
                             field6: { type: 'object', fullPath: 'requestBody.field3.field6', additionalProperties: true, properties: {} }
                         }
                     },
-                    field7: { type: 'array', fullPath: 'requestBody.field7', items: { type: 'string', fullPath: 'requestBody.field7.items' } },
-                    field8: { type: 'array', fullPath: 'requestBody.field8', items: { type: 'integer', fullPath: 'requestBody.field8.items' }, minItems: 1 },
+                    field7: { type: 'array', fullPath: 'requestBody.field7', itemSchema: { type: 'string', fullPath: 'requestBody.field7.items' } },
+                    field8: { type: 'array', fullPath: 'requestBody.field8', itemSchema: { type: 'integer', fullPath: 'requestBody.field8.items' }, minItems: 1 },
                 }
             };
             expect(requestBodySchema).toEqual(expectedValidationSchema);

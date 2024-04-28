@@ -8,8 +8,9 @@ import {
     EndpointData,
     IEndpointValidator,
     ValidationError,
+    ArrayValidationSchema,
 } from './IEndpointValidator';
-import { convertToRecord, isEmpty } from './objectUtils';
+import { convertToArray, convertToRecord, isEmpty } from './objectUtils';
 
 export class EndpointValidator implements IEndpointValidator {
     private endpointsWithPathParams: string[] = [];
@@ -96,6 +97,39 @@ export class EndpointValidator implements IEndpointValidator {
         }
     }
 
+    private validateValue(errors: ValidationError[], value: unknown, validationSchema: ValidationSchema) {
+        if (validationSchema.type === 'string') {
+            this.validateString(errors, value, validationSchema);
+        } else if (validationSchema.type === 'integer') {
+            this.validateInteger(errors, value, validationSchema);
+        } else if (validationSchema.type === 'object') {
+            this.validateObject(errors, value, validationSchema);
+        } else if (validationSchema.type === 'array') {
+            this.validateArray(errors, value, validationSchema);
+        }
+    }
+
+    private validateArray(errors: ValidationError[], value: unknown, validationSchema: ArrayValidationSchema): void {
+        const { minItems, itemSchema } = validationSchema;
+
+        let arrayToValidate: unknown[] = [];
+        try {
+            arrayToValidate = convertToArray(value);
+        } catch {
+            this.pushError(errors, validationSchema.fullPath, 'invalid data type - array expected');
+            return;
+        }
+
+        if (minItems !== undefined && arrayToValidate.length < minItems) {
+            this.pushError(errors, validationSchema.fullPath, `array must contain at least ${minItems} item${minItems > 1 ? 's' : ''}`);
+        }
+
+        arrayToValidate.forEach((value, index) => {
+            const fullPath = itemSchema.fullPath.replace('items', index.toString()); // reference the appropriate array index in any error
+            this.validateValue(errors, value, { ...itemSchema, fullPath });
+        });
+    }
+
     private validateObject(errors: ValidationError[], value: unknown, validationSchema: ObjectValidationSchema): void {
         let objectToValidate: Record<string, unknown> = {};
         try {
@@ -119,16 +153,6 @@ export class EndpointValidator implements IEndpointValidator {
             } else if (!validationSchema.additionalProperties) {
                 this.pushError(errors, `${validationSchema.fullPath}.${key}`, 'field is not permitted');
             }
-        }
-    }
-
-    private validateValue(errors: ValidationError[], value: unknown, validationSchema: ValidationSchema) {
-        if (validationSchema.type === 'string') {
-            this.validateString(errors, value, validationSchema);
-        } else if (validationSchema.type === 'integer') {
-            this.validateInteger(errors, value, validationSchema);
-        } else if (validationSchema.type == 'object') {
-            this.validateObject(errors, value, validationSchema);
         }
     }
 

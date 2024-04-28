@@ -199,7 +199,7 @@ export class OASParser implements IOASParser {
         const returnData: ArrayValidationSchema = {
             type: 'array',
             fullPath,
-            items: this.parseOASByType(itemsOasSchema, endpoint, `${fullPath}.items`)
+            itemSchema: this.parseOASByType(itemsOasSchema, endpoint, `${fullPath}.items`)
         };
 
         const { minItems } = oasArraySchema;

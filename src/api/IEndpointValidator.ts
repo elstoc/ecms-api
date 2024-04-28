@@ -9,7 +9,7 @@ export type ObjectValidationSchema = {
 export type ArrayValidationSchema = {
     type: 'array';
     fullPath: string;
-    items: ValidationSchema;
+    itemSchema: ValidationSchema;
     minItems?: number;
 }
 

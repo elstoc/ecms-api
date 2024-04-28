@@ -9,6 +9,13 @@ export const convertToRecord = (obj: unknown, allowEmpty = false): Record<string
     throw new Error('unable to convert');
 };
 
+export const convertToArray = (arr: unknown): unknown[] => {
+    if (Array.isArray(arr)) {
+        return arr as unknown[];
+    }
+    throw new Error('unable to convert');
+};
+
 const getValueAtPath = (obj: unknown, paths: string[]): unknown => {
     let untypedObj = obj;
     let typedObj: Record<string, unknown> | undefined;
@@ -31,16 +38,16 @@ export const getRecordAtPath = (obj: unknown, paths: string[]): Record<string, u
     }
 };
 
-export const convertToStringArray = (obj: unknown): string[] => {
-    if (Array.isArray(obj)) {
+export const convertToStringArray = (arr: unknown): string[] => {
+    if (Array.isArray(arr)) {
         let allStrings = true;
-        obj.forEach((entry) => {
+        arr.forEach((entry) => {
             if (typeof entry !== 'string') {
                 allStrings = false;
             }
         });
-        if (obj.length > 0 && allStrings) {
-            return obj as string[];
+        if (arr.length > 0 && allStrings) {
+            return arr as string[];
         }
     }
     throw new Error('unable to convert');

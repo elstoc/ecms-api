@@ -11,6 +11,7 @@ export type ArrayValidationSchema = {
     fullPath: string;
     itemSchema: ValidationSchema;
     minItems?: number;
+    pipeDelimitedString?: boolean;
 }
 
 export type StringValidationSchema = {

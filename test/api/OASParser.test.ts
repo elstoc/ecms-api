@@ -230,6 +230,37 @@ describe('OASParser.parseAndValidateSchema', () => {
                 await expect(oasParser.parseOAS())
                     .rejects.toThrow(new OASParsingError('path parameter somename is defined in the OAS parameter list but not in the endpoint name (put:/some/path)'));
             });
+
+            it('has an array-type schema', async () => {
+                const dereferencedSchema = { paths: { '/some/path': { 'put': { parameters: [{ in: 'path', name: 'somename', schema: { type: 'array' } }] } } } };
+                dereferenceMock.mockResolvedValue(dereferencedSchema);
+
+                await expect(oasParser.parseOAS())
+                    .rejects.toThrow(new OASParsingError('array-type schema is not allowed for somename in path parameters in endpoint put:/some/path'));
+            });
+        });
+
+        describe('a query parameter has an array-type schema', () => {
+            it.each([
+                ['explode true', { type: 'array', explode: true, style: 'pipeDelimited' }],
+                ['explode not present', { type: 'array', style: 'pipeDelimited' }],
+                ['style not pipeDelimited', { type: 'array', explode: true, style: 'notPipeDelimited' }],
+                ['style not present', { type: 'array', explode: true }],
+            ])('with incorrect OAS explode/style parameters (%s)', async (desc, items) => {
+                const dereferencedSchema = { paths: { '/some/path': { 'put': { parameters: [{ in: 'query', name: 'somename', schema: { type: 'array', items } }] } } } };
+                dereferenceMock.mockResolvedValue(dereferencedSchema);
+
+                await expect(oasParser.parseOAS())
+                    .rejects.toThrow(new OASParsingError("array-type schema for somename in query parameters for endpoint put:/some/path must have explode=false and style='pipeDelimited'"));
+            });
+
+            it('with (for example) no items definition', async () => {
+                const dereferencedSchema = { paths: { '/some/path': { 'put': { parameters: [{ in: 'query', name: 'somename', schema: { type: 'array', explode: false, style: 'pipeDelimited' } }] } } } };
+                dereferenceMock.mockResolvedValue(dereferencedSchema);
+
+                await expect(oasParser.parseOAS())
+                    .rejects.toThrow(new OASParsingError('array query.somename at endpoint put:/some/path has no items defined'));
+            });
         });
 
         describe('a string schema', () => {
@@ -427,7 +458,8 @@ describe('OASParser.parseAndValidateSchema', () => {
                 { name: 'field1', description: 'some-description', in: 'query', required: true, schema: { type: 'string', enum: ['value1'] } },
                 { name: 'field2', description: 'some-description', in: 'query', schema: { type: 'string', minLength: 1 } },
                 { name: 'field3', description: 'some-description', in: 'query', required: true, schema: { type: 'integer', minimum: 0 } },
-                { name: 'field4', description: 'some-description', in: 'query', schema: { type: 'integer' } }
+                { name: 'field4', description: 'some-description', in: 'query', schema: { type: 'integer' } },
+                { name: 'field5', description: 'some-description', in: 'query', schema: { type: 'array', explode: false, style: 'pipeDelimited', minItems: 1, items: { type: 'string' } } }
             ];
             const dereferencedSchema = buildOASSchema('/some/path', 'get', parameters, undefined);
             dereferenceMock.mockResolvedValue(dereferencedSchema);
@@ -443,7 +475,12 @@ describe('OASParser.parseAndValidateSchema', () => {
                     field1: { type: 'string', fullPath: 'query.field1', enum: ['value1'] },
                     field2: { type: 'string', fullPath: 'query.field2', minLength: 1 },
                     field3: { type: 'integer', fullPath: 'query.field3', minimum: 0 },
-                    field4: { type: 'integer', fullPath: 'query.field4' } }
+                    field4: { type: 'integer', fullPath: 'query.field4' },
+                    field5: {
+                        type: 'array', fullPath: 'query.field5', minItems: 1, pipeDelimitedString: true,
+                        itemSchema: { type: 'string', fullPath: 'query.field5.items' }
+                    }
+                }
             };
 
             expect(queryParamsSchema).toEqual(expectedQueryParams);

@@ -158,15 +158,17 @@ export class OASParser implements IOASParser {
             const name = oasParameterRecord?.name;
             if (typeof name !== 'string' || name === '') {
                 throw new OASParsingError(`missing or invalid name for one or more ${pathOrQuery} parameters in endpoint ${endpoint}`);
-            }
-            if (returnVal.properties[name]) {
+            } else if (returnVal.properties[name]) {
                 throw new OASParsingError(`duplicate ${pathOrQuery} parameter ${name} in endpoint ${endpoint}`);
             }
             const oasSchema = this.toRecordOrThrow(oasParameterRecord?.schema, `no schema for ${name} in ${pathOrQuery} parameters in endpoint ${endpoint}`);
             if (oasSchema?.type === 'object') {
                 throw new OASParsingError(`object-type schema is defined for ${name} in ${pathOrQuery} parameters in endpoint ${endpoint}`);
-            }
-            if (oasParameterRecord?.required === true) {
+            } else if (oasSchema?.type === 'array' && pathOrQuery === 'path') {
+                throw new OASParsingError(`array-type schema is not allowed for ${name} in path parameters in endpoint ${endpoint}`);
+            } else if (oasSchema?.type === 'array' && (oasSchema?.explode !== false || oasSchema?.style !== 'pipeDelimited')) {
+                throw new OASParsingError(`array-type schema for ${name} in query parameters for endpoint ${endpoint} must have explode=false and style='pipeDelimited'`);
+            } else if (oasParameterRecord?.required === true) {
                 requiredParams.push(name);
             }
             returnVal.properties[name] = this.parseOASByType(oasSchema, endpoint, `${pathOrQuery}.${name}`);
@@ -202,14 +204,16 @@ export class OASParser implements IOASParser {
             itemSchema: this.parseOASByType(itemsOasSchema, endpoint, `${fullPath}.items`)
         };
 
-        const { minItems } = oasArraySchema;
+        const { minItems, explode, style } = oasArraySchema;
         if (minItems !== undefined) {
             if (typeof minItems !== 'number' || !Number.isInteger(minItems) || minItems <= 0) {
                 throw new OASParsingError(`array ${fullPath} at endpoint ${endpoint} has a bad minItems value`);
             }
             returnData.minItems = minItems;
         }
-
+        if (explode === false && style === 'pipeDelimited') {
+            returnData.pipeDelimitedString = true;
+        }
         return returnData;
     }
 

@@ -111,7 +111,11 @@ describe('EndpointValidator', () => {
                             field11: {
                                 type: 'array', fullPath: 'requestBody.field11', minItems: 2,
                                 itemSchema: { type: 'integer', fullPath: 'requestBody.field11.items' }
-                            }
+                            },
+                            field12: {
+                                type: 'array', fullPath: 'requestBody.field12', pipeDelimitedString: true,
+                                itemSchema: { type: 'integer', fullPath: 'requestBody.field12.items' }
+                            },
                         },
                         additionalProperties: false
                     };
@@ -228,7 +232,29 @@ describe('EndpointValidator', () => {
                     });
                 });
 
-                describe('expects a field to be an array', () => {
+                describe('expects a field to be a pipe-delimited-string array', () => {
+                    it('is not a string', () => {
+                        const requestBody = {
+                            field1: 'something', field2: 'something', field3: 'something',
+                            field12: [1,2,3]
+                        };
+                        const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
+    
+                        expect(errors).toContainEqual({ property: 'requestBody.field12', error: 'invalid data type - pipe-delimited array expected' });
+                    });
+
+                    it('contains a string element when integers are expected', () => {
+                        const requestBody = {
+                            field1: 'something', field2: 'something', field3: 'something',
+                            field12: '1|two|3'
+                        };
+                        const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
+    
+                        expect(errors).toContainEqual({ property: 'requestBody.field12.1', error: 'invalid data type - integer expected' });
+                    });
+                });
+
+                describe('expects a field to be a non-pipe-delimited-string array', () => {
                     it.each([
                         ['string', 'string'],
                         ['number', 3],
@@ -314,7 +340,19 @@ describe('EndpointValidator', () => {
                         fieldX: { type: 'string', fullPath: 'path.fieldX' }
                     }
                 } as any;
-                const queryParamsSchema = pathParamsSchema;
+                const queryParamsSchema = {
+                    type: 'object',
+                    fullPath: 'path',
+                    required: ['fieldX'],
+                    additionalProperties: false,
+                    properties: {
+                        fieldX: { type: 'string', fullPath: 'path.fieldX' },
+                        arrayOfNumbers: {
+                            type: 'array', minItems: 2, fullPath: 'query.arrayOfNumbers', pipeDelimitedString: true,
+                            itemSchema: { type: 'integer', fullPath: 'query.arrayOfNumbers.items' }
+                        }
+                    }
+                } as any;
     
                 const requestBody = {
                     field1: 'X',
@@ -326,7 +364,9 @@ describe('EndpointValidator', () => {
                     field6: ['item1', 'item2']
                 } as any;
                 const pathParams = { fieldX: 'some-string' } as any;
-                const queryParams = pathParams;
+                const queryParams = {
+                    ...pathParams, arrayOfNumbers: '1|2|3'
+                };
     
                 const validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema, pathParamsSchema, queryParamsSchema} });
     

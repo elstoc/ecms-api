@@ -110,14 +110,22 @@ export class EndpointValidator implements IEndpointValidator {
     }
 
     private validateArray(errors: ValidationError[], value: unknown, validationSchema: ArrayValidationSchema): void {
-        const { minItems, itemSchema } = validationSchema;
+        const { minItems, itemSchema, pipeDelimitedString } = validationSchema;
 
         let arrayToValidate: unknown[] = [];
-        try {
-            arrayToValidate = convertToArray(value);
-        } catch {
-            this.pushError(errors, validationSchema.fullPath, 'invalid data type - array expected');
-            return;
+        if (pipeDelimitedString) {
+            if (typeof value !== 'string') {
+                this.pushError(errors, validationSchema.fullPath, 'invalid data type - pipe-delimited array expected');
+                return;
+            }
+            arrayToValidate = (value as string).split('|');
+        } else {
+            try {
+                arrayToValidate = convertToArray(value);
+            } catch {
+                this.pushError(errors, validationSchema.fullPath, 'invalid data type - array expected');
+                return;
+            }
         }
 
         if (minItems !== undefined && arrayToValidate.length < minItems) {

@@ -155,22 +155,29 @@ export class OASParser implements IOASParser {
 
         oasParameters.forEach((oasParameter) => {
             const oasParameterRecord = this.toRecordOrThrow(oasParameter, `bad ${pathOrQuery} parameter record in endpoint ${endpoint}`);
+
             const name = oasParameterRecord?.name;
             if (typeof name !== 'string' || name === '') {
                 throw new OASParsingError(`missing or invalid name for one or more ${pathOrQuery} parameters in endpoint ${endpoint}`);
             } else if (returnVal.properties[name]) {
                 throw new OASParsingError(`duplicate ${pathOrQuery} parameter ${name} in endpoint ${endpoint}`);
             }
+
             const oasSchema = this.toRecordOrThrow(oasParameterRecord?.schema, `no schema for ${name} in ${pathOrQuery} parameters in endpoint ${endpoint}`);
             if (oasSchema?.type === 'object') {
                 throw new OASParsingError(`object-type schema is defined for ${name} in ${pathOrQuery} parameters in endpoint ${endpoint}`);
-            } else if (oasSchema?.type === 'array' && pathOrQuery === 'path') {
-                throw new OASParsingError(`array-type schema is not allowed for ${name} in path parameters in endpoint ${endpoint}`);
-            } else if (oasSchema?.type === 'array' && (oasSchema?.explode !== false || oasSchema?.style !== 'pipeDelimited')) {
-                throw new OASParsingError(`array-type schema for ${name} in query parameters for endpoint ${endpoint} must have explode=false and style='pipeDelimited'`);
-            } else if (oasParameterRecord?.required === true) {
+            } else if (oasSchema?.type === 'array') {
+                if (pathOrQuery === 'path') {
+                    throw new OASParsingError(`array-type schema is not allowed for ${name} in path parameters in endpoint ${endpoint}`);
+                } else if (oasSchema?.explode !== false || oasSchema?.style !== 'pipeDelimited') {
+                    throw new OASParsingError(`array-type schema for ${name} in query parameters for endpoint ${endpoint} must have explode=false and style='pipeDelimited'`);
+                }
+            }
+
+            if (oasParameterRecord?.required === true) {
                 requiredParams.push(name);
             }
+
             returnVal.properties[name] = this.parseOASByType(oasSchema, endpoint, `${pathOrQuery}.${name}`);
         });
 

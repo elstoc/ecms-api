@@ -1,7 +1,7 @@
 import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
 import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoQueryParams } from './IVideoDb';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
-import { dbVersionSql } from './dbVersionSql';
+import { dbUpgradeSql } from './dbUpgradeSql';
 import path from 'path';
 import { Logger } from 'winston';
 import { NotFoundError } from '../../errors';
@@ -33,10 +33,10 @@ export class VideoDb implements IVideoDb {
     }
 
     private async upgradeDb(): Promise<void> {
-        const latestVersion = dbVersionSql.length;
+        const latestVersion = dbUpgradeSql.length;
         this.dbVersion ??= await this.retrieveVersion();
         if (latestVersion > this.dbVersion) {
-            for (const versionSql of dbVersionSql.slice(this.dbVersion)) {
+            for (const versionSql of dbUpgradeSql.slice(this.dbVersion)) {
                 await this.database?.exec(versionSql);
             }
             await this.storeVersion(latestVersion);
@@ -86,9 +86,9 @@ export class VideoDb implements IVideoDb {
 
     public async addVideo(video: Video): Promise<void> {
         const sql = `INSERT INTO videos
-                     (name, category, director, length_mins, to_watch_priority, progress)
+                     (title, category, director, length_mins, to_watch_priority, progress)
                      VALUES
-                     ($name, $category, $director, $length_mins, $to_watch_priority, $progress)`;
+                     ($title, $category, $director, $length_mins, $to_watch_priority, $progress)`;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const params: any = {};
         let key: keyof Video;
@@ -103,7 +103,7 @@ export class VideoDb implements IVideoDb {
         await this.throwIfNoVideo(video.id);
 
         const sql = `UPDATE videos
-                     SET name = $name,
+                     SET title = $title,
                          category = $category,
                          director = $director,
                          length_mins = $length_mins,
@@ -122,7 +122,7 @@ export class VideoDb implements IVideoDb {
 
     public async getVideo(id: number): Promise<VideoWithId> {
         await this.throwIfNoVideo(id);
-        const sql = `SELECT id, name, category, director, length_mins, to_watch_priority, progress FROM videos WHERE id = ${id}`;
+        const sql = `SELECT id, title, category, director, length_mins, to_watch_priority, progress FROM videos WHERE id = ${id}`;
         const result = await this.database?.get<VideoWithId>(sql);
         if (!result) {
             throw new Error(`Unexpected error getting video ${id}`);
@@ -133,7 +133,7 @@ export class VideoDb implements IVideoDb {
     public async queryVideos(queryParams?: VideoQueryParams): Promise<VideoWithId[]> {
         let params: { [key: string]: unknown } = {};
         const whereClauses: string[] = [];
-        let sql = `SELECT id, name, category, director, length_mins, to_watch_priority, progress
+        let sql = `SELECT id, title, category, director, length_mins, to_watch_priority, progress
                      FROM videos`;
 
         const { maxLength, categories, titleLike } = queryParams || {};
@@ -150,7 +150,7 @@ export class VideoDb implements IVideoDb {
             params = { ...params, ...categoryParams };
         }
         if (titleLike !== undefined) {
-            whereClauses.push('LOWER(name) LIKE $titleLike');
+            whereClauses.push('LOWER(title) LIKE $titleLike');
             params['$titleLike'] = titleLike.toLowerCase();
         }
 

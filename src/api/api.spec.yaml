@@ -193,6 +193,8 @@ paths:
               - categories
               - media_types
               - media_locations
+              - media_definition
+              - watched_status
       responses:
         '200':
           description: OK
@@ -306,14 +308,14 @@ components:
       type: object
       additionalProperties: false
       required:
-        - name
+        - title
         - category
         - director
         - length_mins
         - to_watch_priority
         - progress
       properties:
-        name:
+        title:
           type: string
           minLength: 1
         category:
@@ -331,7 +333,7 @@ components:
       additionalProperties: false
       required:
         - id
-        - name
+        - title
         - category
         - director
         - length_mins
@@ -341,7 +343,7 @@ components:
         id:
           type: integer
           minimum: 0
-        name:
+        title:
           type: string
           minLength: 1
         category:

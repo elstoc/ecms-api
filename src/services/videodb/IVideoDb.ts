@@ -1,5 +1,5 @@
 export type Video = {
-    name: string;
+    title: string;
     category: string;
     director: string;
     length_mins: number;
@@ -16,7 +16,9 @@ export type VideoWithId = Video & videoIdOnly;
 export enum LookupTables {
     video_category = 'l_categories',
     video_media_type = 'l_media_types',
-    video_media_location = 'l_media_locations'
+    video_media_location = 'l_media_locations',
+    video_watched_status = 'l_watched_status',
+    video_media_definition = 'l_media_definition',
 }
 
 export type LookupRow = {

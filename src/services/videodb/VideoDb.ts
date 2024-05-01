@@ -1,5 +1,5 @@
 import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
-import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoQueryParams } from './IVideoDb';
+import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoQueryParams, VideoWithIdAndPrimaryMedium } from './IVideoDb';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { dbUpgradeSql } from './dbUpgradeSql';
 import path from 'path';
@@ -139,8 +139,23 @@ export class VideoDb implements IVideoDb {
     public async queryVideos(queryParams?: VideoQueryParams): Promise<VideoWithId[]> {
         let params: { [key: string]: unknown } = {};
         const whereClauses: string[] = [];
-        let sql = `SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress
-                     FROM videos`;
+        let sql = `SELECT v.id, v.title, v.category, v.director, v.length_mins, v.watched, v.to_watch_priority, v.progress,
+                             pm.media_type pm_media_type, pm.watched pm_watched
+                      FROM   videos v
+                      LEFT OUTER JOIN (
+                        SELECT vm.*
+                        FROM   video_media vm
+                        INNER JOIN l_media_types lmt
+                        ON vm.media_type = lmt.code
+                        WHERE lmt.priority = (
+                            SELECT MIN(lmt2.priority)
+                            FROM   video_media vm2
+                            INNER JOIN l_media_types lmt2
+                            ON vm2.media_type = lmt2.code
+                            AND vm.video_id = vm2.video_id
+                        )
+                      ) pm
+                      ON v.id = pm.video_id`;
 
         const { maxLength, categories, titleLike } = queryParams || {};
         if (maxLength !== undefined) {
@@ -164,7 +179,7 @@ export class VideoDb implements IVideoDb {
             sql += ` WHERE (${whereClauses.join(') AND (')})`;
         }
 
-        const result = await this.database?.getAllWithParams<VideoWithId>(sql, params);
+        const result = await this.database?.getAllWithParams<VideoWithIdAndPrimaryMedium>(sql, params);
         if (!result) {
             throw new Error('Unexpected error querying videos');
         }

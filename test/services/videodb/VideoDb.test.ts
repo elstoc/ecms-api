@@ -312,11 +312,29 @@ describe('VideoDb', () => {
     });
 
     describe('queryVideos', () => {
+        const baseSql = `SELECT v.id, v.title, v.category, v.director, v.length_mins, v.watched, v.to_watch_priority, v.progress,
+                                pm.media_type pm_media_type, pm.watched pm_watched
+                         FROM   videos v
+                         LEFT OUTER JOIN (
+                           SELECT vm.*
+                           FROM   video_media vm
+                           INNER JOIN l_media_types lmt
+                           ON vm.media_type = lmt.code
+                           WHERE lmt.priority = (
+                               SELECT MIN(lmt2.priority)
+                               FROM   video_media vm2
+                               INNER JOIN l_media_types lmt2
+                               ON vm2.media_type = lmt2.code
+                               AND vm.video_id = vm2.video_id
+                           )
+                         ) pm
+                         ON v.id = pm.video_id`;
+
         it('runs the correct sql to retrieve all videos when no query params are defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = 'SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress FROM videos';
+            const expectedSql = baseSql;
 
             mockGetAllWithParams.mockResolvedValue('videos');
             const videos = await videoDb.queryVideos();
@@ -332,7 +350,7 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = 'SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress FROM videos';
+            const expectedSql = baseSql;
 
             mockGetAllWithParams.mockResolvedValue('videos');
             const videos = await videoDb.queryVideos({});
@@ -348,7 +366,7 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = 'SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress FROM videos WHERE (length_mins <= $maxLength)';
+            const expectedSql = baseSql + ' WHERE (length_mins <= $maxLength)';
             const expectedParams = { '$maxLength': 3 };
 
             mockGetAllWithParams.mockResolvedValue('videos');
@@ -365,7 +383,7 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = 'SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress FROM videos WHERE (category IN ($category0, $category1, $category2))';
+            const expectedSql = baseSql + ' WHERE (category IN ($category0, $category1, $category2))';
             const expectedParams = { '$category0': 'MOV', '$category1': 'TV', '$category2': 'TVDOC' };
 
             mockGetAllWithParams.mockResolvedValue('videos');
@@ -382,7 +400,7 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = 'SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress FROM videos WHERE (LOWER(title) LIKE $titleLike)';
+            const expectedSql = baseSql + ' WHERE (LOWER(title) LIKE $titleLike)';
             const expectedParams = { '$titleLike': '%sometitle%' };
 
             mockGetAllWithParams.mockResolvedValue('videos');
@@ -399,11 +417,9 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = `SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress
-                                 FROM videos
-                                 WHERE (length_mins <= $maxLength)
-                                 AND (category IN ($category0, $category1, $category2))
-                                 AND (LOWER(title) LIKE $titleLike)`;
+            const expectedSql = baseSql + ` WHERE (length_mins <= $maxLength)
+                                            AND (category IN ($category0, $category1, $category2))
+                                            AND (LOWER(title) LIKE $titleLike)`;
             const expectedParams = {
                 '$titleLike': '%title%',
                 '$category0': 'MOV', '$category1': 'TV', '$category2': 'TVDOC',

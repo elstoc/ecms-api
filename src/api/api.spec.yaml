@@ -193,7 +193,6 @@ paths:
               - categories
               - media_types
               - media_locations
-              - media_definition
               - watched_status
       responses:
         '200':

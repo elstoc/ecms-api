@@ -23,40 +23,24 @@ dbUpgradeSql.push(`
         ('MOVD', 'Feature Length Documentary'),
         ('MUS', 'Music');
 
-    CREATE TABLE IF NOT EXISTS l_media_definition (
+    CREATE TABLE IF NOT EXISTS l_media_types (
         code VARCHAR(10) PRIMARY KEY,
         description VARCHAR(50) NOT NULL,
         priority INTEGER NOT NULL
     );
 
-    INSERT INTO l_media_definition (code, description, priority)
+    INSERT INTO l_media_types (code, description, priority)
     VALUES
-        ('SD', 'Standard Definition', 3),
-        ('HD', 'High Definition', 2),
-        ('UHD', 'Ultra High Definition', 1);
-
-    CREATE TABLE IF NOT EXISTS l_media_types (
-        code VARCHAR(10) PRIMARY KEY,
-        description VARCHAR(50) NOT NULL,
-        physical VARCHAR(1) NOT NULL,
-        definition VARCHAR(5) NOT NULL,
-
-        FOREIGN KEY (definition)
-            REFERENCES l_media_definition (code)
-    );
-
-    INSERT INTO l_media_types (code, description, physical, definition)
-    VALUES
-        ('DVD', 'DVD', 'Y', 'SD'),
-        ('DVD11', 'DVD (1:1 copy)', 'Y', 'SD'),
-        ('DVDSH', 'DVD (shrunk)', 'Y', 'SD'),
-        ('DVDR1', 'DVD (R1)', 'Y', 'SD'),
-        ('BD', 'Blu Ray', 'Y', 'HD'),
-        ('DL720', 'Download 720p', 'N', 'SD'),
-        ('DL1080', 'Download 1080p', 'N', 'HD'),
-        ('DL2160', 'Download 2160p', 'N', 'UHD'),
-        ('DLSD', 'Download SD', 'N', 'SD'),
-        ('BD4K', '4K UHD Blu Ray', 'Y', 'UHD');
+        ('BD4K', '4K UHD Blu Ray', 10),
+        ('DL2160', 'Download 2160p', 20),
+        ('BD', 'Blu Ray', 30),
+        ('DL1080', 'Download 1080p', 40),
+        ('DL720', 'Download 720p', 50),
+        ('DVD', 'DVD', 60),
+        ('DVD11', 'DVD (1:1 copy)', 70),
+        ('DVDSH', 'DVD (shrunk)', 80),
+        ('DVDR1', 'DVD (R1)', 90),
+        ('DLSD', 'Download SD', 100);
 
     CREATE TABLE IF NOT EXISTS l_media_locations (
         code VARCHAR(5) PRIMARY KEY,

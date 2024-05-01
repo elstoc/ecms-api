@@ -8,18 +8,24 @@ export type Video = {
     progress: string;
 }
 
+export type PrimaryMedium = {
+    pm_media_type: string;
+    pm_watched: string;
+}
+
 type videoIdOnly = {
     id: number;
 }
 
 export type VideoWithId = Video & videoIdOnly;
 
+export type VideoWithIdAndPrimaryMedium = VideoWithId & PrimaryMedium;
+
 export enum LookupTables {
     video_category = 'l_categories',
     video_media_type = 'l_media_types',
     video_media_location = 'l_media_locations',
     video_watched_status = 'l_watched_status',
-    video_media_definition = 'l_media_definition',
 }
 
 export type LookupRow = {

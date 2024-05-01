@@ -31,16 +31,16 @@ dbUpgradeSql.push(`
 
     INSERT INTO l_media_types (code, description, priority)
     VALUES
-        ('BD4K', '4K UHD Blu Ray', 10),
-        ('DL2160', 'Download 2160p', 20),
+        ('BD4K', '4K Blu Ray', 10),
+        ('DL2160', '2160p Download', 20),
         ('BD', 'Blu Ray', 30),
-        ('DL1080', 'Download 1080p', 40),
-        ('DL720', 'Download 720p', 50),
+        ('DL1080', '1080p Download', 40),
+        ('DL720', '720p Download', 50),
         ('DVD', 'DVD', 60),
-        ('DVD11', 'DVD (1:1 copy)', 70),
-        ('DVDSH', 'DVD (shrunk)', 80),
-        ('DVDR1', 'DVD (R1)', 90),
-        ('DLSD', 'Download SD', 100);
+        ('DVD11', 'DVD 1:1', 70),
+        ('DVDSH', 'DVD shrunk', 80),
+        ('DVDR1', 'DVD R1', 90),
+        ('DLSD', 'SD Download', 100);
 
     CREATE TABLE IF NOT EXISTS l_media_locations (
         code VARCHAR(5) PRIMARY KEY,

@@ -84,11 +84,12 @@ export class VideoDb implements IVideoDb {
         return returnVal;
     }
 
-    public async addVideo(video: Video): Promise<void> {
+    public async addVideo(video: Video): Promise<number> {
         const sql = `INSERT INTO videos
                      (title, category, director, length_mins, watched, to_watch_priority, progress)
                      VALUES
-                     ($title, $category, $director, $length_mins, $watched, $to_watch_priority, $progress)`;
+                     ($title, $category, $director, $length_mins, $watched, $to_watch_priority, $progress)
+                     RETURNING id`;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const params: any = {};
         let key: keyof Video;
@@ -96,7 +97,11 @@ export class VideoDb implements IVideoDb {
         for (key in video) {
             params[`$${key}`] = video[key];
         }
-        await this.database?.runWithParams(sql, params);
+        const result = await this.database?.getWithParams<{ id: number }>(sql, params);
+        if (!result) {
+            throw new Error('Unexpected error creating video');
+        }
+        return result.id;
     }
 
     public async updateVideo(video: VideoWithId): Promise<void> {

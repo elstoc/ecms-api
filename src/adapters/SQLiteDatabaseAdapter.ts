@@ -22,14 +22,6 @@ export class SQLiteDatabaseAdapter implements IDatabaseAdapter {
         });
     }
 
-    public get<T>(sql: string): Promise<T> {
-        return new Promise((resolve, reject) => {
-            this.database?.get<T>(sql, (err: Error | null, row: T) => {
-                err ? reject(err) : resolve(row);
-            });
-        });
-    }
-
     public exec(sql: string): Promise<void> {
         return new Promise((resolve, reject) => {
             this.database?.exec(sql, (err: Error | null) => {
@@ -47,10 +39,27 @@ export class SQLiteDatabaseAdapter implements IDatabaseAdapter {
         });
     }
     
+    public get<T>(sql: string): Promise<T | undefined> {
+        return new Promise((resolve, reject) => {
+            this.database?.get<T>(sql, (err: Error | null, row: T) => {
+                err ? reject(err) : resolve(row);
+            });
+        });
+    }
+
     public getAll<T>(sql: string): Promise<T[] | undefined> {
         return new Promise((resolve, reject) => {
             this.database?.all(sql, (err: Error | null, rows: T[]) => {
                 err ? reject(err) : resolve(rows);
+            });
+        });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public getWithParams<T>(sql: string, parameters: any): Promise<T> {
+        return new Promise((resolve, reject) => {
+            this.database?.get(sql, parameters, (err: Error | null, row: T) => {
+                err ? reject(err) : resolve(row);
             });
         });
     }

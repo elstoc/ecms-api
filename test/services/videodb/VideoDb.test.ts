@@ -31,6 +31,7 @@ describe('VideoDb', () => {
     const mockInit = jest.fn();
     const mockClose = jest.fn();
     const mockRunWithParams = jest.fn();
+    const mockGetWithParams = jest.fn();
     const mockGetAllWithParams = jest.fn();
 
     const mockDb = {
@@ -40,6 +41,7 @@ describe('VideoDb', () => {
         exec: mockExec,
         close: mockClose,
         runWithParams: mockRunWithParams,
+        getWithParams: mockGetWithParams,
         getAllWithParams: mockGetAllWithParams
     };
 
@@ -182,9 +184,10 @@ describe('VideoDb', () => {
     });
 
     describe('addVideo', () => {
-        it('runs sql with appropriate parameters', async () => {
+        it('runs sql with appropriate parameters and returns inserted id', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
+            mockGetWithParams.mockResolvedValue({ id: 2468 });
 
             await videoDb.initialise();
 
@@ -201,7 +204,8 @@ describe('VideoDb', () => {
             const expectedSql = `INSERT INTO videos
                                  (title, category, director, length_mins, watched, to_watch_priority, progress)
                                  VALUES
-                                 ($title, $category, $director, $length_mins, $watched, $to_watch_priority, $progress)`;
+                                 ($title, $category, $director, $length_mins, $watched, $to_watch_priority, $progress)
+                                 RETURNING id`;
 
             const expectedVideoParameters = {
                 $title: 'some-title',
@@ -213,12 +217,13 @@ describe('VideoDb', () => {
                 $progress: 'some-progress'
             };
 
-            await videoDb.addVideo(video);
+            const insertedId = await videoDb.addVideo(video);
 
-            expect(mockRunWithParams).toHaveBeenCalled();
-            const [sql, videoParameters] = mockRunWithParams.mock.calls[0];
+            expect(mockGetWithParams).toHaveBeenCalled();
+            const [sql, videoParameters] = mockGetWithParams.mock.calls[0];
             expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
             expect(videoParameters).toEqual(expectedVideoParameters);
+            expect(insertedId).toBe(2468);
         });
     });
 

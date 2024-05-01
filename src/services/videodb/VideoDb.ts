@@ -86,9 +86,9 @@ export class VideoDb implements IVideoDb {
 
     public async addVideo(video: Video): Promise<void> {
         const sql = `INSERT INTO videos
-                     (title, category, director, length_mins, to_watch_priority, progress)
+                     (title, category, director, length_mins, watched, to_watch_priority, progress)
                      VALUES
-                     ($title, $category, $director, $length_mins, $to_watch_priority, $progress)`;
+                     ($title, $category, $director, $length_mins, $watched, $to_watch_priority, $progress)`;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const params: any = {};
         let key: keyof Video;
@@ -107,6 +107,7 @@ export class VideoDb implements IVideoDb {
                          category = $category,
                          director = $director,
                          length_mins = $length_mins,
+                         watched = $watched,
                          to_watch_priority = $to_watch_priority,
                          progress = $progress
                      WHERE id = $id`;
@@ -122,7 +123,7 @@ export class VideoDb implements IVideoDb {
 
     public async getVideo(id: number): Promise<VideoWithId> {
         await this.throwIfNoVideo(id);
-        const sql = `SELECT id, title, category, director, length_mins, to_watch_priority, progress FROM videos WHERE id = ${id}`;
+        const sql = `SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress FROM videos WHERE id = ${id}`;
         const result = await this.database?.get<VideoWithId>(sql);
         if (!result) {
             throw new Error(`Unexpected error getting video ${id}`);
@@ -133,7 +134,7 @@ export class VideoDb implements IVideoDb {
     public async queryVideos(queryParams?: VideoQueryParams): Promise<VideoWithId[]> {
         let params: { [key: string]: unknown } = {};
         const whereClauses: string[] = [];
-        let sql = `SELECT id, title, category, director, length_mins, to_watch_priority, progress
+        let sql = `SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress
                      FROM videos`;
 
         const { maxLength, categories, titleLike } = queryParams || {};

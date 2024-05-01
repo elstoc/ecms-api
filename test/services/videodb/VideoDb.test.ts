@@ -193,20 +193,22 @@ describe('VideoDb', () => {
                 category: 'some-category',
                 director: 'some-director',
                 length_mins: 1234,
+                watched: 'Y',
                 to_watch_priority: 1,
                 progress: 'some-progress'
             };
 
             const expectedSql = `INSERT INTO videos
-                                 (title, category, director, length_mins, to_watch_priority, progress)
+                                 (title, category, director, length_mins, watched, to_watch_priority, progress)
                                  VALUES
-                                 ($title, $category, $director, $length_mins, $to_watch_priority, $progress)`;
+                                 ($title, $category, $director, $length_mins, $watched, $to_watch_priority, $progress)`;
 
             const expectedVideoParameters = {
                 $title: 'some-title',
                 $category: 'some-category',
                 $director: 'some-director',
                 $length_mins: 1234,
+                $watched: 'Y',
                 $to_watch_priority: 1,
                 $progress: 'some-progress'
             };
@@ -227,6 +229,7 @@ describe('VideoDb', () => {
             category: 'some-category',
             director: 'some-director',
             length_mins: 1234,
+            watched: 'Y',
             to_watch_priority: 1,
             progress: 'some-progress'
         };
@@ -251,6 +254,7 @@ describe('VideoDb', () => {
                                      category = $category,
                                      director = $director,
                                      length_mins = $length_mins,
+                                     watched = $watched,
                                      to_watch_priority = $to_watch_priority,
                                      progress = $progress
                                  WHERE id = $id`;
@@ -261,6 +265,7 @@ describe('VideoDb', () => {
                 $category: 'some-category',
                 $director: 'some-director',
                 $length_mins: 1234,
+                $watched: 'Y',
                 $to_watch_priority: 1,
                 $progress: 'some-progress'
             };
@@ -292,7 +297,7 @@ describe('VideoDb', () => {
             mockGet.mockResolvedValueOnce({ video_exists: 1 })
                 .mockResolvedValue('video');
 
-            const sql = 'SELECT id, title, category, director, length_mins, to_watch_priority, progress FROM videos WHERE id = 12';
+            const sql = 'SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress FROM videos WHERE id = 12';
 
             const video = await videoDb.getVideo(12);
 
@@ -306,7 +311,7 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = 'SELECT id, title, category, director, length_mins, to_watch_priority, progress FROM videos';
+            const expectedSql = 'SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress FROM videos';
 
             mockGetAllWithParams.mockResolvedValue('videos');
             const videos = await videoDb.queryVideos();
@@ -322,7 +327,7 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = 'SELECT id, title, category, director, length_mins, to_watch_priority, progress FROM videos';
+            const expectedSql = 'SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress FROM videos';
 
             mockGetAllWithParams.mockResolvedValue('videos');
             const videos = await videoDb.queryVideos({});
@@ -338,7 +343,7 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = 'SELECT id, title, category, director, length_mins, to_watch_priority, progress FROM videos WHERE (length_mins <= $maxLength)';
+            const expectedSql = 'SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress FROM videos WHERE (length_mins <= $maxLength)';
             const expectedParams = { '$maxLength': 3 };
 
             mockGetAllWithParams.mockResolvedValue('videos');
@@ -355,7 +360,7 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = 'SELECT id, title, category, director, length_mins, to_watch_priority, progress FROM videos WHERE (category IN ($category0, $category1, $category2))';
+            const expectedSql = 'SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress FROM videos WHERE (category IN ($category0, $category1, $category2))';
             const expectedParams = { '$category0': 'MOV', '$category1': 'TV', '$category2': 'TVDOC' };
 
             mockGetAllWithParams.mockResolvedValue('videos');
@@ -372,7 +377,7 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = 'SELECT id, title, category, director, length_mins, to_watch_priority, progress FROM videos WHERE (LOWER(title) LIKE $titleLike)';
+            const expectedSql = 'SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress FROM videos WHERE (LOWER(title) LIKE $titleLike)';
             const expectedParams = { '$titleLike': '%sometitle%' };
 
             mockGetAllWithParams.mockResolvedValue('videos');
@@ -389,7 +394,7 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = `SELECT id, title, category, director, length_mins, to_watch_priority, progress
+            const expectedSql = `SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress
                                  FROM videos
                                  WHERE (length_mins <= $maxLength)
                                  AND (category IN ($category0, $category1, $category2))

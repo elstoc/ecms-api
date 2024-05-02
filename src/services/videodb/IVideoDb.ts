@@ -1,3 +1,10 @@
+export type VideoMedia = {
+    media_type: string;
+    media_location?: string;
+    watched?: string;
+    notes?: string;
+}
+
 export type Video = {
     title: string;
     category: string;
@@ -6,6 +13,7 @@ export type Video = {
     watched: string;
     to_watch_priority: number;
     progress: string;
+    media?: VideoMedia[];
 }
 
 export type PrimaryMedium = {

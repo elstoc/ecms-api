@@ -1,5 +1,5 @@
 import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
-import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoQueryParams, VideoWithIdAndPrimaryMedium } from './IVideoDb';
+import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoQueryParams, VideoWithIdAndPrimaryMedium, VideoMedia } from './IVideoDb';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { dbUpgradeSql } from './dbUpgradeSql';
 import path from 'path';
@@ -128,12 +128,26 @@ export class VideoDb implements IVideoDb {
 
     public async getVideo(id: number): Promise<VideoWithId> {
         await this.throwIfNoVideo(id);
-        const sql = `SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress FROM videos WHERE id = ${id}`;
-        const result = await this.database?.get<VideoWithId>(sql);
-        if (!result) {
+        const sql = `SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress
+                     FROM   videos
+                     WHERE  id = ${id}`;
+        const video = await this.database?.get<VideoWithId>(sql);
+        if (!video) {
             throw new Error(`Unexpected error getting video ${id}`);
         }
-        return result;
+        video.media = await this.getVideoMedia(id);
+
+        return video;
+    }
+
+    private async getVideoMedia(id: number): Promise<VideoMedia[] | undefined> {
+        const sql = `SELECT media_type, media_location, watched, notes
+                     FROM video_media
+                     INNER JOIN l_media_types
+                     ON video_media.media_type = l_media_types.code
+                     WHERE video_id = ${id}
+                     ORDER BY priority`;
+        return await this.database?.getAll<VideoMedia>(sql);
     }
 
     public async queryVideos(queryParams?: VideoQueryParams): Promise<VideoWithId[]> {
@@ -179,11 +193,11 @@ export class VideoDb implements IVideoDb {
             sql += ` WHERE (${whereClauses.join(') AND (')})`;
         }
 
-        const result = await this.database?.getAllWithParams<VideoWithIdAndPrimaryMedium>(sql, params);
-        if (!result) {
+        const videos = await this.database?.getAllWithParams<VideoWithIdAndPrimaryMedium>(sql, params);
+        if (!videos) {
             throw new Error('Unexpected error querying videos');
         }
-        return result;
+        return videos;
     }
 
     private async throwIfNoVideo(id: number): Promise<void> {

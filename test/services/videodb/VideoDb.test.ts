@@ -298,16 +298,29 @@ describe('VideoDb', () => {
             expect(mockGet).toHaveBeenCalledWith('SELECT COUNT() AS video_exists FROM videos WHERE id=12');
         });
 
-        it('attempts to get video', async () => {
+        it('attempts to get video and media', async () => {
             mockGet.mockResolvedValueOnce({ video_exists: 1 })
-                .mockResolvedValue('video');
+                .mockResolvedValue({ video: 'video' });
+            mockGetAll.mockResolvedValue('media');
 
-            const sql = 'SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress FROM videos WHERE id = 12';
+            const expectedVideoSql = `SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress
+                              FROM videos
+                              WHERE id = 12`;
+
+            const expectedMediaSql = `SELECT media_type, media_location, watched, notes
+                              FROM video_media
+                              INNER JOIN l_media_types
+                              ON video_media.media_type = l_media_types.code
+                              WHERE video_id = 12
+                              ORDER BY priority`;
 
             const video = await videoDb.getVideo(12);
 
-            expect(mockGet).toHaveBeenCalledWith(sql);
-            expect(video).toBe('video');
+            const actualVideoSql = mockGet.mock.calls[2][0];
+            const actualMediaSql = mockGetAll.mock.calls[0][0];
+            expect(stripWhiteSpace(actualVideoSql)).toBe(stripWhiteSpace(expectedVideoSql));
+            expect(stripWhiteSpace(actualMediaSql)).toBe(stripWhiteSpace(expectedMediaSql));
+            expect(video).toEqual({ video: 'video', media: 'media' });
         });
     });
 

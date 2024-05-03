@@ -110,6 +110,10 @@ export class EndpointValidator implements IEndpointValidator {
     }
 
     private validateArray(errors: ValidationError[], value: unknown, validationSchema: ArrayValidationSchema): void {
+        if (validationSchema.nullable && (value === undefined || value === null)) {
+            return;
+        }
+
         const { minItems, itemSchema, pipeDelimitedString } = validationSchema;
 
         let arrayToValidate: unknown[] = [];
@@ -139,6 +143,10 @@ export class EndpointValidator implements IEndpointValidator {
     }
 
     private validateObject(errors: ValidationError[], value: unknown, validationSchema: ObjectValidationSchema): void {
+        if (validationSchema.nullable && (value === undefined || value === null)) {
+            return;
+        }
+
         let objectToValidate: Record<string, unknown> = {};
         try {
             objectToValidate = convertToRecord(value, true);
@@ -165,6 +173,10 @@ export class EndpointValidator implements IEndpointValidator {
     }
 
     private validateString(errors: ValidationError[], value: unknown, validationSchema: StringValidationSchema): void {
+        if (validationSchema.nullable && (value === undefined || value === null)) {
+            return;
+        }
+
         const stringEnum = validationSchema.enum;
         const stringMinLength = validationSchema.minLength;
 
@@ -178,6 +190,10 @@ export class EndpointValidator implements IEndpointValidator {
     }
 
     private validateInteger(errors: ValidationError[], value: unknown, validationSchema: IntegerValidationSchema): void {
+        if (validationSchema.nullable && (value === undefined || value === null)) {
+            return;
+        }
+
         const { minimum } = validationSchema;
 
         let valueToCheck = value;

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NotFoundError } from '../../src/errors';
-import { EndpointValidator, IEndpointValidator, ObjectValidationSchema } from '../../src/api';
+import { EndpointValidator, IEndpointValidator } from '../../src/api';
 
 describe('EndpointValidator', () => {
     describe('getEndpointAndPathParams', () => {
@@ -84,219 +84,259 @@ describe('EndpointValidator', () => {
             describe('an object to be validated', () => {
                 let validator: IEndpointValidator;
     
-                beforeEach(() => {
-                    const requestBodySchema: ObjectValidationSchema = {
-                        type: 'object',
-                        fullPath: 'requestBody',
-                        required: ['field1', 'field2', 'field3'],
-                        properties: {
-                            field1: { type: 'string', fullPath: 'requestBody.field1' },
-                            field2: { type: 'string', fullPath: 'requestBody.field2' },
-                            field3: { type: 'string', fullPath: 'requestBody.field3', minLength: 2 },
-                            field4: { type: 'string', fullPath: 'requestBody.field4', enum: ['X','Y'] },
-                            field5: { type: 'integer', fullPath: 'requestBody.field5' },
-                            field6: { type: 'integer', fullPath: 'requestBody.field6', minimum: 10 },
-                            field7: {
-                                type: 'object', fullPath: 'requestBody.field7', additionalProperties: false,
-                                properties: { field8: { type: 'integer', fullPath: 'requestBody.field7.field8' } }
-                            },
-                            field9: {
-                                type: 'array', fullPath: 'requestBody.field9',
-                                itemSchema: { type: 'string', fullPath: 'requestBody.field9.items' }
-                            },
-                            field10: {
-                                type: 'array', fullPath: 'requestBody.field10', minItems: 1,
-                                itemSchema: { type: 'integer', fullPath: 'requestBody.field10.items' }
-                            },
-                            field11: {
-                                type: 'array', fullPath: 'requestBody.field11', minItems: 2,
-                                itemSchema: { type: 'integer', fullPath: 'requestBody.field11.items' }
-                            },
-                            field12: {
-                                type: 'array', fullPath: 'requestBody.field12', pipeDelimitedString: true,
-                                itemSchema: { type: 'integer', fullPath: 'requestBody.field12.items' }
-                            },
-                        },
-                        additionalProperties: false
-                    };
-    
-                    validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema } });
-                });
-    
                 it('is not an object', () => {
+                    const requestBodySchema = {
+                        type: 'object', fullPath: 'requestBody', additionalProperties: false,
+                        properties: { field1: { type: 'string', fullPath: 'requestBody.field1' } }
+                    } as any;
+
+                    validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema } });
+
                     const errors = validator.validateEndpoint('put:/some/path', { requestBody: 'not-an-object' } as any);
         
                     expect(errors).toContainEqual({ property: 'requestBody', error: 'invalid data type - object expected' });
                 });
     
-                it('has required fields that are not present', () => {
+                it('has a required field that is not present', () => {
+                    const requestBodySchema = {
+                        type: 'object', fullPath: 'requestBody', additionalProperties: false,
+                        required: ['field1', 'field2'],
+                        properties: {
+                            field1: { type: 'string', fullPath: 'requestBody.field1' },
+                            field2: { type: 'string', fullPath: 'requestBody.field2' },
+                        }
+                    } as any;
+
+                    validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema } });
+
                     const errors = validator.validateEndpoint('put:/some/path', { requestBody: { field1: 'something' } } as any);
         
                     expect(errors).toContainEqual({ property: 'requestBody.field2', error: 'required field is not present' });
-                    expect(errors).toContainEqual({ property: 'requestBody.field3', error: 'required field is not present' });
                 });
     
-                it('does not allow additional properties but some are present in the object', () => {
+                it('does not allow additional properties but one is present in the object', () => {
+                    const requestBodySchema = {
+                        type: 'object', fullPath: 'requestBody', additionalProperties: false,
+                        properties: { field1: { type: 'string', fullPath: 'requestBody.field1' } }
+                    } as any;
+
+                    validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema } });
+
                     const requestBody = {
-                        field1: 'something', field2: 'something', field3: 'something', fieldX: 'something', fieldY: 'something'
+                        field1: 'something', fieldX: 'something'
                     };
                     const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
         
                     expect(errors).toContainEqual({ property: 'requestBody.fieldX', error: 'field is not permitted' });
-                    expect(errors).toContainEqual({ property: 'requestBody.fieldY', error: 'field is not permitted' });
                 });
     
                 describe('expects a field to be a string', () => {
+                    beforeEach(() => {
+                        const requestBodySchema = {
+                            type: 'object', fullPath: 'requestBody', additionalProperties: false,
+                            properties: {
+                                field1: { type: 'string', minLength: 2, fullPath: 'requestBody.field1' },
+                                field2: { type: 'string', enum: ['X', 'Y'], fullPath: 'requestBody.field2' },
+                            }
+                        } as any;
+
+                        validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema } });
+                    });
+
                     it('that is not a string', () => {
                         const requestBody = {
-                            field1: 'something', field2: 'something', field3: 'something',
-                            field4: 2
+                            field1: 2
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
-                        expect(errors).toContainEqual({ property: 'requestBody.field4', error: 'invalid data type - string expected' });
+                        expect(errors).toContainEqual({ property: 'requestBody.field1', error: 'invalid data type - string expected' });
                     });
     
                     it('that is not one of the defined enum values', () => {
                         const requestBody = {
-                            field1: 'something', field2: 'something', field3: 'something',
-                            field4: 'Z'
+                            field2: 'Z'
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
-                        expect(errors).toContainEqual({ property: 'requestBody.field4', error: 'value must be one of [X,Y]' });
+                        expect(errors).toContainEqual({ property: 'requestBody.field2', error: 'value must be one of [X,Y]' });
                     });
 
                     it('that has a length below the defined minimum', () => {
                         const requestBody = {
-                            field1: 'something', field2: 'something', field3: 's',
-                            field4: 'X'
+                            field1: 'X'
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
-                        expect(errors).toContainEqual({ property: 'requestBody.field3', error: 'invalid length - expected at least 2 characters' });
+                        expect(errors).toContainEqual({ property: 'requestBody.field1', error: 'invalid length - expected at least 2 characters' });
                     });
                 });
     
                 describe('expects a field to be an integer', () => {
+                    beforeEach(() => {
+                        const requestBodySchema = {
+                            type: 'object', fullPath: 'requestBody', additionalProperties: false,
+                            properties: {
+                                field1: { type: 'integer', fullPath: 'requestBody.field1' },
+                                field2: { type: 'integer', minimum: 10, fullPath: 'requestBody.field2' },
+                            }
+                        } as any;
+
+                        validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema } });
+                    });
+
                     it('that is not a number', () => {
                         const requestBody = {
-                            field1: 'something', field2: 'something', field3: 'something',
-                            field5: 'Z'
+                            field1: 'something'
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
-                        expect(errors).toContainEqual({ property: 'requestBody.field5', error: 'invalid data type - integer expected' });
+                        expect(errors).toContainEqual({ property: 'requestBody.field1', error: 'invalid data type - integer expected' });
                     });
     
                     it('that is a number but not an integer', () => {
                         const requestBody = {
-                            field1: 'something', field2: 'something', field3: 'something',
-                            field5: 3.14159265
+                            field1: 3.14159265
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
-                        expect(errors).toContainEqual({ property: 'requestBody.field5', error: 'invalid data type - integer expected' });
+                        expect(errors).toContainEqual({ property: 'requestBody.field1', error: 'invalid data type - integer expected' });
                     });
     
                     it('that has a value less than the defined minimum', () => {
                         const requestBody = {
-                            field1: 'something', field2: 'something', field3: 'something',
-                            field6: 9
+                            field2: 9
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
-                        expect(errors).toContainEqual({ property: 'requestBody.field6', error: 'integer must not be less than 10' });
+                        expect(errors).toContainEqual({ property: 'requestBody.field2', error: 'integer must not be less than 10' });
                     });
                 });
     
                 describe('expects a field to be an object (some examples)', () => {
-                    it('that (e.g.) is not an object', () => {
+                    beforeEach(() => {
+                        const requestBodySchema = {
+                            type: 'object', fullPath: 'requestBody', additionalProperties: false,
+                            properties: {
+                                field1: {
+                                    type: 'object', fullPath: 'requestBody.field1', additionalProperties: false,
+                                    properties: { field2: { type: 'integer', fullPath: 'requestBody.field1.field2' } }
+                                },
+                            }
+                        } as any;
+
+                        validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema } });
+                    });
+
+                    it('that is not an object', () => {
                         const requestBody = {
-                            field1: 'something', field2: 'something', field3: 'something',
-                            field7: 9
+                            field1: 'something'
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
-                        expect(errors).toContainEqual({ property: 'requestBody.field7', error: 'invalid data type - object expected' });
+                        expect(errors).toContainEqual({ property: 'requestBody.field1', error: 'invalid data type - object expected' });
                     });
     
-                    it('that (e.g.) field to be an integer field that is not a number', () => {
+                    it('that expects an integer field that is not a number', () => {
                         const requestBody = {
-                            field1: 'something', field2: 'something', field3: 'something',
-                            field7: { field8: 'X' }
+                            field1: { field2: 'X' }
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
-                        expect(errors).toContainEqual({ property: 'requestBody.field7.field8', error: 'invalid data type - integer expected' });
+                        expect(errors).toContainEqual({ property: 'requestBody.field1.field2', error: 'invalid data type - integer expected' });
                     });
                 });
 
                 describe('expects a field to be a pipe-delimited-string array', () => {
+                    beforeEach(() => {
+                        const requestBodySchema = {
+                            type: 'object', fullPath: 'requestBody', additionalProperties: false,
+                            properties: {
+                                field1: {
+                                    type: 'array', nullable: false, fullPath: 'requestBody.field1', pipeDelimitedString: true,
+                                    itemSchema: { type: 'integer', nullable: false, fullPath: 'requestBody.field1.items' }
+                                },
+                            }
+                        } as any;
+
+                        validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema } });
+                    });
+
                     it('is not a string', () => {
                         const requestBody = {
-                            field1: 'something', field2: 'something', field3: 'something',
-                            field12: [1,2,3]
+                            field1: [1,2,3]
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
-                        expect(errors).toContainEqual({ property: 'requestBody.field12', error: 'invalid data type - pipe-delimited array expected' });
+                        expect(errors).toContainEqual({ property: 'requestBody.field1', error: 'invalid data type - pipe-delimited array expected' });
                     });
 
                     it('contains a string element when integers are expected', () => {
                         const requestBody = {
-                            field1: 'something', field2: 'something', field3: 'something',
-                            field12: '1|two|3'
+                            field1: '1|two|3'
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
-                        expect(errors).toContainEqual({ property: 'requestBody.field12.1', error: 'invalid data type - integer expected' });
+                        expect(errors).toContainEqual({ property: 'requestBody.field1.1', error: 'invalid data type - integer expected' });
                     });
                 });
 
                 describe('expects a field to be a non-pipe-delimited-string array', () => {
+                    beforeEach(() => {
+                        const requestBodySchema = {
+                            type: 'object', fullPath: 'requestBody', additionalProperties: false,
+                            properties: {
+                                field1: {
+                                    type: 'array', nullable: false, fullPath: 'requestBody.field1', minItems: 1,
+                                    itemSchema: { type: 'integer', nullable: false, fullPath: 'requestBody.field1.items' }
+                                },
+                                field2: {
+                                    type: 'array', nullable: false, fullPath: 'requestBody.field2', minItems: 2,
+                                    itemSchema: { type: 'integer', nullable: false, fullPath: 'requestBody.field2.items' }
+                                },
+                            }
+                        } as any;
+
+                        validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema } });
+                    });
+
                     it.each([
                         ['string', 'string'],
                         ['number', 3],
                         ['undefined', undefined]
                     ])('that is not an array (%s)', (desc, arrayContent) => {
                         const requestBody = {
-                            field1: 'something', field2: 'something', field3: 'something',
-                            field10: arrayContent
+                            field1: arrayContent
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
-                        expect(errors).toContainEqual({ property: 'requestBody.field10', error: 'invalid data type - array expected' });
+                        expect(errors).toContainEqual({ property: 'requestBody.field1', error: 'invalid data type - array expected' });
                     });
 
                     it('that has element(s) with an incorrect format', () => {
                         const requestBody = {
-                            field1: 'something', field2: 'something', field3: 'something',
-                            field11: [1, 'two', 3]
+                            field2: [1, 'two', 3]
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
-                        expect(errors).toContainEqual({ property: 'requestBody.field11.1', error: 'invalid data type - integer expected' });
+                        expect(errors).toContainEqual({ property: 'requestBody.field2.1', error: 'invalid data type - integer expected' });
                     });
 
                     it('that has fewer elements than the defined minimum length (singular)', () => {
                         const requestBody = {
-                            field1: 'something', field2: 'something', field3: 'something',
-                            field10: []
+                            field1: []
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
-                        expect(errors).toContainEqual({ property: 'requestBody.field10', error: 'array must contain at least 1 item' });
+                        expect(errors).toContainEqual({ property: 'requestBody.field1', error: 'array must contain at least 1 item' });
                     });
 
                     it('that has fewer elements than the defined minimum length (plural)', () => {
                         const requestBody = {
-                            field1: 'something', field2: 'something', field3: 'something',
-                            field11: ['item']
+                            field2: ['item']
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
-                        expect(errors).toContainEqual({ property: 'requestBody.field11', error: 'array must contain at least 2 items' });
+                        expect(errors).toContainEqual({ property: 'requestBody.field2', error: 'array must contain at least 2 items' });
                     });
                 });
             });
@@ -311,67 +351,166 @@ describe('EndpointValidator', () => {
                 expect(errors).toEqual([]);
             });
     
-            it('valid pathParams, queryParams and a complex requestBody are submitted', () => {
+            it('valid strings are provided in the requestBody', () => {
                 const requestBodySchema = {
-                    type: 'object',
-                    fullPath: 'requestBody',
+                    type: 'object', fullPath: 'requestBody', additionalProperties: false,
+                    required: ['field1', 'field3'],
+                    properties: {
+                        field1: { type: 'string', minLength: 2, fullPath: 'requestBody.field1' },
+                        field2: { type: 'string', enum: ['X', 'Y'], fullPath: 'requestBody.field2' },
+                        field3: { type: 'string', nullable: true, fullPath: 'requestBody.field3' },
+                        field4: { type: 'string', nullable: true, fullPath: 'requestBody.field4' },
+                    }
+                } as any;
+                const validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema } });
+                const requestBody = {
+                    field1: 'St', field2: 'X', field3: null, field4: undefined
+                };
+
+                const errors = validator.validateEndpoint('put:/some/path', { requestBody });
+
+                expect(errors).toEqual([]);
+            });
+
+            it('valid integers are provided in the requestBody', () => {
+                const requestBodySchema = {
+                    type: 'object', fullPath: 'requestBody', additionalProperties: false,
+                    required: ['field1', 'field3'],
+                    properties: {
+                        field1: { type: 'integer', fullPath: 'requestBody.field1' },
+                        field2: { type: 'integer', minimum: 10, fullPath: 'requestBody.field2' },
+                        field3: { type: 'integer', nullable: true, fullPath: 'requestBody.field3' },
+                        field4: { type: 'integer', nullable: true, fullPath: 'requestBody.field4' },
+                    }
+                } as any;
+                const validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema } });
+                const requestBody = {
+                    field1: 1234, field2: 10, field3: null, field4: undefined
+                };
+
+                const errors = validator.validateEndpoint('put:/some/path', { requestBody });
+
+                expect(errors).toEqual([]);
+            });
+
+            it('valid objects are provided in the request body', () => {
+                const requestBodySchema = {
+                    type: 'object', fullPath: 'requestBody', additionalProperties: false,
+                    required: ['field1', 'field3'],
+                    properties: {
+                        field1: {
+                            type: 'object', fullPath: 'requestBody.field1', additionalProperties: false,
+                            properties: { field2: { type: 'integer', fullPath: 'requestBody.field1.field2' } }
+                        },
+                        field3: {
+                            type: 'object', nullable: true, fullPath: 'requestBody.field3', additionalProperties: false,
+                            properties: { field2: { type: 'integer', fullPath: 'requestBody.field3.field4' } }
+                        },
+                        field5: {
+                            type: 'object', nullable: true, fullPath: 'requestBody.field5', additionalProperties: false,
+                            properties: { field2: { type: 'integer', fullPath: 'requestBody.field5.field6' } }
+                        }
+                    }
+                } as any;
+                const validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema } });
+                const requestBody = {
+                    field1: { field2: 44 }, field3: null, field5: undefined
+                };
+
+                const errors = validator.validateEndpoint('put:/some/path', { requestBody });
+
+                expect(errors).toEqual([]);
+            });
+
+            it('valid arrays are provided in the request body', () => {
+                const requestBodySchema = {
+                    type: 'object', fullPath: 'requestBody', additionalProperties: false,
+                    required: ['field1', 'field3'],
+                    properties: {
+                        field1: {
+                            type: 'array', nullable: false, fullPath: 'requestBody.field1', minItems: 3,
+                            itemSchema: { type: 'integer', nullable: false, fullPath: 'requestBody.field1.items' }
+                        },
+                        field2: {
+                            type: 'array', nullable: true, fullPath: 'requestBody.field2',
+                            itemSchema: { type: 'integer', nullable: false, fullPath: 'requestBody.field2.items' }
+                        },
+                        field3: {
+                            type: 'array', nullable: true, fullPath: 'requestBody.field2',
+                            itemSchema: { type: 'integer', nullable: false, fullPath: 'requestBody.field3.items' }
+                        }
+                    }
+                } as any;
+                const validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema } });
+                const requestBody = {
+                    field1: [1, 2, 3], field2: null, field3: undefined
+                };
+
+                const errors = validator.validateEndpoint('put:/some/path', { requestBody });
+
+                expect(errors).toEqual([]);
+            });
+
+            it('valid strings are provided in the path and query params', () => {
+                const pathParamsSchema = {
+                    type: 'object', fullPath: 'params', additionalProperties: false,
                     required: ['field1', 'field2'],
                     properties: {
-                        field1: { type: 'string', fullPath: 'requestBody.field1', enum: ['X','Y'] },
-                        field2: { type: 'integer', fullPath: 'requestBody.field2', minimum: 10 },
-                        field3: { type: 'string', fullPath: 'requestBody.field3', minLength: 1 },
-                        field4: {
-                            type: 'object', fullPath: 'requestBody.field4', additionalProperties: true,
-                            properties: { field5: { type: 'integer', fullPath: 'requestBody.field4.field5' } }
-                        },
-                        field6: {
-                            type: 'array', fullPath: 'requestBody.field6', minItems: 2,
-                            itemSchema: { fullPath: 'requestBody.field6.items', type: 'string' }
-                        }
-                    },
-                    additionalProperties: false
-                } as any;
-                const pathParamsSchema = {
-                    type: 'object',
-                    fullPath: 'path',
-                    required: ['fieldX'],
-                    additionalProperties: false,
-                    properties: {
-                        fieldX: { type: 'string', fullPath: 'path.fieldX' }
+                        field1: { type: 'string', minLength: 2, fullPath: 'params.field1' },
+                        field2: { type: 'string', enum: ['X', 'Y'], fullPath: 'params.field2' },
                     }
                 } as any;
-                const queryParamsSchema = {
-                    type: 'object',
-                    fullPath: 'path',
-                    required: ['fieldX'],
-                    additionalProperties: false,
-                    properties: {
-                        fieldX: { type: 'string', fullPath: 'path.fieldX' },
-                        arrayOfNumbers: {
-                            type: 'array', minItems: 2, fullPath: 'query.arrayOfNumbers', pipeDelimitedString: true,
-                            itemSchema: { type: 'integer', fullPath: 'query.arrayOfNumbers.items' }
-                        }
-                    }
-                } as any;
-    
-                const requestBody = {
-                    field1: 'X',
-                    field2: 11,
-                    field3: 'test',
-                    field4: {
-                        field5: 99
-                    },
-                    field6: ['item1', 'item2']
-                } as any;
-                const pathParams = { fieldX: 'some-string' } as any;
-                const queryParams = {
-                    ...pathParams, arrayOfNumbers: '1|2|3'
+                const queryParamsSchema = pathParamsSchema;
+                const validator = new EndpointValidator({ 'put:/some/path': { pathParamsSchema, queryParamsSchema } });
+                const pathParams = {
+                    field1: 'St', field2: 'X'
                 };
-    
-                const validator = new EndpointValidator({ 'put:/some/path': { requestBodySchema, pathParamsSchema, queryParamsSchema} });
-    
-                const errors = validator.validateEndpoint('put:/some/path', { requestBody, pathParams, queryParams });
-    
+                const queryParams = pathParams;
+
+                const errors = validator.validateEndpoint('put:/some/path', { pathParams, queryParams });
+
+                expect(errors).toEqual([]);
+            });
+
+            it('valid integers are provided (as strings) in the path and query params', () => {
+                const pathParamsSchema = {
+                    type: 'object', fullPath: 'params', additionalProperties: false,
+                    required: ['field1', 'field2'],
+                    properties: {
+                        field1: { type: 'integer', fullPath: 'params.field1' },
+                        field2: { type: 'integer', minimum: 10, fullPath: 'params.field2' },
+                    }
+                } as any;
+                const queryParamsSchema = pathParamsSchema;
+                const validator = new EndpointValidator({ 'put:/some/path': { queryParamsSchema, pathParamsSchema } });
+                const pathParams = {
+                    field1: '1234', field2: '10'
+                };
+                const queryParams = pathParams;
+
+                const errors = validator.validateEndpoint('put:/some/path', { pathParams, queryParams });
+
+                expect(errors).toEqual([]);
+            });
+
+            it('valid pipe-delimited array is provided in the query params', () => {
+                const queryParamsSchema = {
+                    type: 'object', fullPath: 'requestBody', additionalProperties: false,
+                    required: ['field1'],
+                    properties: {
+                        field1: {
+                            type: 'array', nullable: false, fullPath: 'requestBody.field1', minItems: 3, pipeDelimitedString: true,
+                            itemSchema: { type: 'integer', nullable: false, fullPath: 'requestBody.field1.items' }
+                        },
+                    }
+                } as any;
+                const validator = new EndpointValidator({ 'put:/some/path': { queryParamsSchema } });
+                const queryParams = {
+                    field1: '1|2|3'
+                };
+
+                const errors = validator.validateEndpoint('put:/some/path', { queryParams });
+
                 expect(errors).toEqual([]);
             });
         });

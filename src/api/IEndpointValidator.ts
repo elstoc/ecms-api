@@ -1,5 +1,6 @@
 export type ObjectValidationSchema = {
     type: 'object';
+    nullable: boolean;
     fullPath: string;
     required?: string[];
     properties: { [key: string]: ValidationSchema };
@@ -8,6 +9,7 @@ export type ObjectValidationSchema = {
 
 export type ArrayValidationSchema = {
     type: 'array';
+    nullable: boolean;
     fullPath: string;
     itemSchema: ValidationSchema;
     minItems?: number;
@@ -16,6 +18,7 @@ export type ArrayValidationSchema = {
 
 export type StringValidationSchema = {
     type: 'string';
+    nullable: boolean;
     fullPath: string;
     enum?: string[];
     minLength?: number;
@@ -23,6 +26,7 @@ export type StringValidationSchema = {
 
 export type IntegerValidationSchema = {
     type: 'integer';
+    nullable: boolean;
     fullPath: string;
     minimum?: number;
 }

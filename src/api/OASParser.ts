@@ -146,6 +146,7 @@ export class OASParser implements IOASParser {
     private createValidationSchemaFromOASParameters(oasParameters: unknown[], endpoint: string, pathOrQuery: string): ObjectValidationSchema {
         const returnVal: ObjectValidationSchema = {
             type: 'object',
+            nullable: false,
             fullPath: pathOrQuery,
             properties: {},
             additionalProperties: false
@@ -208,6 +209,7 @@ export class OASParser implements IOASParser {
         const itemsOasSchema = this.toRecordOrThrow(oasArraySchema.items, `array ${fullPath} at endpoint ${endpoint} has no items defined`);
         const returnData: ArrayValidationSchema = {
             type: 'array',
+            nullable: oasArraySchema.nullable === true,
             fullPath,
             itemSchema: this.parseOASByType(itemsOasSchema, endpoint, `${fullPath}.items`)
         };
@@ -246,6 +248,7 @@ export class OASParser implements IOASParser {
 
         const validationSchema: ObjectValidationSchema = {
             type: 'object',
+            nullable: oasObjectSchema.nullable === true,
             fullPath,
             additionalProperties,
             properties: objectValidationProperties
@@ -266,7 +269,10 @@ export class OASParser implements IOASParser {
     }
 
     private parseOASString(oasStringSchema: Record<string, unknown>, endpoint: string, fullPath: string): StringValidationSchema {
-        const validationSchema: StringValidationSchema = { type: 'string', fullPath };
+        const validationSchema: StringValidationSchema = {
+            type: 'string', fullPath,
+            nullable: oasStringSchema.nullable === true,
+        };
 
         if (oasStringSchema.enum) {
             const enumArray = this.toStringArrayOrThrow(oasStringSchema.enum, `string at ${fullPath} for endpoint ${endpoint} has an invalid enum`);
@@ -285,7 +291,10 @@ export class OASParser implements IOASParser {
     }
 
     private parseOASInteger(oasIntSchema: Record<string, unknown>, endpoint: string, fullPath: string): IntegerValidationSchema {
-        const validationSchema: IntegerValidationSchema = { type: 'integer', fullPath };
+        const validationSchema: IntegerValidationSchema = {
+            type: 'integer', fullPath,
+            nullable: oasIntSchema.nullable === true,
+        };
 
         if (oasIntSchema.minimum !== undefined) {
             if (typeof oasIntSchema.minimum !== 'number' || !Number.isInteger(oasIntSchema.minimum)) {

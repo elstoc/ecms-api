@@ -406,10 +406,11 @@ describe('OASParser.parseAndValidateSchema', () => {
                 additionalProperties: false,
                 description: 'some-description',
                 properties: {
-                    field1: { type: 'string', description: 'some-description', minLength: 1 },
-                    field2: { type: 'integer', description: 'some-description' },
+                    field1: { type: 'string', nullable: true, description: 'some-description', minLength: 1 },
+                    field2: { type: 'integer', nullable: true, description: 'some-description' },
                     field3: {
                         type: 'object',
+                        nullable: true,
                         required: ['field4', 'field5'],
                         properties: {
                             field4: { type: 'string', enum: ['value1', 'value2'], description: 'some-description' },
@@ -417,7 +418,7 @@ describe('OASParser.parseAndValidateSchema', () => {
                             field6: { type: 'object', additionalProperties: true }
                         }
                     },
-                    field7: { type: 'array', items: { type: 'string' } },
+                    field7: { type: 'array', nullable: true, items: { type: 'string' } },
                     field8: { type: 'array', items: { type: 'integer' }, minItems: 1 },
                 }
             };
@@ -429,24 +430,26 @@ describe('OASParser.parseAndValidateSchema', () => {
 
             const expectedValidationSchema = {
                 type: 'object',
+                nullable: false,
                 additionalProperties: false,
                 fullPath: 'requestBody',
                 properties: {
-                    field1: { type: 'string', fullPath: 'requestBody.field1', minLength: 1 },
-                    field2: { type: 'integer', fullPath: 'requestBody.field2' },
+                    field1: { type: 'string', nullable: true, fullPath: 'requestBody.field1', minLength: 1 },
+                    field2: { type: 'integer', nullable: true, fullPath: 'requestBody.field2' },
                     field3: {
                         type: 'object',
+                        nullable: true,
                         additionalProperties: true,
                         fullPath: 'requestBody.field3',
                         required: ['field4', 'field5'],
                         properties: {
-                            field4: { type: 'string', enum: ['value1', 'value2'], fullPath: 'requestBody.field3.field4' },
-                            field5: { type: 'integer', minimum: 4, fullPath: 'requestBody.field3.field5' },
-                            field6: { type: 'object', fullPath: 'requestBody.field3.field6', additionalProperties: true, properties: {} }
+                            field4: { type: 'string', enum: ['value1', 'value2'], nullable: false, fullPath: 'requestBody.field3.field4' },
+                            field5: { type: 'integer', minimum: 4, nullable: false, fullPath: 'requestBody.field3.field5' },
+                            field6: { type: 'object', nullable: false, fullPath: 'requestBody.field3.field6', additionalProperties: true, properties: {} }
                         }
                     },
-                    field7: { type: 'array', fullPath: 'requestBody.field7', itemSchema: { type: 'string', fullPath: 'requestBody.field7.items' } },
-                    field8: { type: 'array', fullPath: 'requestBody.field8', itemSchema: { type: 'integer', fullPath: 'requestBody.field8.items' }, minItems: 1 },
+                    field7: { type: 'array', nullable: true, fullPath: 'requestBody.field7', itemSchema: { type: 'string', nullable: false, fullPath: 'requestBody.field7.items' } },
+                    field8: { type: 'array', nullable: false, fullPath: 'requestBody.field8', itemSchema: { type: 'integer', nullable: false, fullPath: 'requestBody.field8.items' }, minItems: 1 },
                 }
             };
             expect(requestBodySchema).toEqual(expectedValidationSchema);
@@ -470,15 +473,16 @@ describe('OASParser.parseAndValidateSchema', () => {
                 type: 'object',
                 additionalProperties: false,
                 fullPath: 'query',
+                nullable: false,
                 required: ['field1', 'field3'],
                 properties: {
-                    field1: { type: 'string', fullPath: 'query.field1', enum: ['value1'] },
-                    field2: { type: 'string', fullPath: 'query.field2', minLength: 1 },
-                    field3: { type: 'integer', fullPath: 'query.field3', minimum: 0 },
-                    field4: { type: 'integer', fullPath: 'query.field4' },
+                    field1: { type: 'string', nullable: false, fullPath: 'query.field1', enum: ['value1'] },
+                    field2: { type: 'string', nullable: false, fullPath: 'query.field2', minLength: 1 },
+                    field3: { type: 'integer', nullable: false, fullPath: 'query.field3', minimum: 0 },
+                    field4: { type: 'integer', nullable: false, fullPath: 'query.field4' },
                     field5: {
-                        type: 'array', fullPath: 'query.field5', minItems: 1, pipeDelimitedString: true,
-                        itemSchema: { type: 'string', fullPath: 'query.field5.items' }
+                        type: 'array', nullable: false, fullPath: 'query.field5', minItems: 1, pipeDelimitedString: true,
+                        itemSchema: { type: 'string', nullable: false, fullPath: 'query.field5.items' }
                     }
                 }
             };
@@ -502,13 +506,14 @@ describe('OASParser.parseAndValidateSchema', () => {
             const expectedPathParams = {
                 type: 'object',
                 additionalProperties: false,
+                nullable: false,
                 fullPath: 'path',
                 required: ['field1', 'field3'],
                 properties: {
-                    field1: { type: 'string', fullPath: 'path.field1', enum: ['value1'] },
-                    field2: { type: 'string', fullPath: 'path.field2' },
-                    field3: { type: 'integer', fullPath: 'path.field3', minimum: 0 },
-                    field4: { type: 'integer', fullPath: 'path.field4' } }
+                    field1: { type: 'string', nullable: false, fullPath: 'path.field1', enum: ['value1'] },
+                    field2: { type: 'string', nullable: false, fullPath: 'path.field2' },
+                    field3: { type: 'integer', nullable: false, fullPath: 'path.field3', minimum: 0 },
+                    field4: { type: 'integer', nullable: false, fullPath: 'path.field4' } }
             };
 
             expect(pathParamsSchema).toEqual(expectedPathParams);
@@ -539,30 +544,33 @@ describe('OASParser.parseAndValidateSchema', () => {
             const expectedBodyValidationSchema = {
                 type: 'object',
                 additionalProperties: true,
+                nullable: false,
                 fullPath: 'requestBody',
                 properties: {
-                    field1: { type: 'string', fullPath: 'requestBody.field1' },
-                    field2: { type: 'integer', fullPath: 'requestBody.field2' },
+                    field1: { type: 'string', nullable: false, fullPath: 'requestBody.field1' },
+                    field2: { type: 'integer', nullable: false, fullPath: 'requestBody.field2' },
                 }
             };
             const expectedQueryParams = {
                 type: 'object',
                 additionalProperties: false,
+                nullable: false,
                 fullPath: 'query',
                 required: ['field1'],
                 properties: {
-                    field1: { type: 'string', fullPath: 'query.field1' },
-                    field2: { type: 'string', fullPath: 'query.field2' },
+                    field1: { type: 'string', nullable: false, fullPath: 'query.field1' },
+                    field2: { type: 'string', nullable: false, fullPath: 'query.field2' },
                 }
             };
             const expectedPathParams = {
                 type: 'object',
                 additionalProperties: false,
+                nullable: false,
                 fullPath: 'path',
                 required: ['field3'],
                 properties: {
-                    field3: { type: 'integer', fullPath: 'path.field3' },
-                    field4: { type: 'integer', fullPath: 'path.field4' } }
+                    field3: { type: 'integer', nullable: false, fullPath: 'path.field3' },
+                    field4: { type: 'integer', nullable: false, fullPath: 'path.field4' } }
             };
 
             expect(requestBodySchema).toEqual(expectedBodyValidationSchema);

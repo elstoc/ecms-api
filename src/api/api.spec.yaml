@@ -303,6 +303,52 @@ components:
       schema:
         type: string
   schemas:
+    VideoMedium:
+      type: object
+      additionalProperties: false
+      required:
+        - media_type
+      properties:
+        media_type:
+          type: string
+          enum:
+            - BD4K
+            - DL2160
+            - BD
+            - DL1080
+            - DL720
+            - DVD
+            - DVD11
+            - DVDSH
+            - DVDR1
+            - DLSD
+        media_location:
+          type: string
+          nullable: true
+          enum:
+            - MOVW
+            - NAS
+            - TVDOW
+            - TVCOW
+            - TVDRW
+            - TVBOX
+            - EXT
+            - OTH
+        watched:
+          type: string
+          nullable: true
+          enum:
+            - Y
+            - N
+            - P
+        notes:
+          type: string
+          nullable: true
+    VideoMedia:
+      type: array
+      nullable: true
+      items:
+        $ref: '#/components/schemas/VideoMedium'
     Video:
       type: object
       additionalProperties: false
@@ -322,18 +368,25 @@ components:
           $ref: '#/components/schemas/category'
         director:
           type: string
+          nullable: true
         length_mins:
           type: integer
+          nullable: true
         watched:
           type: string
+          nullable: true
           enum:
             - Y
             - N
             - P
         to_watch_priority:
           type: integer
+          nullable: true
         progress:
           type: string
+          nullable: true
+        media:
+          $ref: '#/components/schemas/VideoMedia'
     VideoWithId:
       type: object
       additionalProperties: false
@@ -357,18 +410,25 @@ components:
           $ref: '#/components/schemas/category'
         director:
           type: string
+          nullable: true
         length_mins:
           type: integer
+          nullable: true
         watched:
           type: string
+          nullable: true
           enum:
             - Y
             - N
             - P
         to_watch_priority:
           type: integer
+          nullable: true
         progress:
           type: string
+          nullable: true
+        media:
+          $ref: '#/components/schemas/VideoMedia'
     category:
       type: string
       enum:

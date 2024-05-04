@@ -184,7 +184,7 @@ describe('VideoDb', () => {
     });
 
     describe('addVideo', () => {
-        it('runs sql with appropriate parameters and returns inserted id', async () => {
+        it('runs video insert sql with appropriate parameters and returns inserted id', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
             mockGetWithParams.mockResolvedValue({ id: 2468 });
@@ -224,6 +224,90 @@ describe('VideoDb', () => {
             expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
             expect(videoParameters).toEqual(expectedVideoParameters);
             expect(insertedId).toBe(2468);
+        });
+
+        it('deletes but does not insert media if media is undefined', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValue({ ver: 4 });
+            mockGetWithParams.mockResolvedValue({ id: 2468 });
+
+            await videoDb.initialise();
+
+            const video = {
+                title: 'some-title',
+                category: 'some-category',
+                director: 'some-director',
+                length_mins: 1234,
+                watched: 'Y',
+                to_watch_priority: 1,
+                progress: 'some-progress'
+            };
+
+            const expectedMediaDeleteSql = 'DELETE FROM video_media WHERE video_id = 2468';
+            await videoDb.addVideo(video);
+
+            expect(mockExec).toHaveBeenCalledWith(expectedMediaDeleteSql);
+            expect(mockRunWithParams).toHaveBeenCalledTimes(0);
+        });
+
+        it('deletes and inserts media if media is defined', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValue({ ver: 4 });
+            mockGetWithParams.mockResolvedValue({ id: 2468 });
+
+            await videoDb.initialise();
+
+            const video = {
+                title: 'some-title',
+                category: 'some-category',
+                director: 'some-director',
+                length_mins: 1234,
+                watched: 'Y',
+                to_watch_priority: 1,
+                progress: 'some-progress',
+                media: [
+                    {
+                      media_type: 'DL2160',
+                      media_location: 'NAS',
+                      watched: 'N',
+                      notes: null
+                    },
+                    {
+                      media_type: 'DVDR1',
+                      media_location: 'MOVW',
+                      watched: 'Y',
+                      notes: null
+                    }
+                  ]
+            };
+            const expectedMediaInsertSql = `INSERT INTO video_media (video_id, media_type, media_location, watched, notes)
+                            VALUES ($id, $media_type, $media_location, $watched, $notes)`;
+            const expectedMediaInsertParams1 = {
+                '$id': 2468,
+                '$media_type': 'DL2160',
+                '$media_location': 'NAS',
+                '$watched': 'N',
+                '$notes': null
+            };
+            const expectedMediaInsertParams2 = {
+                '$id': 2468,
+                '$media_type': 'DVDR1',
+                '$media_location': 'MOVW',
+                '$watched': 'Y',
+                '$notes': null
+            };
+
+            const expectedMediaDeleteSql = 'DELETE FROM video_media WHERE video_id = 2468';
+            await videoDb.addVideo(video as any);
+
+            expect(mockExec).toHaveBeenCalledWith(expectedMediaDeleteSql);
+            expect(mockRunWithParams).toHaveBeenCalledTimes(2);
+            const [mediaInsertSql1, mediaInsertParams1] = mockRunWithParams.mock.calls[0];
+            const [mediaInsertSql2, mediaInsertParams2] = mockRunWithParams.mock.calls[1];
+            expect(stripWhiteSpace(mediaInsertSql1)).toBe(stripWhiteSpace(expectedMediaInsertSql));
+            expect(stripWhiteSpace(mediaInsertSql2)).toBe(stripWhiteSpace(expectedMediaInsertSql));
+            expect(mediaInsertParams1).toEqual(expectedMediaInsertParams1);
+            expect(mediaInsertParams2).toEqual(expectedMediaInsertParams2);
         });
     });
 
@@ -281,6 +365,83 @@ describe('VideoDb', () => {
             const [sql, videoParameters] = mockRunWithParams.mock.calls[0];
             expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
             expect(videoParameters).toEqual(expectedVideoParameters);
+        });
+
+        it('deletes but does not insert media if media is undefined', async () => {
+            mockGet.mockResolvedValue({ video_exists: 1 });
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValue({ ver: 4 });
+            mockGetWithParams.mockResolvedValue({ id: 2468 });
+
+            await videoDb.initialise();
+
+            const expectedMediaDeleteSql = 'DELETE FROM video_media WHERE video_id = 1';
+            await videoDb.updateVideo(video);
+
+            expect(mockExec).toHaveBeenCalledWith(expectedMediaDeleteSql);
+            expect(mockRunWithParams).toHaveBeenCalledTimes(1); //for the video update
+        });
+
+        it('deletes and inserts media if media is defined', async () => {
+            mockGet.mockResolvedValue({ video_exists: 1 });
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValue({ ver: 4 });
+            mockGetWithParams.mockResolvedValue({ id: 2468 });
+
+            await videoDb.initialise();
+
+            const videoWithMedia = {
+                id: 1,
+                title: 'some-title',
+                category: 'some-category',
+                director: 'some-director',
+                length_mins: 1234,
+                watched: 'Y',
+                to_watch_priority: 1,
+                progress: 'some-progress',
+                media: [
+                    {
+                      media_type: 'DL2160',
+                      media_location: 'NAS',
+                      watched: 'N',
+                      notes: null
+                    },
+                    {
+                      media_type: 'DVDR1',
+                      media_location: 'MOVW',
+                      watched: 'Y',
+                      notes: null
+                    }
+                  ]
+            };
+            const expectedMediaInsertSql = `INSERT INTO video_media (video_id, media_type, media_location, watched, notes)
+                            VALUES ($id, $media_type, $media_location, $watched, $notes)`;
+            const expectedMediaInsertParams1 = {
+                '$id': 1,
+                '$media_type': 'DL2160',
+                '$media_location': 'NAS',
+                '$watched': 'N',
+                '$notes': null
+            };
+            const expectedMediaInsertParams2 = {
+                '$id': 1,
+                '$media_type': 'DVDR1',
+                '$media_location': 'MOVW',
+                '$watched': 'Y',
+                '$notes': null
+            };
+
+            const expectedMediaDeleteSql = 'DELETE FROM video_media WHERE video_id = 1';
+            await videoDb.updateVideo(videoWithMedia as any);
+
+            expect(mockExec).toHaveBeenCalledWith(expectedMediaDeleteSql);
+            expect(mockRunWithParams).toHaveBeenCalledTimes(3);
+            const [mediaInsertSql1, mediaInsertParams1] = mockRunWithParams.mock.calls[1];
+            const [mediaInsertSql2, mediaInsertParams2] = mockRunWithParams.mock.calls[2];
+            expect(stripWhiteSpace(mediaInsertSql1)).toBe(stripWhiteSpace(expectedMediaInsertSql));
+            expect(stripWhiteSpace(mediaInsertSql2)).toBe(stripWhiteSpace(expectedMediaInsertSql));
+            expect(mediaInsertParams1).toEqual(expectedMediaInsertParams1);
+            expect(mediaInsertParams2).toEqual(expectedMediaInsertParams2);
         });
     });
 

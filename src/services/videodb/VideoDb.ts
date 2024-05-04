@@ -95,12 +95,17 @@ export class VideoDb implements IVideoDb {
         let key: keyof Video;
         // prefix all column names with $
         for (key in video) {
-            params[`$${key}`] = video[key];
+            if (key !== 'media') {
+                params[`$${key}`] = video[key];
+            }
         }
         const result = await this.database?.getWithParams<{ id: number }>(sql, params);
         if (!result) {
             throw new Error('Unexpected error creating video');
         }
+
+        await this.createOrReplaceVideoMedia(result.id, video.media);
+
         return result.id;
     }
 
@@ -116,14 +121,41 @@ export class VideoDb implements IVideoDb {
                          to_watch_priority = $to_watch_priority,
                          progress = $progress
                      WHERE id = $id`;
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const params: any = {};
         let key: keyof VideoWithId;
         // prefix all column names with $
         for (key in video) {
-            params[`$${key}`] = video[key];
+            if (key !== 'media') {
+                params[`$${key}`] = video[key];
+            }
         }
         await this.database?.runWithParams(sql, params);
+
+        await this.createOrReplaceVideoMedia(video.id, video.media);
+    }
+
+    private async createOrReplaceVideoMedia(id: number, media?: VideoMedia[]): Promise<void> {
+        const deleteSql = `DELETE FROM video_media WHERE video_id = ${id}`;
+        await this.database?.exec(deleteSql);
+
+        if (!media) return;
+
+        const insertSql = `INSERT INTO video_media (video_id, media_type, media_location, watched, notes)
+                           VALUES ($id, $media_type, $media_location, $watched, $notes)`;
+        
+        for (const medium of media) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const params: any = { '$id': id };
+
+            let key: keyof VideoMedia;
+            // prefix all column names with $
+            for (key in medium) {
+                params[`$${key}`] = medium[key];
+            }
+            await this.database?.runWithParams(insertSql, params);
+        }
     }
 
     public async getVideo(id: number): Promise<VideoWithId> {

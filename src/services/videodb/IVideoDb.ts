@@ -16,6 +16,8 @@ export type Video = {
     media?: VideoMedia[];
 }
 
+export const videoFields = ['title', 'category', 'director', 'length_mins', 'watched', 'to_watch_priority', 'progress'];
+
 export type PrimaryMedium = {
     pm_media_type: string;
     pm_watched: string;

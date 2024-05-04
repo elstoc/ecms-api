@@ -1,5 +1,5 @@
 import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
-import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoQueryParams, VideoWithIdAndPrimaryMedium, VideoMedia } from './IVideoDb';
+import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoQueryParams, VideoWithIdAndPrimaryMedium, VideoMedia, videoFields } from './IVideoDb';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { dbUpgradeSql } from './dbUpgradeSql';
 import path from 'path';
@@ -86,9 +86,9 @@ export class VideoDb implements IVideoDb {
 
     public async addVideo(video: Video): Promise<number> {
         const sql = `INSERT INTO videos
-                     (title, category, director, length_mins, watched, to_watch_priority, progress)
+                     (${videoFields.join(', ')})
                      VALUES
-                     ($title, $category, $director, $length_mins, $watched, $to_watch_priority, $progress)
+                     ($${videoFields.join(', $')})
                      RETURNING id`;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const params: any = {};
@@ -112,20 +112,11 @@ export class VideoDb implements IVideoDb {
     public async updateVideo(video: VideoWithId): Promise<void> {
         await this.throwIfNoVideo(video.id);
 
-        const sql = `UPDATE videos
-                     SET title = $title,
-                         category = $category,
-                         director = $director,
-                         length_mins = $length_mins,
-                         watched = $watched,
-                         to_watch_priority = $to_watch_priority,
-                         progress = $progress
-                     WHERE id = $id`;
+        const setList = videoFields.map((field) => `${field} = $${field}`);
+        const sql = `UPDATE videos SET ${setList.join(', ')} WHERE id = $id`;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const params: any = {};
         let key: keyof VideoWithId;
-        // prefix all column names with $
+        const params: { [key: string]: unknown} = {};
         for (key in video) {
             if (key !== 'media') {
                 params[`$${key}`] = video[key];
@@ -146,11 +137,8 @@ export class VideoDb implements IVideoDb {
                            VALUES ($id, $media_type, $media_location, $watched, $notes)`;
         
         for (const medium of media) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const params: any = { '$id': id };
-
             let key: keyof VideoMedia;
-            // prefix all column names with $
+            const params: { [key: string]: unknown} = { '$id': id };
             for (key in medium) {
                 params[`$${key}`] = medium[key];
             }
@@ -160,7 +148,7 @@ export class VideoDb implements IVideoDb {
 
     public async getVideo(id: number): Promise<VideoWithId> {
         await this.throwIfNoVideo(id);
-        const sql = `SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress
+        const sql = `SELECT id, ${videoFields.join(', ')}
                      FROM   videos
                      WHERE  id = ${id}`;
         const video = await this.database?.get<VideoWithId>(sql);
@@ -185,7 +173,7 @@ export class VideoDb implements IVideoDb {
     public async queryVideos(queryParams?: VideoQueryParams): Promise<VideoWithId[]> {
         let params: { [key: string]: unknown } = {};
         const whereClauses: string[] = [];
-        let sql = `SELECT v.id, v.title, v.category, v.director, v.length_mins, v.watched, v.to_watch_priority, v.progress,
+        let sql = `SELECT v.id, v.${videoFields.join(', v.')},
                              pm.media_type pm_media_type, pm.watched pm_watched
                       FROM   videos v
                       LEFT OUTER JOIN (

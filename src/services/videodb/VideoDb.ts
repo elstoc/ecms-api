@@ -90,10 +90,8 @@ export class VideoDb implements IVideoDb {
                      VALUES
                      ($${videoFields.join(', $')})
                      RETURNING id`;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const params: any = {};
+        const params: { [key: string]: unknown } = {};
         let key: keyof Video;
-        // prefix all column names with $
         for (key in video) {
             if (key !== 'media') {
                 params[`$${key}`] = video[key];

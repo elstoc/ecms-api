@@ -664,6 +664,23 @@ describe('VideoDb', () => {
             expect(videos).toBe('videos');
         });
 
+        it('runs the correct sql with query params when tags query param is defined', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValueOnce({ ver: 4 });
+            await videoDb.initialise();
+            const expectedSql = baseSql + ' WHERE (EXISTS (SELECT 1 FROM video_tags WHERE video_id = id AND tag IN ($tag0, $tag1, $tag2)))' + orderBySQL;
+            const expectedParams = { '$tag0': 'tag0', '$tag1': 'tag1', '$tag2': 'tag2' };
+
+            mockGetAllWithParams.mockResolvedValue('videos');
+            const videos = await videoDb.queryVideos({ tags: ['tag0','tag1','tag2'] });
+
+            expect(mockGetAllWithParams).toHaveBeenCalled();
+            const [sql, params] = mockGetAllWithParams.mock.calls[0];
+            expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
+            expect(params).toEqual(expectedParams);
+            expect(videos).toBe('videos');
+        });
+
         it('runs the correct sql with query params when titleLike query param is defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
@@ -681,21 +698,23 @@ describe('VideoDb', () => {
             expect(videos).toBe('videos');
         });
 
-        it('runs the correct sql with query params when titleLike, categories and maxLength query param are both defined', async () => {
+        it('runs the correct sql with query params when titleLike, categories, tags and maxLength query param are all defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
             const expectedSql = baseSql + ` WHERE (length_mins <= $maxLength)
                                             AND (category IN ($category0, $category1, $category2))
+                                            AND (EXISTS (SELECT 1 FROM video_tags WHERE video_id = id AND tag IN ($tag0, $tag1, $tag2)))
                                             AND (LOWER(title) LIKE $titleLike)` + orderBySQL;
             const expectedParams = {
                 '$titleLike': '%title%',
                 '$category0': 'MOV', '$category1': 'TV', '$category2': 'TVDOC',
+                '$tag0': 'tag0', '$tag1': 'tag1', '$tag2': 'tag2',
                 '$maxLength': 120
             };
 
             mockGetAllWithParams.mockResolvedValue('videos');
-            const videos = await videoDb.queryVideos({ titleLike: '%title%', maxLength: 120, categories: ['MOV','TV','TVDOC'] });
+            const videos = await videoDb.queryVideos({ titleLike: '%title%', maxLength: 120, categories: ['MOV','TV','TVDOC'], tags: ['tag0','tag1','tag2'] });
 
             expect(mockGetAllWithParams).toHaveBeenCalled();
             const [sql, params] = mockGetAllWithParams.mock.calls[0];

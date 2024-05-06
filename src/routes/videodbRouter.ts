@@ -29,10 +29,11 @@ export const createVideoDbRouter = (site: ISite): Router => {
                 const video = await videoDb.getVideo(parseInt(req.query.id as string));
                 res.json(video);
             } else if (fn === 'getVideos') {
-                const { maxLength, categories, titleLike } = req.query;
+                const { maxLength, categories, tags, titleLike } = req.query;
                 const queryParams = {
                     maxLength: maxLength === undefined ? undefined : parseInt(maxLength as string),
                     categories: categories === undefined ? undefined : (categories as string)?.split('|'),
+                    tags: tags === undefined ? undefined : (tags as string)?.split('|'),
                     titleLike: titleLike === undefined ? undefined : titleLike as string
                 };
                 const videos = await videoDb.queryVideos(queryParams);

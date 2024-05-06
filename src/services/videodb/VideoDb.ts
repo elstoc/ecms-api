@@ -231,7 +231,7 @@ export class VideoDb implements IVideoDb {
                       ) pm
                       ON v.id = pm.video_id`;
 
-        const { maxLength, categories, titleLike } = queryParams || {};
+        const { maxLength, categories, tags, titleLike } = queryParams || {};
         if (maxLength !== undefined) {
             whereClauses.push('length_mins <= $maxLength');
             params['$maxLength'] = maxLength;
@@ -243,6 +243,14 @@ export class VideoDb implements IVideoDb {
             });
             whereClauses.push(`category IN (${Object.keys(categoryParams).join(', ')})`);
             params = { ...params, ...categoryParams };
+        }
+        if (tags !== undefined) {
+            const tagParams: { [key: string]: string } = {};
+            tags.forEach((tag, index) => {
+                tagParams['$tag' + index.toString()] = tag;
+            });
+            whereClauses.push(`EXISTS (SELECT 1 FROM video_tags WHERE video_id = id AND tag IN (${Object.keys(tagParams).join(', ')}))`);
+            params = { ...params, ...tagParams };
         }
         if (titleLike !== undefined) {
             whereClauses.push('LOWER(title) LIKE $titleLike');

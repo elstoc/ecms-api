@@ -271,7 +271,7 @@ paths:
           description: OK
   /videodb/videos:
     get:
-      description: Get a list of videos from the database
+      description: Get a list of videos from the database, filtering accordingly
       parameters:
         - $ref: '#/components/parameters/ComponentPath'
         - in: query
@@ -299,6 +299,17 @@ paths:
             minItems: 1
             items:
               $ref: '#/components/schemas/category'
+        - in: query
+          name: tags
+          required: false
+          description: A list of tags
+          explode: false
+          style: pipeDelimited
+          schema:
+            type: array
+            minItems: 1
+            items:
+              type: string
       responses:
         '200':
           description: OK

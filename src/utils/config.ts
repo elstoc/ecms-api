@@ -30,6 +30,7 @@ export type Config = {
     apiPort: number;
     uiUrl: string;
     dataDir: string;
+    omdbApiKey: string;
     storageWriteUid?: number;
     storageWriteGid?: number;
     enableAuthentication: boolean;
@@ -47,6 +48,7 @@ export const getConfig = (): Config => {
         apiPort: getIntConfig('API_PORT'),
         uiUrl: getStringConfig('UI_URL'),
         dataDir: getStringConfig('DATA_DIR'),
+        omdbApiKey: getOptionalStringConfig('OMDB_API_KEY', ''),
         storageWriteUid: parseInt(getOptionalStringConfig('STORAGE_WRITE_UID', '0')),
         storageWriteGid: parseInt(getOptionalStringConfig('STORAGE_WRITE_GID', '0')),
         enableAuthentication: getBooleanConfig('ENABLE_AUTHENTICATION'),

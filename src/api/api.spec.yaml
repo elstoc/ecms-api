@@ -179,6 +179,14 @@ paths:
       responses:
         '200':
           description: OK
+  /videodb/omdb-key:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/ComponentPath'
+      description:  Get the API key for omdb
+      responses:
+        '200':
+          description: OK
   /videodb/lookup:
     get:
       description:  Get the contents of a lookup table

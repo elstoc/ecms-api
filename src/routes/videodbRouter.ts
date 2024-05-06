@@ -11,6 +11,8 @@ export const createVideoDbRouter = (site: ISite): Router => {
             if (fn === 'getVersion') {
                 const version = await videoDb.getVersion();
                 res.json({ version });
+            } else if (fn === 'getOmdbKey') {
+                res.send(videoDb.getOmdbApiKey());
             } else if (fn === 'getLookup') {
                 const values = await videoDb.getLookupValues(req.query.table as string);
                 res.json(values);
@@ -43,6 +45,7 @@ export const createVideoDbRouter = (site: ISite): Router => {
 
     const router = Router();
     router.get('/version', async (req, res, next) => videoDbHandler(req, res, next, 'getVersion'));
+    router.get('/omdb-key', async (req, res, next) => videoDbHandler(req, res, next, 'getOmdbKey'));
     router.get('/lookup', async (req, res, next) => videoDbHandler(req, res, next, 'getLookup'));
     router.get('/tags', async (req, res, next) => videoDbHandler(req, res, next, 'getTags'));
     router.post('/video', async (req, res, next) => videoDbHandler(req, res, next, 'postVideo'));

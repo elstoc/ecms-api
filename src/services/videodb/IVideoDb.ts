@@ -92,4 +92,5 @@ export interface IVideoDb {
     updateVideo(video: VideoWithId): Promise<void>;
     getVideo(id: number): Promise<VideoWithId>;
     queryVideos(queryParams?: VideoQueryParams): Promise<VideoSummaryAndPrimaryMedium[]>;
+    getOmdbApiKey(): string;
 }

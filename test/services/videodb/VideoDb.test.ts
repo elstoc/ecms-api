@@ -45,9 +45,13 @@ describe('VideoDb', () => {
         getAllWithParams: mockGetAllWithParams
     };
 
+    const config = {
+        omdbApiKey: 'omdb-key'
+    } as any;
+
     beforeEach(() => {
         mockStorage.getContentDb.mockResolvedValue(mockDb);
-        videoDb = new VideoDb(apiPath, mockLogger, mockStorage as any);
+        videoDb = new VideoDb(apiPath, config, mockLogger, mockStorage as any);
     });
 
     describe('initialise', () => {
@@ -180,6 +184,12 @@ describe('VideoDb', () => {
             const tablePrefix = tableName.replace('l_', '');
 
             await expect(videoDb.getLookupValues(tablePrefix)).rejects.toThrow(`No records found in ${tableName}`);
+        });
+    });
+
+    describe('getOmdbApiKey', () => {
+        it('returns the config api key', () => {
+            expect(videoDb.getOmdbApiKey()).toBe('omdb-key');
         });
     });
 

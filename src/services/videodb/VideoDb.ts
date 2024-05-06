@@ -5,6 +5,7 @@ import { dbUpgradeSql } from './dbUpgradeSql';
 import path from 'path';
 import { Logger } from 'winston';
 import { NotFoundError } from '../../errors';
+import { Config } from '../../utils';
 
 export class VideoDb implements IVideoDb {
     private apiPath: string;
@@ -14,6 +15,7 @@ export class VideoDb implements IVideoDb {
 
     public constructor(
         apiPath: string,
+        private config: Config,
         private logger: Logger,
         private storage: IStorageAdapter,
     ) {
@@ -56,6 +58,10 @@ export class VideoDb implements IVideoDb {
 
     public async getVersion(): Promise<number> {
         return this.dbVersion ?? 0;
+    }
+
+    public getOmdbApiKey(): string {
+        return this.config.omdbApiKey;
     }
 
     public async getLookupValues(tableSuffix: string): Promise<LookupValues> {

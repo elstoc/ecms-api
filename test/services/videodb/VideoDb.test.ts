@@ -236,7 +236,7 @@ describe('VideoDb', () => {
             expect(insertedId).toBe(2468);
         });
 
-        it('deletes but does not insert media if media is undefined', async () => {
+        it('deletes but does not insert media/tags if media/tags are undefined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
             mockGetWithParams.mockResolvedValue({ id: 2468 });
@@ -259,13 +259,15 @@ describe('VideoDb', () => {
             };
 
             const expectedMediaDeleteSql = 'DELETE FROM video_media WHERE video_id = 2468';
+            const expectedTagDeleteSql = 'DELETE FROM video_tags WHERE video_id = 2468';
             await videoDb.addVideo(video);
 
             expect(mockExec).toHaveBeenCalledWith(expectedMediaDeleteSql);
+            expect(mockExec).toHaveBeenCalledWith(expectedTagDeleteSql);
             expect(mockRunWithParams).toHaveBeenCalledTimes(0);
         });
 
-        it('deletes and inserts media if media is defined', async () => {
+        it('deletes and inserts media/tags if media/tags are defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
             mockGetWithParams.mockResolvedValue({ id: 2468 });
@@ -280,6 +282,7 @@ describe('VideoDb', () => {
                 watched: 'Y',
                 to_watch_priority: 1,
                 progress: 'some-progress',
+                tags: ['tag1', 'tag2'],
                 media: [
                     {
                       media_type: 'DL2160',
@@ -311,18 +314,29 @@ describe('VideoDb', () => {
                 '$watched': 'Y',
                 '$notes': null
             };
+            const expectedTagInsertParams1 = { '$id': 2468, '$tag': 'tag1' };
+            const expectedTagInsertParams2 = { '$id': 2468, '$tag': 'tag2' };
 
             const expectedMediaDeleteSql = 'DELETE FROM video_media WHERE video_id = 2468';
+            const expectedTagDeleteSql = 'DELETE FROM video_tags WHERE video_id = 2468';
+            const expectedTagInsertSql = 'INSERT INTO video_tags (video_id, tag) VALUES ($id, $tag)';
             await videoDb.addVideo(video as any);
 
             expect(mockExec).toHaveBeenCalledWith(expectedMediaDeleteSql);
-            expect(mockRunWithParams).toHaveBeenCalledTimes(2);
+            expect(mockExec).toHaveBeenCalledWith(expectedTagDeleteSql);
+            expect(mockRunWithParams).toHaveBeenCalledTimes(4);
             const [mediaInsertSql1, mediaInsertParams1] = mockRunWithParams.mock.calls[0];
             const [mediaInsertSql2, mediaInsertParams2] = mockRunWithParams.mock.calls[1];
+            const [tagInsertSql1, tagInsertParams1] = mockRunWithParams.mock.calls[2];
+            const [tagInsertSql2, tagInsertParams2] = mockRunWithParams.mock.calls[3];
             expect(stripWhiteSpace(mediaInsertSql1)).toBe(stripWhiteSpace(expectedMediaInsertSql));
             expect(stripWhiteSpace(mediaInsertSql2)).toBe(stripWhiteSpace(expectedMediaInsertSql));
+            expect(stripWhiteSpace(tagInsertSql1)).toBe(stripWhiteSpace(expectedTagInsertSql));
+            expect(stripWhiteSpace(tagInsertSql2)).toBe(stripWhiteSpace(expectedTagInsertSql));
             expect(mediaInsertParams1).toEqual(expectedMediaInsertParams1);
             expect(mediaInsertParams2).toEqual(expectedMediaInsertParams2);
+            expect(tagInsertParams1).toEqual(expectedTagInsertParams1);
+            expect(tagInsertParams2).toEqual(expectedTagInsertParams2);
         });
     });
 
@@ -397,7 +411,7 @@ describe('VideoDb', () => {
             expect(videoParameters).toEqual(expectedVideoParameters);
         });
 
-        it('deletes but does not insert media if media is undefined', async () => {
+        it('deletes but does not insert media/tags if media/tags are undefined', async () => {
             mockGet.mockResolvedValue({ video_exists: 1 });
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
@@ -406,13 +420,15 @@ describe('VideoDb', () => {
             await videoDb.initialise();
 
             const expectedMediaDeleteSql = 'DELETE FROM video_media WHERE video_id = 1';
+            const expectedTagDeleteSql = 'DELETE FROM video_tags WHERE video_id = 1';
             await videoDb.updateVideo(video);
 
             expect(mockExec).toHaveBeenCalledWith(expectedMediaDeleteSql);
+            expect(mockExec).toHaveBeenCalledWith(expectedTagDeleteSql);
             expect(mockRunWithParams).toHaveBeenCalledTimes(1); //for the video update
         });
 
-        it('deletes and inserts media if media is defined', async () => {
+        it('deletes and inserts media/tags if media/tags are defined', async () => {
             mockGet.mockResolvedValue({ video_exists: 1 });
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
@@ -429,6 +445,7 @@ describe('VideoDb', () => {
                 watched: 'Y',
                 to_watch_priority: 1,
                 progress: 'some-progress',
+                tags: ['tag1', 'tag2'],
                 media: [
                     {
                       media_type: 'DL2160',
@@ -460,18 +477,29 @@ describe('VideoDb', () => {
                 '$watched': 'Y',
                 '$notes': null
             };
+            const expectedTagInsertParams1 = { '$id': 1, '$tag': 'tag1' };
+            const expectedTagInsertParams2 = { '$id': 1, '$tag': 'tag2' };
 
             const expectedMediaDeleteSql = 'DELETE FROM video_media WHERE video_id = 1';
+            const expectedTagDeleteSql = 'DELETE FROM video_tags WHERE video_id = 1';
+            const expectedTagInsertSql = 'INSERT INTO video_tags (video_id, tag) VALUES ($id, $tag)';
             await videoDb.updateVideo(videoWithMedia as any);
 
             expect(mockExec).toHaveBeenCalledWith(expectedMediaDeleteSql);
-            expect(mockRunWithParams).toHaveBeenCalledTimes(3);
+            expect(mockExec).toHaveBeenCalledWith(expectedTagDeleteSql);
+            expect(mockRunWithParams).toHaveBeenCalledTimes(5);
             const [mediaInsertSql1, mediaInsertParams1] = mockRunWithParams.mock.calls[1];
             const [mediaInsertSql2, mediaInsertParams2] = mockRunWithParams.mock.calls[2];
+            const [tagInsertSql1, tagInsertParams1] = mockRunWithParams.mock.calls[3];
+            const [tagInsertSql2, tagInsertParams2] = mockRunWithParams.mock.calls[4];
             expect(stripWhiteSpace(mediaInsertSql1)).toBe(stripWhiteSpace(expectedMediaInsertSql));
             expect(stripWhiteSpace(mediaInsertSql2)).toBe(stripWhiteSpace(expectedMediaInsertSql));
+            expect(stripWhiteSpace(tagInsertSql1)).toBe(stripWhiteSpace(expectedTagInsertSql));
+            expect(stripWhiteSpace(tagInsertSql2)).toBe(stripWhiteSpace(expectedTagInsertSql));
             expect(mediaInsertParams1).toEqual(expectedMediaInsertParams1);
             expect(mediaInsertParams2).toEqual(expectedMediaInsertParams2);
+            expect(tagInsertParams1).toEqual(expectedTagInsertParams1);
+            expect(tagInsertParams2).toEqual(expectedTagInsertParams2);
         });
     });
 
@@ -489,10 +517,10 @@ describe('VideoDb', () => {
             expect(mockGet).toHaveBeenCalledWith('SELECT COUNT() AS video_exists FROM videos WHERE id=12');
         });
 
-        it('attempts to get video and media', async () => {
+        it('attempts to get video, tags and media', async () => {
             mockGet.mockResolvedValueOnce({ video_exists: 1 })
                 .mockResolvedValue({ video: 'video' });
-            mockGetAll.mockResolvedValue('media');
+            mockGetAll.mockResolvedValueOnce('media').mockResolvedValue([{ tag: 'tag1' }, { tag: 'tag2' }]);
 
             const expectedVideoSql = `SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress, imdb_id, image_url, year, actors, plot
                               FROM videos
@@ -505,13 +533,16 @@ describe('VideoDb', () => {
                               WHERE video_id = 12
                               ORDER BY priority`;
 
+            const expectedTagSql = 'SELECT tag FROM video_tags WHERE video_id = 12 ORDER BY tag';
             const video = await videoDb.getVideo(12);
 
             const actualVideoSql = mockGet.mock.calls[2][0];
             const actualMediaSql = mockGetAll.mock.calls[0][0];
+            const actualTagSql = mockGetAll.mock.calls[1][0];
             expect(stripWhiteSpace(actualVideoSql)).toBe(stripWhiteSpace(expectedVideoSql));
             expect(stripWhiteSpace(actualMediaSql)).toBe(stripWhiteSpace(expectedMediaSql));
-            expect(video).toEqual({ video: 'video', media: 'media' });
+            expect(stripWhiteSpace(actualTagSql)).toBe(stripWhiteSpace(expectedTagSql));
+            expect(video).toEqual({ video: 'video', media: 'media', tags: ['tag1', 'tag2'] });
         });
     });
 

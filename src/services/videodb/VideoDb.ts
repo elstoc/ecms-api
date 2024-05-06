@@ -93,7 +93,7 @@ export class VideoDb implements IVideoDb {
         const params: { [key: string]: unknown } = {};
         let key: keyof Video;
         for (key in video) {
-            if (key !== 'media') {
+            if (!['media', 'tags'].includes(key)) {
                 params[`$${key}`] = video[key];
             }
         }
@@ -103,6 +103,7 @@ export class VideoDb implements IVideoDb {
         }
 
         await this.createOrReplaceVideoMedia(result.id, video.media);
+        await this.createOrReplaceVideoTags(result.id, video.tags);
 
         return result.id;
     }
@@ -116,13 +117,29 @@ export class VideoDb implements IVideoDb {
         let key: keyof VideoWithId;
         const params: { [key: string]: unknown} = {};
         for (key in video) {
-            if (key !== 'media') {
+            if (!['media', 'tags'].includes(key)) {
                 params[`$${key}`] = video[key];
             }
         }
         await this.database?.runWithParams(sql, params);
 
         await this.createOrReplaceVideoMedia(video.id, video.media);
+        await this.createOrReplaceVideoTags(video.id, video.tags);
+    }
+
+    private async createOrReplaceVideoTags(id: number, tags?: string[]): Promise<void> {
+        const deleteSql = `DELETE FROM video_tags WHERE video_id = ${id}`;
+        await this.database?.exec(deleteSql);
+
+        if (!tags) return;
+
+        const insertSql = `INSERT INTO video_tags (video_id, tag)
+                           VALUES ($id, $tag)`;
+        
+        for (const tag of tags) {
+            const params = { '$id': id, $tag: tag };
+            await this.database?.runWithParams(insertSql, params);
+        }
     }
 
     private async createOrReplaceVideoMedia(id: number, media?: VideoMedia[]): Promise<void> {
@@ -154,6 +171,7 @@ export class VideoDb implements IVideoDb {
             throw new Error(`Unexpected error getting video ${id}`);
         }
         video.media = await this.getVideoMedia(id);
+        video.tags = await this.getVideoTags(id);
 
         return video;
     }
@@ -166,6 +184,14 @@ export class VideoDb implements IVideoDb {
                      WHERE video_id = ${id}
                      ORDER BY priority`;
         return await this.database?.getAll<VideoMedia>(sql);
+    }
+
+    private async getVideoTags(id: number): Promise<string[] | undefined> {
+        const sql = `SELECT tag FROM video_tags WHERE video_id = ${id} ORDER BY tag`;
+        const tagReturn = await this.database?.getAll<{ tag: string }>(sql);
+        if (tagReturn) {
+            return tagReturn.map((tagObj) => tagObj.tag);
+        }
     }
 
     public async queryVideos(queryParams?: VideoQueryParams): Promise<VideoSummaryAndPrimaryMedium[]> {

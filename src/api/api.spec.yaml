@@ -407,6 +407,11 @@ components:
           nullable: true
         media:
           $ref: '#/components/schemas/VideoMedia'
+        tags:
+          type: array
+          nullable: true
+          items:
+            type: string
     VideoWithId:
       type: object
       additionalProperties: false
@@ -469,6 +474,11 @@ components:
           nullable: true
         media:
           $ref: '#/components/schemas/VideoMedia'
+        tags:
+          type: array
+          nullable: true
+          items:
+            type: string
     category:
       type: string
       enum:

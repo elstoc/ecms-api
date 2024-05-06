@@ -19,6 +19,7 @@ export type Video = {
     actors: string;
     plot: string;
     media?: VideoMedia[];
+    tags?: string[];
 }
 
 export const videoFields = [

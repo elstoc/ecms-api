@@ -183,6 +183,22 @@ describe('VideoDb', () => {
         });
     });
 
+    describe('getTags', () => {
+        it('gets and returns a list of tags', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValue({ ver: 4 });
+            mockGetAll.mockResolvedValue([{ tag: 'tag1' }, { tag: 'tag2' }]);
+            const sql = 'SELECT DISTINCT tag from video_tags ORDER BY tag';
+
+            await videoDb.initialise();
+
+            const tags = await videoDb.getTags();
+
+            expect(mockGetAll).toHaveBeenCalledWith(sql);
+            expect(tags).toEqual(['tag1', 'tag2']);
+        });
+    });
+
     describe('addVideo', () => {
         it('runs video insert sql with appropriate parameters and returns inserted id', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);

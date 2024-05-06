@@ -194,6 +194,16 @@ export class VideoDb implements IVideoDb {
         }
     }
 
+    public async getTags(): Promise<string[]> {
+        const sql = 'SELECT DISTINCT tag from video_tags ORDER BY tag';
+        const tagReturn = await this.database?.getAll<{ tag: string }>(sql);
+        if (tagReturn) {
+            return tagReturn.map((tagObj) => tagObj.tag);
+        } else {
+            return [];
+        }
+    }
+
     public async queryVideos(queryParams?: VideoQueryParams): Promise<VideoSummaryAndPrimaryMedium[]> {
         let params: { [key: string]: unknown } = {};
         const whereClauses: string[] = [];

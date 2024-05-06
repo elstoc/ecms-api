@@ -360,6 +360,11 @@ components:
         - watched
         - to_watch_priority
         - progress
+        - imdb_id
+        - image_url
+        - year
+        - actors
+        - plot
       properties:
         title:
           type: string
@@ -385,6 +390,21 @@ components:
         progress:
           type: string
           nullable: true
+        imdb_id:
+          type: string
+          nullable: true
+        image_url:
+          type: string
+          nullable: true
+        year:
+          type: integer
+          nullable: true
+        actors:
+          type: string
+          nullable: true
+        plot:
+          type: string
+          nullable: true
         media:
           $ref: '#/components/schemas/VideoMedia'
     VideoWithId:
@@ -399,6 +419,11 @@ components:
         - watched
         - to_watch_priority
         - progress
+        - imdb_id
+        - image_url
+        - year
+        - actors
+        - plot
       properties:
         id:
           type: integer
@@ -425,6 +450,21 @@ components:
           type: integer
           nullable: true
         progress:
+          type: string
+          nullable: true
+        imdb_id:
+          type: string
+          nullable: true
+        image_url:
+          type: string
+          nullable: true
+        year:
+          type: integer
+          nullable: true
+        actors:
+          type: string
+          nullable: true
+        plot:
           type: string
           nullable: true
         media:

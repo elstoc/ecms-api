@@ -13,15 +13,18 @@ export type Video = {
     watched: string;
     to_watch_priority: number;
     progress: string;
+    imdb_id: string;
+    image_url: string;
+    year: number;
+    actors: string;
+    plot: string;
     media?: VideoMedia[];
 }
 
-export const videoFields = ['title', 'category', 'director', 'length_mins', 'watched', 'to_watch_priority', 'progress'];
-
-export type PrimaryMedium = {
-    pm_media_type: string;
-    pm_watched: string;
-}
+export const videoFields = [
+    'title', 'category', 'director', 'length_mins', 'watched', 'to_watch_priority', 'progress',
+    'imdb_id', 'image_url', 'year', 'actors', 'plot'
+];
 
 type videoIdOnly = {
     id: number;
@@ -29,7 +32,32 @@ type videoIdOnly = {
 
 export type VideoWithId = Video & videoIdOnly;
 
-export type VideoWithIdAndPrimaryMedium = VideoWithId & PrimaryMedium;
+export type VideoSummary = {
+    id: string;
+    title: string;
+    category: string;
+    director: string;
+    length_mins: number;
+    watched: string;
+    to_watch_priority: number;
+    progress: string;
+    year: number;
+    actors: string;
+    pm_media_type: string;
+    pm_watched: string;
+}
+
+export const videoSummaryFields = [
+    'id', 'title', 'category', 'director', 'length_mins', 'watched', 'to_watch_priority', 'progress',
+    'year', 'actors'
+];
+
+export type PrimaryMedium = {
+    pm_media_type: string;
+    pm_watched: string;
+}
+
+export type VideoSummaryAndPrimaryMedium = VideoSummary & PrimaryMedium;
 
 export enum LookupTables {
     video_category = 'l_categories',
@@ -61,5 +89,5 @@ export interface IVideoDb {
     addVideo(video: Video): Promise<number>;
     updateVideo(video: VideoWithId): Promise<void>;
     getVideo(id: number): Promise<VideoWithId>;
-    queryVideos(queryParams?: VideoQueryParams): Promise<VideoWithId[]>;
+    queryVideos(queryParams?: VideoQueryParams): Promise<VideoSummaryAndPrimaryMedium[]>;
 }

@@ -78,6 +78,11 @@ dbUpgradeSql.push(`
         watched VARCHAR(1),
         to_watch_priority INTEGER,
         progress VARCHAR(50),
+        imdb_id VARCHAR(50),
+        image_url VARCHAR(500),
+        year INTEGER,
+        actors VARCHAR(200),
+        plot VARCHAR(5000),
 
         FOREIGN KEY (category)
             REFERENCES l_categories (code),
@@ -101,5 +106,14 @@ dbUpgradeSql.push(`
             REFERENCES videos (id),
         FOREIGN KEY (watched)
             REFERENCES l_watched_status (code)
+    );
+
+    CREATE TABLE IF NOT EXISTS video_tags (
+        video_id INTEGER NOT NULL,
+        tag VARCHAR(100) NOT NULL,
+
+        PRIMARY KEY (video_id, tag),
+        FOREIGN KEY (video_id)
+            REFERENCES videos (id)
     );
 `);

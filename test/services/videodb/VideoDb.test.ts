@@ -198,13 +198,18 @@ describe('VideoDb', () => {
                 length_mins: 1234,
                 watched: 'Y',
                 to_watch_priority: 1,
-                progress: 'some-progress'
+                progress: 'some-progress',
+                imdb_id: 'imdb1234',
+                image_url: 'url',
+                year: 1923,
+                actors: 'some-actors',
+                plot: 'stuff happened',
             };
 
             const expectedSql = `INSERT INTO videos
-                                 (title, category, director, length_mins, watched, to_watch_priority, progress)
+                                 (title, category, director, length_mins, watched, to_watch_priority, progress, imdb_id, image_url, year, actors, plot)
                                  VALUES
-                                 ($title, $category, $director, $length_mins, $watched, $to_watch_priority, $progress)
+                                 ($title, $category, $director, $length_mins, $watched, $to_watch_priority, $progress, $imdb_id, $image_url, $year, $actors, $plot)
                                  RETURNING id`;
 
             const expectedVideoParameters = {
@@ -214,7 +219,12 @@ describe('VideoDb', () => {
                 $length_mins: 1234,
                 $watched: 'Y',
                 $to_watch_priority: 1,
-                $progress: 'some-progress'
+                $progress: 'some-progress',
+                $imdb_id: 'imdb1234',
+                $image_url: 'url',
+                $year: 1923,
+                $actors: 'some-actors',
+                $plot: 'stuff happened',
             };
 
             const insertedId = await videoDb.addVideo(video);
@@ -240,7 +250,12 @@ describe('VideoDb', () => {
                 length_mins: 1234,
                 watched: 'Y',
                 to_watch_priority: 1,
-                progress: 'some-progress'
+                progress: 'some-progress',
+                imdb_id: 'imdb1234',
+                image_url: 'url',
+                year: 1923,
+                actors: 'some-actors',
+                plot: 'stuff happened',
             };
 
             const expectedMediaDeleteSql = 'DELETE FROM video_media WHERE video_id = 2468';
@@ -320,7 +335,12 @@ describe('VideoDb', () => {
             length_mins: 1234,
             watched: 'Y',
             to_watch_priority: 1,
-            progress: 'some-progress'
+            progress: 'some-progress',
+            imdb_id: 'imdb1234',
+            image_url: 'url',
+            year: 1923,
+            actors: 'some-actors',
+            plot: 'stuff happened',
         };
 
         beforeEach(async () => {
@@ -345,7 +365,12 @@ describe('VideoDb', () => {
                                      length_mins = $length_mins,
                                      watched = $watched,
                                      to_watch_priority = $to_watch_priority,
-                                     progress = $progress
+                                     progress = $progress,
+                                     imdb_id = $imdb_id,
+                                     image_url = $image_url,
+                                     year = $year,
+                                     actors = $actors,
+                                     plot = $plot
                                  WHERE id = $id`;
 
             const expectedVideoParameters = {
@@ -356,7 +381,12 @@ describe('VideoDb', () => {
                 $length_mins: 1234,
                 $watched: 'Y',
                 $to_watch_priority: 1,
-                $progress: 'some-progress'
+                $progress: 'some-progress',
+                $imdb_id: 'imdb1234',
+                $image_url: 'url',
+                $year: 1923,
+                $actors: 'some-actors',
+                $plot: 'stuff happened',
             };
 
             await videoDb.updateVideo(video);
@@ -464,7 +494,7 @@ describe('VideoDb', () => {
                 .mockResolvedValue({ video: 'video' });
             mockGetAll.mockResolvedValue('media');
 
-            const expectedVideoSql = `SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress
+            const expectedVideoSql = `SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress, imdb_id, image_url, year, actors, plot
                               FROM videos
                               WHERE id = 12`;
 
@@ -486,7 +516,7 @@ describe('VideoDb', () => {
     });
 
     describe('queryVideos', () => {
-        const baseSql = `SELECT v.id, v.title, v.category, v.director, v.length_mins, v.watched, v.to_watch_priority, v.progress,
+        const baseSql = `SELECT v.id, v.title, v.category, v.director, v.length_mins, v.watched, v.to_watch_priority, v.progress, v.year, v.actors,
                                 pm.media_type pm_media_type, pm.watched pm_watched
                          FROM   videos v
                          LEFT OUTER JOIN (

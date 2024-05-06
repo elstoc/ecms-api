@@ -27,11 +27,11 @@ export const videoFields = [
     'imdb_id', 'image_url', 'year', 'actors', 'plot'
 ];
 
-type videoIdOnly = {
+type VideoIdOnly = {
     id: number;
 }
 
-export type VideoWithId = Video & videoIdOnly;
+export type VideoWithId = Video & VideoIdOnly;
 
 export type VideoSummary = {
     id: string;

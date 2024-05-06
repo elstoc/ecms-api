@@ -211,6 +211,14 @@ export class VideoDb implements IVideoDb {
             sql += ` WHERE (${whereClauses.join(') AND (')})`;
         }
 
+        sql += ` ORDER BY (
+            CASE WHEN UPPER(title) LIKE 'THE %' THEN SUBSTR(title, 5)
+                 WHEN UPPER(title) LIKE 'AN %' THEN SUBSTR(title, 4)
+                 WHEN UPPER(title) LIKE 'A %' THEN SUBSTR(title, 3)
+                 ELSE title
+            END
+        )`;
+
         const videos = await this.database?.getAllWithParams<VideoSummaryAndPrimaryMedium>(sql, params);
         if (!videos) {
             throw new Error('Unexpected error querying videos');

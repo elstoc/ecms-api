@@ -533,12 +533,19 @@ describe('VideoDb', () => {
                            )
                          ) pm
                          ON v.id = pm.video_id`;
+        const orderBySQL = ` ORDER BY (
+            CASE WHEN UPPER(title) LIKE 'THE %' THEN SUBSTR(title, 5)
+                 WHEN UPPER(title) LIKE 'AN %' THEN SUBSTR(title, 4)
+                 WHEN UPPER(title) LIKE 'A %' THEN SUBSTR(title, 3)
+                 ELSE title
+            END
+        )`;
 
         it('runs the correct sql to retrieve all videos when no query params are defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = baseSql;
+            const expectedSql = baseSql + orderBySQL;
 
             mockGetAllWithParams.mockResolvedValue('videos');
             const videos = await videoDb.queryVideos();
@@ -554,7 +561,7 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = baseSql;
+            const expectedSql = baseSql + orderBySQL;
 
             mockGetAllWithParams.mockResolvedValue('videos');
             const videos = await videoDb.queryVideos({});
@@ -570,7 +577,7 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = baseSql + ' WHERE (length_mins <= $maxLength)';
+            const expectedSql = baseSql + ' WHERE (length_mins <= $maxLength)' + orderBySQL;
             const expectedParams = { '$maxLength': 3 };
 
             mockGetAllWithParams.mockResolvedValue('videos');
@@ -587,7 +594,7 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = baseSql + ' WHERE (category IN ($category0, $category1, $category2))';
+            const expectedSql = baseSql + ' WHERE (category IN ($category0, $category1, $category2))' + orderBySQL;
             const expectedParams = { '$category0': 'MOV', '$category1': 'TV', '$category2': 'TVDOC' };
 
             mockGetAllWithParams.mockResolvedValue('videos');
@@ -604,7 +611,7 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = baseSql + ' WHERE (LOWER(title) LIKE $titleLike)';
+            const expectedSql = baseSql + ' WHERE (LOWER(title) LIKE $titleLike)' + orderBySQL;
             const expectedParams = { '$titleLike': '%sometitle%' };
 
             mockGetAllWithParams.mockResolvedValue('videos');
@@ -623,7 +630,7 @@ describe('VideoDb', () => {
             await videoDb.initialise();
             const expectedSql = baseSql + ` WHERE (length_mins <= $maxLength)
                                             AND (category IN ($category0, $category1, $category2))
-                                            AND (LOWER(title) LIKE $titleLike)`;
+                                            AND (LOWER(title) LIKE $titleLike)` + orderBySQL;
             const expectedParams = {
                 '$titleLike': '%title%',
                 '$category0': 'MOV', '$category1': 'TV', '$category2': 'TVDOC',

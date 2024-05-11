@@ -828,6 +828,7 @@ describe('Markdown', () => {
                 const page = new Markdown('rootDir', config, mockStorage as any, mockLogger, true);
     
                 const expectedStructure = {
+                    apiPath: 'rootDir',
                     children: [
                         { title: 'rootDir', apiPath: 'rootDir', additionalData: {} } ,
                         { title: 'markdown1', apiPath: 'rootDir/markdown1', additionalData: {} },
@@ -874,6 +875,7 @@ describe('Markdown', () => {
                 const page = new Markdown('rootDir', config, mockStorage as any, mockLogger, true);
     
                 const expectedStructure = {
+                    apiPath: 'rootDir',
                     children: [{ title: 'rootDir', apiPath: 'rootDir', additionalData: {} } ]
                 };
                 const structure = await page.getTree();
@@ -947,6 +949,7 @@ describe('Markdown', () => {
                 const actualStructure = await page.getTree();
     
                 const expectedStructure = {
+                    apiPath: 'rootDir',
                     children: [
                         { title: 'rootDir', apiPath: 'rootDir', additionalData: {} },
                         { title: 'fileC', apiPath: 'rootDir/fileC', weight: 10, additionalData: {} },
@@ -987,6 +990,7 @@ describe('Markdown', () => {
                 const actualStructure = await page.getTree();
     
                 const expectedStructure = {
+                    apiPath: 'rootDir',
                     children: [
                         { title: 'rootDir', apiPath: 'rootDir', additionalData: {} },
                         { title: 'file1', apiPath: 'rootDir/file1', additionalData: {} },

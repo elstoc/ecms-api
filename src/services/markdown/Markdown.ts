@@ -242,7 +242,7 @@ export class Markdown implements IMarkdown {
         if (this.isRoot) {
             // metadata for the root instance is added to the top of the list
             sortedChildren.unshift({ ...metadata });
-            return { children: sortedChildren };
+            return { apiPath: this.apiPath, children: sortedChildren };
         } else if (children.length === 0) {
             return { ...metadata };
         }

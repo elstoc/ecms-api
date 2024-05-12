@@ -1,9 +1,9 @@
 import { NextFunction, Response } from 'express';
+import { Logger } from 'winston';
 
 import { RequestWithUser } from './types';
 import { AuthenticationError, EndpointValidationError, NotFoundError, NotPermittedError } from '../errors';
 import { ValidationError } from '../api/IEndpointValidator';
-import { Logger } from 'winston';
 
 interface ExtraErrors extends Error {
     validationErrors?: ValidationError[],

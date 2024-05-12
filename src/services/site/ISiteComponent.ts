@@ -3,25 +3,37 @@ import { IGallery } from '../gallery';
 import { IMarkdown } from '../markdown';
 import { IVideoDb } from '../videodb';
 
-export type AdditionalData = {
-    [key: string]: boolean | number | string | undefined; 
-};
-
 export enum ComponentTypes {
     gallery = 'gallery',
     markdown = 'markdown',
     videodb = 'videodb'
 }
 
-export type ComponentMetadata = {
-    type: string;
+export type ComponentMetadataCommon = {
     apiPath: string;
     uiPath: string;
     title: string;
     weight?: number;
     restrict?: string;
-    additionalData?: AdditionalData;
 }
+
+export type GalleryComponentMetadata = ComponentMetadataCommon & {
+    type: ComponentTypes.gallery;
+    marginPx: number;
+    batchSize: number;
+    threshold: number;
+}
+
+export type MarkdownComponentMetadata = ComponentMetadataCommon & {
+    type: ComponentTypes.markdown;
+    includeNav: boolean;
+}
+
+export type VideoDbComponentMetadata = ComponentMetadataCommon & {
+    type: ComponentTypes.videodb;
+}
+
+export type ComponentMetadata = GalleryComponentMetadata | MarkdownComponentMetadata | VideoDbComponentMetadata;
 
 export interface ISiteComponent {
     getMetadata(user?: User): Promise<ComponentMetadata | undefined>;

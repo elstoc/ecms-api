@@ -1,5 +1,8 @@
 import { User } from '../auth';
-import { AdditionalData } from '../site';
+
+export type AdditionalData = {
+    [key: string]: boolean | number | string | undefined; 
+};
 
 export type MarkdownTree = {
     apiPath?: string;

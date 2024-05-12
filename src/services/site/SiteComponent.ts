@@ -1,11 +1,10 @@
 import YAML from 'yaml';
-import _ from 'lodash';
 
 import { Config } from '../../utils';
 import { userHasReadAccess } from '../auth/accessUtils';
 import { Gallery, IGallery } from '../gallery';
 import { IMarkdown, Markdown } from '../markdown';
-import { ISiteComponent, ComponentMetadata, ComponentTypes } from './ISiteComponent';
+import { ISiteComponent, ComponentTypes, ComponentMetadataCommon, ComponentMetadata } from './ISiteComponent';
 import { IStorageAdapter } from '../../adapters';
 import { NotFoundError } from '../../errors';
 import { User } from '../auth';
@@ -52,20 +51,57 @@ export class SiteComponent implements ISiteComponent {
             throw new NotFoundError('Valid component type not found');
         }
 
-        const fieldList = ['type', 'apiPath', 'uiPath', 'title', 'weight', 'restrict'];
-        const pickedFields = _.pick(parsedYaml, fieldList);
-        const additionalData = _.omit(parsedYaml, fieldList);
-
-        this.metadata = {
-            type: parsedYaml.type,
-            uiPath: this.contentDir,
-            title: this.contentDir,
-            ...pickedFields,
-            apiPath: this.contentDir,
-            additionalData
-        };
-
+        this.metadata = this.getComponentMetadata(parsedYaml);
         this.metadataFromSourceTime = sourceFileModifiedTime;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private getComponentMetadata(parsedYaml: any): ComponentMetadata {
+        const { type } = parsedYaml;
+        if (!(type in ComponentTypes)) {
+            throw new NotFoundError('Valid component type not found');
+        }
+
+        const commonMetadata = this.getCommonMetadata(parsedYaml);
+
+        if (type === ComponentTypes.gallery) {
+            const { marginPx, batchSize, threshold } = parsedYaml;
+            if (typeof marginPx !== 'number' || typeof batchSize !== 'number' || typeof threshold !== 'number') {
+                throw new Error('Gallery components must include marginPx, batchSize and threshold as numbers');
+            }
+            return {
+                type, marginPx, batchSize, threshold,
+                ...commonMetadata
+            };
+        } else if (type === ComponentTypes.markdown) {
+            const { includeNav } = parsedYaml;
+            if (typeof includeNav !== 'boolean') {
+                throw new Error('Markdown components must include the includeNav parameter as a boolean');
+            }
+            return {
+                type, includeNav,
+                ...commonMetadata
+            };
+        } 
+
+        return {
+            type,
+            ...commonMetadata
+        };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private getCommonMetadata(parsedYaml: any): ComponentMetadataCommon {
+        if (parsedYaml.weight && typeof parsedYaml.weight !== 'number') {
+            throw new Error('Component weight must be numeric');
+        }
+        return {
+            apiPath: this.contentDir,
+            uiPath: parsedYaml?.uiPath ?? this.contentDir,
+            title: parsedYaml?.title ?? this.contentDir,
+            weight: parsedYaml.weight,
+            restrict: parsedYaml.restrict
+        };
     }
 
     private throwIfNoContent(): void {

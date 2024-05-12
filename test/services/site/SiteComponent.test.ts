@@ -75,9 +75,167 @@ describe('SiteComponent', () => {
                 await expect(component.getMetadata()).rejects
                     .toThrow(new NotFoundError('Valid component type not found'));
             });
+
+            it('if weight is present but non-numeric', async () => {
+                mockStorage.contentFileExists.mockReturnValue(true);
+                mockStorage.contentDirectoryExists.mockReturnValue(true);
+                mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+                mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+                yamlParseMock.mockReturnValue({
+                    uiPath: 'test',
+                    title: 'The Title',
+                    type: 'gallery',
+                    weight: 'boo'
+                });
+    
+                await expect(component.getMetadata()).rejects
+                    .toThrow(new NotFoundError('Component weight must be numeric'));
+            });
+
+            describe('for gallery components', () => {
+                beforeEach(() => {
+                    mockStorage.contentFileExists.mockReturnValue(true);
+                    mockStorage.contentDirectoryExists.mockReturnValue(true);
+                    mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+                    mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+                });
+
+                it('if marginPx is not a number', async () => {
+                    yamlParseMock.mockReturnValue({
+                        uiPath: 'test',
+                        title: 'The Title',
+                        type: 'gallery',
+                        marginPx: 'boo',
+                        batchSize: 3,
+                        threshold: 4
+                    });
+        
+                    await expect(component.getMetadata()).rejects
+                        .toThrow(new NotFoundError('Gallery components must include marginPx, batchSize and threshold as numbers'));
+                });
+
+                it('if batchSize is not a number', async () => {
+                    yamlParseMock.mockReturnValue({
+                        uiPath: 'test',
+                        title: 'The Title',
+                        type: 'gallery',
+                        marginPx: 3,
+                        batchSize: 'boo',
+                        threshold: 4
+                    });
+        
+                    await expect(component.getMetadata()).rejects
+                        .toThrow(new NotFoundError('Gallery components must include marginPx, batchSize and threshold as numbers'));
+                });
+
+                it('if threshold is not a number', async () => {
+                    yamlParseMock.mockReturnValue({
+                        uiPath: 'test',
+                        title: 'The Title',
+                        type: 'gallery',
+                        marginPx: 3,
+                        batchSize: 4,
+                        threshold: 'boo'
+                    });
+        
+                    await expect(component.getMetadata()).rejects
+                        .toThrow(new NotFoundError('Gallery components must include marginPx, batchSize and threshold as numbers'));
+                });
+            });
+
+            describe('for markdown components', () => {
+                it('if includeNav is not boolean', async () => {
+                    mockStorage.contentFileExists.mockReturnValue(true);
+                    mockStorage.contentDirectoryExists.mockReturnValue(true);
+                    mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+                    mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+                    yamlParseMock.mockReturnValue({
+                        uiPath: 'test',
+                        title: 'The Title',
+                        type: 'markdown',
+                        includeNav: 'boo'
+                    });
+        
+                    await expect(component.getMetadata()).rejects
+                        .toThrow(new NotFoundError('Markdown components must include the includeNav parameter as a boolean'));
+                });
+            });
         });
 
         describe('returns metadata', () => {
+            it('correctly returns metadata for gallery component', async () => {
+                mockStorage.contentFileExists.mockReturnValue(true);
+                mockStorage.contentDirectoryExists.mockReturnValue(true);
+                mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+                mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+                yamlParseMock.mockReturnValue({
+                    uiPath: 'test',
+                    title: 'The Title',
+                    type: 'gallery',
+                    marginPx: 1,
+                    batchSize: 2,
+                    threshold: 3
+                });
+    
+                const actualMetadata = await component.getMetadata();
+    
+                const expectedMetadata = {
+                    uiPath: 'test',
+                    apiPath: 'my-component',
+                    title: 'The Title',
+                    type: 'gallery',
+                    marginPx: 1,
+                    batchSize: 2,
+                    threshold: 3
+                };
+                expect(actualMetadata).toEqual(expectedMetadata);
+            });
+
+            it('correctly returns metadata for markdown component', async () => {
+                mockStorage.contentFileExists.mockReturnValue(true);
+                mockStorage.contentDirectoryExists.mockReturnValue(true);
+                mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+                mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+                yamlParseMock.mockReturnValue({
+                    uiPath: 'test',
+                    title: 'The Title',
+                    type: 'markdown',
+                    includeNav: true
+                });
+    
+                const actualMetadata = await component.getMetadata();
+    
+                const expectedMetadata = {
+                    uiPath: 'test',
+                    apiPath: 'my-component',
+                    title: 'The Title',
+                    type: 'markdown',
+                    includeNav: true
+                };
+                expect(actualMetadata).toEqual(expectedMetadata);
+            });
+
+            it('correctly returns metadata for videodb component', async () => {
+                mockStorage.contentFileExists.mockReturnValue(true);
+                mockStorage.contentDirectoryExists.mockReturnValue(true);
+                mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+                mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+                yamlParseMock.mockReturnValue({
+                    uiPath: 'test',
+                    title: 'The Title',
+                    type: 'videodb',
+                });
+    
+                const actualMetadata = await component.getMetadata();
+    
+                const expectedMetadata = {
+                    uiPath: 'test',
+                    apiPath: 'my-component',
+                    title: 'The Title',
+                    type: 'videodb',
+                };
+                expect(actualMetadata).toEqual(expectedMetadata);
+            });
             it('gets metadata by parsing the component file on the first run', async () => {
                 mockStorage.contentFileExists.mockReturnValue(true);
                 mockStorage.contentDirectoryExists.mockReturnValue(true);
@@ -86,7 +244,7 @@ describe('SiteComponent', () => {
                 yamlParseMock.mockReturnValue({
                     uiPath: 'test',
                     title: 'The Title',
-                    type: 'gallery',
+                    type: 'videodb',
                 });
     
                 const actualMetadata = await component.getMetadata();
@@ -95,43 +253,14 @@ describe('SiteComponent', () => {
                     uiPath: 'test',
                     apiPath: 'my-component',
                     title: 'The Title',
-                    type: 'gallery',
-                    additionalData: {}
+                    type: 'videodb',
                 };
                 expect(mockStorage.contentDirectoryExists).toHaveBeenCalled();
                 expect(mockStorage.contentFileExists).toHaveBeenCalled();
                 expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledWith('my-component.yaml');
                 expect(mockStorage.getContentFile).toHaveBeenCalledWith('my-component.yaml');
                 expect(yamlParseMock).toHaveBeenCalledWith(contentFileBuf.toString('utf-8'));
-                expect(actualMetadata).toStrictEqual(expectedMetadata);
-            });
-    
-            it('places any additional unidentified metadata into additionalData', async () => {
-                mockStorage.contentFileExists.mockReturnValue(true);
-                mockStorage.contentDirectoryExists.mockReturnValue(true);
-                mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
-                mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
-                yamlParseMock.mockReturnValue({
-                    uiPath: 'test',
-                    title: 'The Title',
-                    type: 'gallery',
-                    anotherField: 'anotherValue',
-                    aDifferentField: 'aDifferentValue'
-                });
-    
-                const actualMetadata = await component.getMetadata();
-    
-                const expectedMetadata = {
-                    uiPath: 'test',
-                    apiPath: 'my-component',
-                    title: 'The Title',
-                    type: 'gallery',
-                    additionalData: {
-                        anotherField: 'anotherValue',
-                        aDifferentField: 'aDifferentValue'
-                    }
-                };
-                expect(actualMetadata).toStrictEqual(expectedMetadata);
+                expect(actualMetadata).toEqual(expectedMetadata);
             });
     
             it('gets identical metadata without parsing the component file on the second run (file unchanged)', async () => {
@@ -142,7 +271,7 @@ describe('SiteComponent', () => {
                 yamlParseMock.mockReturnValue({
                     uiPath: 'test',
                     title: 'The Title',
-                    type: 'gallery',
+                    type: 'videodb',
                 });
     
                 const actualMetadata1 = await component.getMetadata();
@@ -152,16 +281,15 @@ describe('SiteComponent', () => {
                     uiPath: 'test',
                     apiPath: 'my-component',
                     title: 'The Title',
-                    type: 'gallery',
-                    additionalData: {}
+                    type: 'videodb',
                 };
                 expect(mockStorage.contentDirectoryExists).toHaveBeenCalledTimes(2);
                 expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(2);
                 expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledTimes(2);
                 expect(mockStorage.getContentFile).toHaveBeenCalledTimes(1);
                 expect(yamlParseMock).toHaveBeenCalledTimes(1);
-                expect(actualMetadata1).toStrictEqual(expectedMetadata);
-                expect(actualMetadata2).toStrictEqual(expectedMetadata);
+                expect(actualMetadata1).toEqual(expectedMetadata);
+                expect(actualMetadata2).toEqual(expectedMetadata);
             });
     
             it('attempts to re-parse component file if a newer file is present', async () => {
@@ -174,11 +302,11 @@ describe('SiteComponent', () => {
                 yamlParseMock.mockReturnValueOnce({
                     uiPath: 'test',
                     title: 'The Title',
-                    type: 'gallery'
+                    type: 'videodb'
                 }).mockReturnValue({
                     uiPath: 'test',
                     title: 'The New Title',
-                    type: 'gallery'
+                    type: 'videodb'
                 });
     
                 const actualMetadata1 = await component.getMetadata();
@@ -188,8 +316,7 @@ describe('SiteComponent', () => {
                     uiPath: 'test',
                     apiPath: 'my-component',
                     title: 'The Title',
-                    type: 'gallery',
-                    additionalData: {}
+                    type: 'videodb',
                 };
                 const expectedMetadata2 = { ...expectedMetadata1, title: 'The New Title' };
                 expect(mockStorage.contentDirectoryExists).toHaveBeenCalledTimes(2);
@@ -197,8 +324,8 @@ describe('SiteComponent', () => {
                 expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledTimes(2);
                 expect(mockStorage.getContentFile).toHaveBeenCalledTimes(2);
                 expect(yamlParseMock).toHaveBeenCalledTimes(2);
-                expect(actualMetadata1).toStrictEqual(expectedMetadata1);
-                expect(actualMetadata2).toStrictEqual(expectedMetadata2);
+                expect(actualMetadata1).toEqual(expectedMetadata1);
+                expect(actualMetadata2).toEqual(expectedMetadata2);
             });
     
             it('sets uiPath and title to apiPath if they do not exist', async () => {
@@ -207,7 +334,7 @@ describe('SiteComponent', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    type: 'gallery'
+                    type: 'videodb'
                 });
     
                 const actualMetadata = await component.getMetadata();
@@ -216,10 +343,9 @@ describe('SiteComponent', () => {
                     uiPath: 'my-component',
                     apiPath: 'my-component',
                     title: 'my-component',
-                    type: 'gallery',
-                    additionalData: {}
+                    type: 'videodb',
                 };
-                expect(actualMetadata).toStrictEqual(expectedMetadata);
+                expect(actualMetadata).toEqual(expectedMetadata);
             });
         });
     
@@ -232,7 +358,7 @@ describe('SiteComponent', () => {
                 yamlParseMock.mockReturnValue({
                     uiPath: 'test',
                     title: 'The Title',
-                    type: 'gallery',
+                    type: 'videodb',
                     restrict: 'admin'
                 });
     
@@ -249,7 +375,7 @@ describe('SiteComponent', () => {
                 yamlParseMock.mockReturnValue({
                     uiPath: 'test',
                     title: 'The Title',
-                    type: 'gallery',
+                    type: 'videodb',
                     restrict: 'admin'
                 });
     
@@ -266,7 +392,7 @@ describe('SiteComponent', () => {
                 yamlParseMock.mockReturnValue({
                     uiPath: 'test',
                     title: 'The Title',
-                    type: 'gallery',
+                    type: 'videodb',
                     restrict: 'admin'
                 });
                 const newConfig = { ...config, enableAuthentication: false };
@@ -285,7 +411,7 @@ describe('SiteComponent', () => {
                 yamlParseMock.mockReturnValue({
                     uiPath: 'test',
                     title: 'The Title',
-                    type: 'gallery',
+                    type: 'videodb',
                     restrict: 'role1'
                 });
     
@@ -302,7 +428,7 @@ describe('SiteComponent', () => {
                 yamlParseMock.mockReturnValue({
                     uiPath: 'test',
                     title: 'The Title',
-                    type: 'gallery',
+                    type: 'videodb',
                     restrict: 'role1'
                 });
     
@@ -352,7 +478,7 @@ describe('SiteComponent', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    type
+                    type, marginPx: 1, batchSize: 2, threshold: 3, includeNav: true
                 });
 
                 await expect(component.getGallery()).rejects
@@ -366,7 +492,7 @@ describe('SiteComponent', () => {
             mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
             mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
             yamlParseMock.mockReturnValue({
-                type: 'gallery'
+                type: 'gallery', marginPx: 1, batchSize: 2, threshold: 3
             });
             (mockGallery).mockImplementation(() => ({
                 name: 'mocked gallery'
@@ -417,7 +543,7 @@ describe('SiteComponent', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    type
+                    type, marginPx: 1, batchSize: 2, threshold: 3, includeNav: true
                 });
     
                 await expect(component.getMarkdown()).rejects
@@ -431,7 +557,8 @@ describe('SiteComponent', () => {
             mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
             mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
             yamlParseMock.mockReturnValue({
-                type: 'markdown'
+                type: 'markdown',
+                includeNav: true
             });
             mockMarkdown.mockImplementation(() => ({
                 name: 'mocked markdown'
@@ -482,7 +609,7 @@ describe('SiteComponent', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    type
+                    type, marginPx: 1, batchSize: 2, threshold: 3, includeNav: true
                 });
 
                 await expect(component.getVideoDb()).rejects

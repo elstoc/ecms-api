@@ -1,6 +1,5 @@
 import path from 'path';
 import YAML from 'yaml';
-import _ from 'lodash';
 
 import { IMarkdown, MarkdownPage, MarkdownTree } from './IMarkdown';
 import { Config, sortByWeightAndTitle, splitPath } from '../../utils';
@@ -201,13 +200,13 @@ export class Markdown implements IMarkdown {
         const frontMatter = await this.parseFrontMatter();
         this.hasFrontMatter = Boolean(frontMatter && Object.keys(frontMatter).length);
 
-        const fieldList = ['apiPath', 'title', 'uiPath', 'weight', 'restrict', 'allowWrite'];
-        const pickedFields = this.hasFrontMatter ? _.pick(frontMatter, fieldList) : {};
+        const { apiPath, title, uiPath, weight, restrict, allowWrite } = frontMatter ?? {};
 
         this.metadata = {
-            apiPath: this.apiPath,
-            title: path.basename(this.apiPath),
-            ...pickedFields,
+            apiPath: apiPath ?? this.apiPath,
+            title: title ?? path.basename(this.apiPath),
+            weight: weight ? parseInt(weight) : undefined,
+            uiPath, restrict, allowWrite
         };
 
         this.metadataFromSourceFileTime = contentModifiedTime;

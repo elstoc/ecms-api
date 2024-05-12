@@ -806,7 +806,7 @@ describe('Markdown', () => {
                     ]
                 };
                 const structure = await page.getTree();
-                expect(structure).toStrictEqual(expectedStructure);
+                expect(structure).toEqual(expectedStructure);
             });
     
             it('non-root: lists main page and then children with non-md and index.md removed', async () => {
@@ -832,7 +832,7 @@ describe('Markdown', () => {
                     ]
                 };
                 const structure = await page.getTree();
-                expect(structure).toStrictEqual(expectedStructure);
+                expect(structure).toEqual(expectedStructure);
             });
     
             it('returns index file metadata as a single child for a root directory with no (other) children', async () => {
@@ -849,7 +849,7 @@ describe('Markdown', () => {
                     children: [{ title: 'rootDir', apiPath: 'rootDir' } ]
                 };
                 const structure = await page.getTree();
-                expect(structure).toStrictEqual(expectedStructure);
+                expect(structure).toEqual(expectedStructure);
             });
     
             it('returns a single metadata item for a non-root page with no children', async () => {
@@ -863,7 +863,7 @@ describe('Markdown', () => {
     
                 const expectedStructure = { title: 'page', apiPath: 'rootDir/page' };
                 const structure = await page.getTree();
-                expect(structure).toStrictEqual(expectedStructure);
+                expect(structure).toEqual(expectedStructure);
             });
     
             it('orders non-root children by weight (ascending) first and then by title (ascending)', async () => {

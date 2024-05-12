@@ -30,10 +30,9 @@ export class SQLiteDatabaseAdapter implements IDatabaseAdapter {
         });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public async runWithParams(sql: string, parameters: any): Promise<void> {
+    public async runWithParams(sql: string, params: unknown): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.database?.run(sql, parameters, (err: Error | null) => {
+            this.database?.run(sql, params, (err: Error | null) => {
                 err ? reject(err) : resolve();
             });
         });
@@ -55,19 +54,17 @@ export class SQLiteDatabaseAdapter implements IDatabaseAdapter {
         });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public getWithParams<T>(sql: string, parameters: any): Promise<T> {
+    public getWithParams<T>(sql: string, params: unknown): Promise<T> {
         return new Promise((resolve, reject) => {
-            this.database?.get(sql, parameters, (err: Error | null, row: T) => {
+            this.database?.get(sql, params, (err: Error | null, row: T) => {
                 err ? reject(err) : resolve(row);
             });
         });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public getAllWithParams<T>(sql: string, parameters: any): Promise<T[] | undefined> {
+    public getAllWithParams<T>(sql: string, params: unknown): Promise<T[] | undefined> {
         return new Promise((resolve, reject) => {
-            this.database?.all(sql, parameters, (err: Error | null, rows: T[]) => {
+            this.database?.all(sql, params, (err: Error | null, rows: T[]) => {
                 err ? reject(err) : resolve(rows);
             });
         });

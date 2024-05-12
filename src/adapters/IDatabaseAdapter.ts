@@ -2,12 +2,9 @@ export interface IDatabaseAdapter {
     initialise(): Promise<void>;
     close(): Promise<void>;
     exec(sql: string): Promise<void>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    runWithParams(sql: string, parameters: any): Promise<void>;
+    runWithParams(sql: string, params: unknown): Promise<void>;
     get<T>(sql: string): Promise<T | undefined>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    getWithParams<T>(sql: string, params: any): Promise<T | undefined>;
+    getWithParams<T>(sql: string, params: unknown): Promise<T | undefined>;
     getAll<T>(sql: string): Promise<T[] | undefined>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    getAllWithParams<T>(sql: string, params: any): Promise<T[] | undefined>;
+    getAllWithParams<T>(sql: string, params: unknown): Promise<T[] | undefined>;
 }

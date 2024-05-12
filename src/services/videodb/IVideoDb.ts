@@ -88,7 +88,7 @@ export interface IVideoDb {
     initialise(): Promise<void>;
     getVersion(): Promise<number>;
     getLookupValues(tableName: string): Promise<LookupValues>;
-    getTags(): Promise<string[]>;
+    getAllTags(): Promise<string[]>;
     addVideo(video: Video): Promise<number>;
     updateVideo(video: VideoWithId): Promise<void>;
     getVideo(id: number): Promise<VideoWithId>;

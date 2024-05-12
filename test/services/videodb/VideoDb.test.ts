@@ -193,7 +193,7 @@ describe('VideoDb', () => {
         });
     });
 
-    describe('getTags', () => {
+    describe('getAllTags', () => {
         it('gets and returns a list of tags', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
@@ -202,7 +202,7 @@ describe('VideoDb', () => {
 
             await videoDb.initialise();
 
-            const tags = await videoDb.getTags();
+            const tags = await videoDb.getAllTags();
 
             expect(mockGetAll).toHaveBeenCalledWith(sql);
             expect(tags).toEqual(['tag1', 'tag2']);

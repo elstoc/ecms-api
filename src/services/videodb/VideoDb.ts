@@ -30,11 +30,11 @@ export class VideoDb implements IVideoDb {
                 this.dbVersion = 0;
             }
             this.database = await this.storage.getContentDb(dbContentPath);
-            await this.upgradeDb();
+            await this.upgrade();
         }
     }
 
-    private async upgradeDb(): Promise<void> {
+    private async upgrade(): Promise<void> {
         const latestVersion = dbUpgradeSql.length;
         this.dbVersion ??= await this.retrieveVersion();
         if (latestVersion > this.dbVersion) {
@@ -194,17 +194,17 @@ export class VideoDb implements IVideoDb {
 
     private async getVideoTags(id: number): Promise<string[] | undefined> {
         const sql = `SELECT tag FROM video_tags WHERE video_id = ${id} ORDER BY tag`;
-        const tagReturn = await this.database?.getAll<{ tag: string }>(sql);
-        if (tagReturn) {
-            return tagReturn.map((tagObj) => tagObj.tag);
+        const tags = await this.database?.getAll<{ tag: string }>(sql);
+        if (tags) {
+            return tags.map((tagObj) => tagObj.tag);
         }
     }
 
-    public async getTags(): Promise<string[]> {
+    public async getAllTags(): Promise<string[]> {
         const sql = 'SELECT DISTINCT tag from video_tags ORDER BY tag';
-        const tagReturn = await this.database?.getAll<{ tag: string }>(sql);
-        if (tagReturn) {
-            return tagReturn.map((tagObj) => tagObj.tag);
+        const tags = await this.database?.getAll<{ tag: string }>(sql);
+        if (tags) {
+            return tags.map((tagObj) => tagObj.tag);
         } else {
             return [];
         }

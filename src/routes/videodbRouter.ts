@@ -17,7 +17,7 @@ export const createVideoDbRouter = (site: ISite): Router => {
                 const values = await videoDb.getLookupValues(req.query.table as string);
                 res.json(values);
             } else if (fn === 'getTags') {
-                const tags = await videoDb.getTags();
+                const tags = await videoDb.getAllTags();
                 res.json(tags);
             } else if (fn === 'postVideo') {
                 const id = await videoDb.addVideo(req.body.video);

@@ -203,13 +203,11 @@ export class Markdown implements IMarkdown {
 
         const fieldList = ['apiPath', 'title', 'uiPath', 'weight', 'restrict', 'allowWrite'];
         const pickedFields = this.hasFrontMatter ? _.pick(frontMatter, fieldList) : {};
-        const additionalData = this.hasFrontMatter ? _.omit(frontMatter, fieldList) : {};
 
         this.metadata = {
             apiPath: this.apiPath,
             title: path.basename(this.apiPath),
             ...pickedFields,
-            additionalData
         };
 
         this.metadataFromSourceFileTime = contentModifiedTime;

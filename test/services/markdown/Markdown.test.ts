@@ -695,39 +695,12 @@ describe('Markdown', () => {
                 const expectedMetadata = {
                     apiPath: 'root/file',
                     title: 'Some Title',
-                    additionalData: {}
                 };
                 expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledWith('root/file.md');
                 expect(mockStorage.getContentFile).toHaveBeenCalledWith('root/file.md');
                 expect(mockSplitFrontMatter).toHaveBeenCalledWith(contentFileBuf.toString('utf-8'));
                 expect(mockYAMLparse).toHaveBeenCalledWith(parsedYaml);
     
-                expect(actualMetadata).toEqual(expectedMetadata);
-            });
-    
-            it('places unknown metadata into additionalData', async () => {
-                const parsedYaml = {
-                    title: 'Some Title',
-                    someOtherField: 'some-other-value',
-                    someDifferentField: 'some-different-value'
-                };
-                mockStorage.contentFileExists.mockReturnValue(true);
-                mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
-                mockStorage.listContentChildren.mockResolvedValue([]);
-                mockSplitFrontMatter.mockReturnValue([parsedYaml]);
-                mockYAMLparse.mockReturnValue(parsedYaml);
-    
-                const page = new Markdown('root/file', config, mockStorage as any, mockLogger);
-                const actualMetadata = await page.getTree();
-    
-                const expectedMetadata = {
-                    apiPath: 'root/file',
-                    title: 'Some Title',
-                    additionalData: {
-                        someOtherField: 'some-other-value',
-                        someDifferentField: 'some-different-value'
-                    }
-                };
                 expect(actualMetadata).toEqual(expectedMetadata);
             });
     
@@ -746,7 +719,6 @@ describe('Markdown', () => {
                 const expectedMetadata = {
                     apiPath: 'root/file',
                     title: 'Some Title',
-                    additionalData: {}
                 };
                 expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledTimes(2);
                 expect(mockStorage.getContentFile).toHaveBeenCalledTimes(1);
@@ -775,7 +747,6 @@ describe('Markdown', () => {
                 const expectedMetadata = {
                     apiPath: 'root/file',
                     title: 'Some Title',
-                    additionalData: {}
                 };
                 expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledTimes(2);
                 expect(mockStorage.getContentFile).toHaveBeenCalledTimes(2);
@@ -800,7 +771,6 @@ describe('Markdown', () => {
                 const expectedMetadata = {
                     apiPath: 'root/file',
                     title: 'file',
-                    additionalData: {}
                 };
                 expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledWith('root/file.md');
                 expect(mockStorage.getContentFile).toHaveBeenCalledWith('root/file.md');
@@ -830,9 +800,9 @@ describe('Markdown', () => {
                 const expectedStructure = {
                     apiPath: 'rootDir',
                     children: [
-                        { title: 'rootDir', apiPath: 'rootDir', additionalData: {} } ,
-                        { title: 'markdown1', apiPath: 'rootDir/markdown1', additionalData: {} },
-                        { title: 'markdown2', apiPath: 'rootDir/markdown2', additionalData: {} }
+                        { title: 'rootDir', apiPath: 'rootDir' } ,
+                        { title: 'markdown1', apiPath: 'rootDir/markdown1' },
+                        { title: 'markdown2', apiPath: 'rootDir/markdown2' }
                     ]
                 };
                 const structure = await page.getTree();
@@ -855,10 +825,10 @@ describe('Markdown', () => {
                 const page = new Markdown('rootDir', config, mockStorage as any, mockLogger, false);
     
                 const expectedStructure = {
-                    title: 'rootDir', apiPath: 'rootDir', additionalData: {},
+                    title: 'rootDir', apiPath: 'rootDir',
                     children: [
-                        { title: 'markdown1', apiPath: 'rootDir/markdown1', additionalData: {} },
-                        { title: 'markdown2', apiPath: 'rootDir/markdown2', additionalData: {} }
+                        { title: 'markdown1', apiPath: 'rootDir/markdown1'  },
+                        { title: 'markdown2', apiPath: 'rootDir/markdown2' }
                     ]
                 };
                 const structure = await page.getTree();
@@ -876,7 +846,7 @@ describe('Markdown', () => {
     
                 const expectedStructure = {
                     apiPath: 'rootDir',
-                    children: [{ title: 'rootDir', apiPath: 'rootDir', additionalData: {} } ]
+                    children: [{ title: 'rootDir', apiPath: 'rootDir' } ]
                 };
                 const structure = await page.getTree();
                 expect(structure).toStrictEqual(expectedStructure);
@@ -891,7 +861,7 @@ describe('Markdown', () => {
     
                 const page = new Markdown('rootDir/page', config, mockStorage as any, mockLogger);
     
-                const expectedStructure = { title: 'page', apiPath: 'rootDir/page', additionalData: {} };
+                const expectedStructure = { title: 'page', apiPath: 'rootDir/page' };
                 const structure = await page.getTree();
                 expect(structure).toStrictEqual(expectedStructure);
             });
@@ -916,14 +886,14 @@ describe('Markdown', () => {
                 const actualStructure = await page.getTree();
     
                 const expectedStructure = {
-                    title: 'rootDir', apiPath: 'rootDir', additionalData: {},
+                    title: 'rootDir', apiPath: 'rootDir',
                     children: [
-                        { title: 'fileC', apiPath: 'rootDir/fileC', weight: 10, additionalData: {} },
-                        { title: 'fileB', apiPath: 'rootDir/fileB', weight: 20, additionalData: {} },
-                        { title: 'fileA', apiPath: 'rootDir/fileA', weight: 30, additionalData: {} },
-                        { title: 'fileD', apiPath: 'rootDir/fileD', additionalData: {} },
-                        { title: 'fileE', apiPath: 'rootDir/fileE', additionalData: {} },
-                        { title: 'fileF', apiPath: 'rootDir/fileF', additionalData: {} },
+                        { title: 'fileC', apiPath: 'rootDir/fileC', weight: 10 },
+                        { title: 'fileB', apiPath: 'rootDir/fileB', weight: 20 },
+                        { title: 'fileA', apiPath: 'rootDir/fileA', weight: 30 },
+                        { title: 'fileD', apiPath: 'rootDir/fileD' },
+                        { title: 'fileE', apiPath: 'rootDir/fileE' },
+                        { title: 'fileF', apiPath: 'rootDir/fileF' },
                     ]
                 };
                 expect(actualStructure).toEqual(expectedStructure);
@@ -951,13 +921,13 @@ describe('Markdown', () => {
                 const expectedStructure = {
                     apiPath: 'rootDir',
                     children: [
-                        { title: 'rootDir', apiPath: 'rootDir', additionalData: {} },
-                        { title: 'fileC', apiPath: 'rootDir/fileC', weight: 10, additionalData: {} },
-                        { title: 'fileB', apiPath: 'rootDir/fileB', weight: 20, additionalData: {} },
-                        { title: 'fileA', apiPath: 'rootDir/fileA', weight: 30, additionalData: {} },
-                        { title: 'fileD', apiPath: 'rootDir/fileD', additionalData: {} },
-                        { title: 'fileE', apiPath: 'rootDir/fileE', additionalData: {} },
-                        { title: 'fileF', apiPath: 'rootDir/fileF', additionalData: {} },
+                        { title: 'rootDir', apiPath: 'rootDir' },
+                        { title: 'fileC', apiPath: 'rootDir/fileC', weight: 10 },
+                        { title: 'fileB', apiPath: 'rootDir/fileB', weight: 20 },
+                        { title: 'fileA', apiPath: 'rootDir/fileA', weight: 30 },
+                        { title: 'fileD', apiPath: 'rootDir/fileD' },
+                        { title: 'fileE', apiPath: 'rootDir/fileE' },
+                        { title: 'fileF', apiPath: 'rootDir/fileF' },
                     ]
                 };
                 expect(actualStructure).toEqual(expectedStructure);
@@ -992,25 +962,25 @@ describe('Markdown', () => {
                 const expectedStructure = {
                     apiPath: 'rootDir',
                     children: [
-                        { title: 'rootDir', apiPath: 'rootDir', additionalData: {} },
-                        { title: 'file1', apiPath: 'rootDir/file1', additionalData: {} },
-                        { title: 'file2', apiPath: 'rootDir/file2', additionalData: {} },
+                        { title: 'rootDir', apiPath: 'rootDir' },
+                        { title: 'file1', apiPath: 'rootDir/file1'  },
+                        { title: 'file2', apiPath: 'rootDir/file2' },
                         {
-                            title: 'firstDir', apiPath: 'rootDir/firstDir', additionalData: {},
+                            title: 'firstDir', apiPath: 'rootDir/firstDir',
                             children: [
-                                { title: 'file3', apiPath: 'rootDir/firstDir/file3', additionalData: {} },
-                                { title: 'file4', apiPath: 'rootDir/firstDir/file4', additionalData: {} },
+                                { title: 'file3', apiPath: 'rootDir/firstDir/file3' },
+                                { title: 'file4', apiPath: 'rootDir/firstDir/file4' },
                                 {
-                                    title: 'firstSubDir', apiPath: 'rootDir/firstDir/firstSubDir', additionalData: {},
+                                    title: 'firstSubDir', apiPath: 'rootDir/firstDir/firstSubDir',
                                     children: [
-                                        { title: 'file5', apiPath: 'rootDir/firstDir/firstSubDir/file5', additionalData: {} },
-                                        { title: 'file6', apiPath: 'rootDir/firstDir/firstSubDir/file6', additionalData: {} },
+                                        { title: 'file5', apiPath: 'rootDir/firstDir/firstSubDir/file5' },
+                                        { title: 'file6', apiPath: 'rootDir/firstDir/firstSubDir/file6' },
                                         {
-                                            title: 'secondSubDir', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir', additionalData: {},
+                                            title: 'secondSubDir', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir',
                                             children: [
-                                                { title: 'file7', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file7', additionalData: {} },
-                                                { title: 'file8', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file8', additionalData: {} },
-                                                { title: 'file9', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file9', additionalData: {} },
+                                                { title: 'file7', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file7' },
+                                                { title: 'file8', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file8' },
+                                                { title: 'file9', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file9' },
                                             ]
                                         },
                                     ]

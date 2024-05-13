@@ -10,8 +10,11 @@ import { Config } from '../../utils';
 import { User } from '../auth';
 import { userIsAdmin } from '../auth/accessUtils';
 
+const wait = (timeMs: number) => new Promise(resolve => setTimeout(resolve, timeMs));
+
 export class VideoDb implements IVideoDb {
     private apiPath: string;
+    private initialising = false;
     private database?: IDatabaseAdapter;
     private dbVersion?: number;
     private lookupTableCache: { [key: string]: LookupValues } = {};
@@ -26,7 +29,13 @@ export class VideoDb implements IVideoDb {
     }
 
     public async initialise(): Promise<void> {
+        while (this.initialising) {
+            this.logger.info('waiting for database to initialise');
+            await wait(50);
+        }
+
         if (!this.database) {
+            this.initialising = true;
             this.logger.info(`initialising database at ${this.apiPath}`);
             const dbContentPath = path.join(this.apiPath, 'data.db');
             if (!this.storage.contentFileExists(dbContentPath)) {
@@ -34,6 +43,7 @@ export class VideoDb implements IVideoDb {
             }
             this.database = await this.storage.getContentDb(dbContentPath);
             await this.upgrade();
+            this.initialising = false;
         }
     }
 

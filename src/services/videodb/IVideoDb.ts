@@ -1,3 +1,5 @@
+import { User } from '../auth';
+
 export type VideoMedia = {
     media_type: string;
     media_location?: string;
@@ -89,9 +91,9 @@ export interface IVideoDb {
     getVersion(): Promise<number>;
     getLookupValues(tableName: string): Promise<LookupValues>;
     getAllTags(): Promise<string[]>;
-    addVideo(video: Video): Promise<number>;
-    updateVideo(video: VideoWithId): Promise<void>;
+    addVideo(video: Video, user?: User): Promise<number>;
+    updateVideo(video: VideoWithId, user?: User): Promise<void>;
     getVideo(id: number): Promise<VideoWithId>;
     queryVideos(queryParams?: VideoQueryParams): Promise<VideoSummaryAndPrimaryMedium[]>;
-    getOmdbApiKey(): string;
+    getOmdbApiKey(user?: User): string;
 }

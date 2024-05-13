@@ -1,11 +1,14 @@
+import path from 'path';
+import { Logger } from 'winston';
+
 import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
 import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoQueryParams, VideoMedia, videoFields, videoSummaryFields, VideoSummaryAndPrimaryMedium } from './IVideoDb';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { dbUpgradeSql } from './dbUpgradeSql';
-import path from 'path';
-import { Logger } from 'winston';
-import { NotFoundError } from '../../errors';
+import { NotFoundError, NotPermittedError } from '../../errors';
 import { Config } from '../../utils';
+import { User } from '../auth';
+import { userIsAdmin } from '../auth/accessUtils';
 
 export class VideoDb implements IVideoDb {
     private apiPath: string;
@@ -60,7 +63,8 @@ export class VideoDb implements IVideoDb {
         return this.dbVersion ?? 0;
     }
 
-    public getOmdbApiKey(): string {
+    public getOmdbApiKey(user?: User): string {
+        this.throwIfNotAdmin(user);
         return this.config.omdbApiKey;
     }
 
@@ -90,7 +94,8 @@ export class VideoDb implements IVideoDb {
         return returnVal;
     }
 
-    public async addVideo(video: Video): Promise<number> {
+    public async addVideo(video: Video, user?: User): Promise<number> {
+        this.throwIfNotAdmin(user);
         const sql = `INSERT INTO videos
                      (${videoFields.join(', ')})
                      VALUES
@@ -114,7 +119,8 @@ export class VideoDb implements IVideoDb {
         return result.id;
     }
 
-    public async updateVideo(video: VideoWithId): Promise<void> {
+    public async updateVideo(video: VideoWithId, user?: User): Promise<void> {
+        this.throwIfNotAdmin(user);
         await this.throwIfNoVideo(video.id);
 
         const setList = videoFields.map((field) => `${field} = $${field}`);
@@ -274,6 +280,10 @@ export class VideoDb implements IVideoDb {
             throw new Error('Unexpected error querying videos');
         }
         return videos;
+    }
+
+    private throwIfNotAdmin(user?: User): void {
+        if (this.config.enableAuthentication && !userIsAdmin(user)) throw new NotPermittedError();
     }
 
     private async throwIfNoVideo(id: number): Promise<void> {

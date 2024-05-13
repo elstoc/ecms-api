@@ -12,7 +12,7 @@ export const createVideoDbRouter = (site: ISite): Router => {
                 const version = await videoDb.getVersion();
                 res.json({ version });
             } else if (fn === 'getOmdbKey') {
-                res.send(videoDb.getOmdbApiKey());
+                res.send(videoDb.getOmdbApiKey(req.user));
             } else if (fn === 'getLookup') {
                 const values = await videoDb.getLookupValues(req.query.table as string);
                 res.json(values);
@@ -20,10 +20,10 @@ export const createVideoDbRouter = (site: ISite): Router => {
                 const tags = await videoDb.getAllTags();
                 res.json(tags);
             } else if (fn === 'postVideo') {
-                const id = await videoDb.addVideo(req.body.video);
+                const id = await videoDb.addVideo(req.body.video, req.user);
                 res.json({ id });
             } else if (fn === 'putVideo') {
-                await videoDb.updateVideo(req.body.video);
+                await videoDb.updateVideo(req.body.video, req.user);
                 res.sendStatus(200);
             } else if (fn === 'getVideo') {
                 const video = await videoDb.getVideo(parseInt(req.query.id as string));

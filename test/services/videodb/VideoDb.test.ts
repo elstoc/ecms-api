@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NotFoundError } from '../../../src/errors';
+import { NotFoundError, NotPermittedError } from '../../../src/errors';
 import { VideoDb, IVideoDb } from '../../../src/services/videodb';
 import { LookupTables } from '../../../src/services/videodb/IVideoDb';
 import { stripWhiteSpace } from '../../../src/utils';
@@ -22,6 +22,9 @@ const mockLogger = {
     info: jest.fn(),
     error: jest.fn()
 } as any;
+
+const regularUser = { id: 'some-user', roles: ['not-admin'] };
+const adminUser = { id: 'some-user', roles: ['admin'] };
 
 describe('VideoDb', () => {
     let videoDb: IVideoDb;
@@ -188,6 +191,36 @@ describe('VideoDb', () => {
     });
 
     describe('getOmdbApiKey', () => {
+        it('throws error if user is not admin and auth enabled', () => {
+            const newConfig = {
+                ...config, enableAuthentication: true
+            } as any;
+            mockStorage.getContentDb.mockResolvedValue(mockDb);
+            videoDb = new VideoDb(apiPath, newConfig, mockLogger, mockStorage as any);
+
+            expect(() => videoDb.getOmdbApiKey(regularUser)).toThrow(new NotPermittedError());
+        });
+
+        it('does not throw error if user is admin and auth enabled', () => {
+            const newConfig = {
+                ...config, enableAuthentication: false
+            } as any;
+            mockStorage.getContentDb.mockResolvedValue(mockDb);
+            videoDb = new VideoDb(apiPath, newConfig, mockLogger, mockStorage as any);
+
+            expect(() => videoDb.getOmdbApiKey(regularUser)).not.toThrow();
+        });
+
+        it('does not throw error if user is not admin and auth disabled', () => {
+            const newConfig = {
+                ...config, enableAuthentication: true
+            } as any;
+            mockStorage.getContentDb.mockResolvedValue(mockDb);
+            videoDb = new VideoDb(apiPath, newConfig, mockLogger, mockStorage as any);
+
+            expect(() => videoDb.getOmdbApiKey(adminUser)).not.toThrow();
+        });
+
         it('returns the config api key', () => {
             expect(videoDb.getOmdbApiKey()).toBe('omdb-key');
         });
@@ -210,6 +243,99 @@ describe('VideoDb', () => {
     });
 
     describe('addVideo', () => {
+        it('throws error if user is not admin and auth enabled', async () => {
+            const newConfig = {
+                ...config, enableAuthentication: true
+            } as any;
+            mockStorage.getContentDb.mockResolvedValue(mockDb);
+            videoDb = new VideoDb(apiPath, newConfig, mockLogger, mockStorage as any);
+
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValue({ ver: 4 });
+            mockGetWithParams.mockResolvedValue({ id: 2468 });
+
+            await videoDb.initialise();
+
+            const video = {
+                title: 'some-title',
+                category: 'some-category',
+                director: 'some-director',
+                length_mins: 1234,
+                watched: 'Y',
+                to_watch_priority: 1,
+                progress: 'some-progress',
+                imdb_id: 'imdb1234',
+                image_url: 'url',
+                year: 1923,
+                actors: 'some-actors',
+                plot: 'stuff happened',
+            };
+
+            await expect(videoDb.addVideo(video, regularUser)).rejects.toThrow(new NotPermittedError());
+        });
+
+        it('does not throw error if user is admin and auth enabled', async () => {
+            const newConfig = {
+                ...config, enableAuthentication: true
+            } as any;
+            mockStorage.getContentDb.mockResolvedValue(mockDb);
+            videoDb = new VideoDb(apiPath, newConfig, mockLogger, mockStorage as any);
+
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValue({ ver: 4 });
+            mockGetWithParams.mockResolvedValue({ id: 2468 });
+
+            await videoDb.initialise();
+
+            const video = {
+                title: 'some-title',
+                category: 'some-category',
+                director: 'some-director',
+                length_mins: 1234,
+                watched: 'Y',
+                to_watch_priority: 1,
+                progress: 'some-progress',
+                imdb_id: 'imdb1234',
+                image_url: 'url',
+                year: 1923,
+                actors: 'some-actors',
+                plot: 'stuff happened',
+            };
+
+            await expect(videoDb.addVideo(video, adminUser)).resolves.toBeDefined();
+        });
+
+        it('does not throw error if user is not admin and auth disabled', async () => {
+            const newConfig = {
+                ...config, enableAuthentication: false
+            } as any;
+            mockStorage.getContentDb.mockResolvedValue(mockDb);
+            videoDb = new VideoDb(apiPath, newConfig, mockLogger, mockStorage as any);
+
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValue({ ver: 4 });
+            mockGetWithParams.mockResolvedValue({ id: 2468 });
+
+            await videoDb.initialise();
+
+            const video = {
+                title: 'some-title',
+                category: 'some-category',
+                director: 'some-director',
+                length_mins: 1234,
+                watched: 'Y',
+                to_watch_priority: 1,
+                progress: 'some-progress',
+                imdb_id: 'imdb1234',
+                image_url: 'url',
+                year: 1923,
+                actors: 'some-actors',
+                plot: 'stuff happened',
+            };
+
+            await expect(videoDb.addVideo(video, regularUser)).resolves.toBeDefined();
+        });
+
         it('runs video insert sql with appropriate parameters and returns inserted id', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
@@ -387,6 +513,48 @@ describe('VideoDb', () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
             await videoDb.initialise();
+        });
+
+        it('throws error if user is not admin and auth enabled', async () => {
+            const newConfig = {
+                ...config, enableAuthentication: true
+            } as any;
+            mockStorage.getContentDb.mockResolvedValue(mockDb);
+            videoDb = new VideoDb(apiPath, newConfig, mockLogger, mockStorage as any);
+
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValue({ ver: 4 });
+            await videoDb.initialise();
+
+            await expect(videoDb.updateVideo(video, regularUser)).rejects.toThrow(new NotPermittedError());
+        });
+
+        it('does not throw error if user is admin and auth enabled', async () => {
+            const newConfig = {
+                ...config, enableAuthentication: true
+            } as any;
+            mockStorage.getContentDb.mockResolvedValue(mockDb);
+            videoDb = new VideoDb(apiPath, newConfig, mockLogger, mockStorage as any);
+
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValueOnce({ ver: 4 }).mockResolvedValue({ video_exists: 1 });
+            await videoDb.initialise();
+
+            await expect(videoDb.updateVideo(video, adminUser)).resolves.toBeUndefined();
+        });
+
+        it('does not throw error if user is not admin and auth disabled', async () => {
+            const newConfig = {
+                ...config, enableAuthentication: false
+            } as any;
+            mockStorage.getContentDb.mockResolvedValue(mockDb);
+            videoDb = new VideoDb(apiPath, newConfig, mockLogger, mockStorage as any);
+
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValueOnce({ ver: 4 }).mockResolvedValue({ video_exists: 1 });
+            await videoDb.initialise();
+
+            await expect(videoDb.updateVideo(video, regularUser)).resolves.toBeUndefined();
         });
 
         it('throws error if video id does not exist', async () => {

@@ -24,7 +24,7 @@ RUN mkdir -p /app/data
 WORKDIR /app
 
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/src/api/api.spec.yaml ./api/src/api.spec.yaml
+COPY --from=builder /app/src/api/api.spec.yaml ./dist/api/api.spec.yaml
 COPY --from=builder /app/node_modules ./node_modules
 
 CMD node ./dist/index.js

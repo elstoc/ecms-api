@@ -101,6 +101,7 @@ export class Markdown implements IMarkdown {
             this.logger.info(`writing markdown page ${targetApiPath}`);
             this.throwIfNoWriteAccess(user);
             await this.storage.storeContentFile(this.contentPath, Buffer.from(fileContent));
+            this.metadataFromSourceFileTime = -1;
         } else {
             const nextChild = this.getNextChildInTargetPath(targetApiPath);
             try {

@@ -65,13 +65,12 @@ export class SiteComponent implements ISiteComponent {
         const commonMetadata = this.getCommonMetadata(parsedYaml);
 
         if (type === ComponentTypes.gallery) {
-            const { marginPx, batchSize, threshold } = parsedYaml;
-            if (typeof marginPx !== 'number' || typeof batchSize !== 'number' || typeof threshold !== 'number') {
-                throw new Error('Gallery components must include marginPx, batchSize and threshold as numbers');
+            const { marginPx, batchSize } = parsedYaml;
+            if (typeof marginPx !== 'number' || typeof batchSize !== 'number') {
+                throw new Error('Gallery components must include marginPx and batchSize as numbers');
             }
             return {
-                type, marginPx, batchSize, threshold,
-                ...commonMetadata
+                type, marginPx, batchSize, ...commonMetadata
             };
         } else if (type === ComponentTypes.markdown) {
             const { includeNav } = parsedYaml;

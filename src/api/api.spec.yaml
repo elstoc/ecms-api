@@ -282,7 +282,7 @@ paths:
             type: integer
             minimum: 0
         - in: query
-          name: titleLike
+          name: titleContains
           required: false
           description: Case insensitive like clause for video title (percent is wildcard)
           schema:

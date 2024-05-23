@@ -866,6 +866,23 @@ describe('VideoDb', () => {
             expect(videos).toBe('videos');
         });
 
+        it('runs the correct sql with filter params when limit param is defined', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValueOnce({ ver: 4 });
+            await videoDb.initialise();
+            const expectedSql = baseSql + orderBySQL + ' LIMIT 100';
+            const expectedParams = { };
+
+            mockGetAllWithParams.mockResolvedValue('videos');
+            const videos = await videoDb.queryVideos({}, 100);
+
+            expect(mockGetAllWithParams).toHaveBeenCalled();
+            const [sql, params] = mockGetAllWithParams.mock.calls[0];
+            expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
+            expect(params).toEqual(expectedParams);
+            expect(videos).toBe('videos');
+        });
+
         it('runs the correct sql with filter params when titleContains, categories, tags and maxLength filter param are all defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });

@@ -226,7 +226,7 @@ export class VideoDb implements IVideoDb {
         }
     }
 
-    public async queryVideos(filters?: VideoFilters): Promise<VideoSummaryAndPrimaryMedium[]> {
+    public async queryVideos(filters?: VideoFilters, limit?: number): Promise<VideoSummaryAndPrimaryMedium[]> {
         let params: { [key: string]: unknown } = {};
         const whereClauses: string[] = [];
         let sql = `SELECT v.${videoSummaryFields.join(', v.')},
@@ -284,6 +284,10 @@ export class VideoDb implements IVideoDb {
                  ELSE title
             END
         )`;
+
+        if (limit) {
+            sql += ` LIMIT ${limit}`;
+        }
 
         const videos = await this.database?.getAllWithParams<VideoSummaryAndPrimaryMedium>(sql, params);
         if (!videos) {

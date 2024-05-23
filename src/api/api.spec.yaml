@@ -275,6 +275,13 @@ paths:
       parameters:
         - $ref: '#/components/parameters/ComponentPath'
         - in: query
+          name: limit
+          required: false
+          description: Maximum number of records to return
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
           name: maxLength
           required: false
           description: The maximum video length

@@ -2,7 +2,7 @@ import path from 'path';
 import { Logger } from 'winston';
 
 import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
-import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoQueryParams, VideoMedia, videoFields, videoSummaryFields, VideoSummaryAndPrimaryMedium } from './IVideoDb';
+import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoFilters, VideoMedia, videoFields, videoSummaryFields, VideoSummaryAndPrimaryMedium } from './IVideoDb';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { dbUpgradeSql } from './dbUpgradeSql';
 import { NotFoundError, NotPermittedError } from '../../errors';
@@ -226,7 +226,7 @@ export class VideoDb implements IVideoDb {
         }
     }
 
-    public async queryVideos(queryParams?: VideoQueryParams): Promise<VideoSummaryAndPrimaryMedium[]> {
+    public async queryVideos(filters?: VideoFilters): Promise<VideoSummaryAndPrimaryMedium[]> {
         let params: { [key: string]: unknown } = {};
         const whereClauses: string[] = [];
         let sql = `SELECT v.${videoSummaryFields.join(', v.')},
@@ -247,7 +247,7 @@ export class VideoDb implements IVideoDb {
                       ) pm
                       ON v.id = pm.video_id`;
 
-        const { maxLength, categories, tags, titleContains } = queryParams || {};
+        const { maxLength, categories, tags, titleContains } = filters || {};
         if (maxLength !== undefined) {
             whereClauses.push('length_mins <= $maxLength');
             params['$maxLength'] = maxLength;

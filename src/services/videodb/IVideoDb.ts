@@ -78,7 +78,7 @@ export type LookupValues = {
     [key: string]: string;
 }
 
-export type VideoQueryParams = {
+export type VideoFilters = {
     maxLength?: number;
     categories?: string[];
     tags?: string[];
@@ -94,6 +94,6 @@ export interface IVideoDb {
     addVideo(video: Video, user?: User): Promise<number>;
     updateVideo(video: VideoWithId, user?: User): Promise<void>;
     getVideo(id: number): Promise<VideoWithId>;
-    queryVideos(queryParams?: VideoQueryParams): Promise<VideoSummaryAndPrimaryMedium[]>;
+    queryVideos(filters?: VideoFilters): Promise<VideoSummaryAndPrimaryMedium[]>;
     getOmdbApiKey(user?: User): string;
 }

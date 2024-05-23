@@ -766,7 +766,7 @@ describe('VideoDb', () => {
             END
         )`;
 
-        it('runs the correct sql to retrieve all videos when no query params are defined', async () => {
+        it('runs the correct sql to retrieve all videos when no filter params are defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
@@ -782,7 +782,7 @@ describe('VideoDb', () => {
             expect(videos).toBe('videos');
         });
 
-        it('runs the correct sql to retrieve all videos when empty query params object is defined', async () => {
+        it('runs the correct sql to retrieve all videos when empty filter params object is defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
@@ -798,7 +798,7 @@ describe('VideoDb', () => {
             expect(videos).toBe('videos');
         });
 
-        it('runs the correct sql with query params when maxLength query param is defined', async () => {
+        it('runs the correct sql with filter params when maxLength filter param is defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
@@ -815,7 +815,7 @@ describe('VideoDb', () => {
             expect(videos).toBe('videos');
         });
 
-        it('runs the correct sql with query params when categories query param is defined', async () => {
+        it('runs the correct sql with filter params when categories filter param is defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
@@ -832,7 +832,7 @@ describe('VideoDb', () => {
             expect(videos).toBe('videos');
         });
 
-        it('runs the correct sql with query params when tags query param is defined', async () => {
+        it('runs the correct sql with filter params when tags filter param is defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
@@ -849,7 +849,7 @@ describe('VideoDb', () => {
             expect(videos).toBe('videos');
         });
 
-        it('runs the correct sql with query params when titleContains query param is defined', async () => {
+        it('runs the correct sql with filter params when titleContains filter param is defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
@@ -866,7 +866,7 @@ describe('VideoDb', () => {
             expect(videos).toBe('videos');
         });
 
-        it('runs the correct sql with query params when titleContains, categories, tags and maxLength query param are all defined', async () => {
+        it('runs the correct sql with filter params when titleContains, categories, tags and maxLength filter param are all defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();

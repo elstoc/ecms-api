@@ -742,8 +742,14 @@ describe('VideoDb', () => {
 
     describe('queryVideos', () => {
         const baseSql = `SELECT v.id, v.title, v.category, v.director, v.length_mins, v.watched, v.to_watch_priority, v.progress, v.year, v.actors,
-                                pm.media_type pm_media_type, pm.watched pm_watched
+                                pm.media_type pm_media_type, pm.watched pm_watched,
+                                vt.tags
                          FROM   videos v
+                        LEFT OUTER JOIN (
+                            SELECT video_id, GROUP_CONCAT(tag) AS tags
+                            FROM video_tags
+                            GROUP BY video_id ) vt
+                        ON v.id =  vt.video_id
                          LEFT OUTER JOIN (
                            SELECT vm.*
                            FROM   video_media vm

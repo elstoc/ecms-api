@@ -230,8 +230,14 @@ export class VideoDb implements IVideoDb {
         let params: { [key: string]: unknown } = {};
         const whereClauses: string[] = [];
         let sql = `SELECT v.${videoSummaryFields.join(', v.')},
-                             pm.media_type pm_media_type, pm.watched pm_watched
+                             pm.media_type pm_media_type, pm.watched pm_watched,
+                             vt.tags
                       FROM   videos v
+					  LEFT OUTER JOIN (
+					    SELECT video_id, GROUP_CONCAT(tag) AS tags
+                        FROM video_tags
+                        GROUP BY video_id ) vt
+					  ON v.id =  vt.video_id
                       LEFT OUTER JOIN (
                         SELECT vm.*
                         FROM   video_media vm

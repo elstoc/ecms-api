@@ -48,6 +48,7 @@ export type VideoSummary = {
     actors: string | null;
     pm_media_type: string | null;
     pm_watched: string | null;
+    tags: string | null;
 }
 
 export const videoSummaryFields = [

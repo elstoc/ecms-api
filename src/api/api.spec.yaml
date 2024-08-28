@@ -337,6 +337,39 @@ components:
       schema:
         type: string
   schemas:
+    VideoMediaType:
+      type: string
+      nullable: true
+      enum:
+        - BD4K
+        - DL2160
+        - BD
+        - DL1080
+        - DL720
+        - DVD
+        - DVD11
+        - DVDSH
+        - DVDR1
+        - DLSD
+    VideoMediaLocation:
+      type: string
+      nullable: true
+      enum:
+        - MOVW
+        - NAS
+        - TVDOW
+        - TVCOW
+        - TVDRW
+        - TVBOX
+        - EXT
+        - OTH
+    VideoMediaWatchedStatus:
+      type: string
+      nullable: true
+      enum:
+        - Y
+        - N
+        - P
     VideoMedium:
       type: object
       additionalProperties: false
@@ -504,6 +537,19 @@ components:
           type: string
           nullable: true
         plot:
+          type: string
+          nullable: true
+        primary_media_type:
+          $ref: '#/components/schemas/VideoMediaType'
+        primary_media_location:
+          $ref: '#/components/schemas/VideoMediaLocation'
+        primary_media_watched:
+          $ref: '#/components/schemas/VideoMediaWatchedStatus'
+        other_media_type:
+          $ref: '#/components/schemas/VideoMediaType'
+        other_media_location:
+          $ref: '#/components/schemas/VideoMediaLocation'
+        media_notes:
           type: string
           nullable: true
         media:

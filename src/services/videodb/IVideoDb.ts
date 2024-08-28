@@ -1,12 +1,5 @@
 import { User } from '../auth';
 
-export type VideoMedia = {
-    media_type: string;
-    media_location: string;
-    watched: string;
-    notes: string | null;
-}
-
 export type Video = {
     title: string;
     category: string;
@@ -20,7 +13,6 @@ export type Video = {
     year: number | null;
     actors: string | null;
     plot: string | null;
-    media?: VideoMedia[];
     tags?: string[];
     primary_media_type: string | null;
     primary_media_location: string | null;

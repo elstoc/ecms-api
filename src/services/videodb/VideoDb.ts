@@ -2,7 +2,7 @@ import path from 'path';
 import { Logger } from 'winston';
 
 import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
-import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoFilters, VideoMedia, videoFields, videoSummaryFields, VideoSummaryAndPrimaryMedium } from './IVideoDb';
+import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoFilters, videoFields, videoSummaryFields, VideoSummaryAndPrimaryMedium } from './IVideoDb';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { dbUpgradeSql } from './dbUpgradeSql';
 import { NotFoundError, NotPermittedError } from '../../errors';
@@ -114,7 +114,7 @@ export class VideoDb implements IVideoDb {
         const params: { [key: string]: unknown } = {};
         let key: keyof Video;
         for (key in video) {
-            if (!['media', 'tags'].includes(key)) {
+            if (key !== 'tags') {
                 params[`$${key}`] = video[key];
             }
         }
@@ -123,7 +123,6 @@ export class VideoDb implements IVideoDb {
             throw new Error('Unexpected error creating video');
         }
 
-        await this.createOrReplaceVideoMedia(result.id, video.media);
         await this.createOrReplaceVideoTags(result.id, video.tags);
 
         return result.id;
@@ -139,13 +138,12 @@ export class VideoDb implements IVideoDb {
         let key: keyof VideoWithId;
         const params: { [key: string]: unknown} = {};
         for (key in video) {
-            if (!['media', 'tags'].includes(key)) {
+            if (key !== 'tags') {
                 params[`$${key}`] = video[key];
             }
         }
         await this.database?.runWithParams(sql, params);
 
-        await this.createOrReplaceVideoMedia(video.id, video.media);
         await this.createOrReplaceVideoTags(video.id, video.tags);
     }
 
@@ -164,25 +162,6 @@ export class VideoDb implements IVideoDb {
         }
     }
 
-    private async createOrReplaceVideoMedia(id: number, media?: VideoMedia[]): Promise<void> {
-        const deleteSql = `DELETE FROM video_media WHERE video_id = ${id}`;
-        await this.database?.exec(deleteSql);
-
-        if (!media) return;
-
-        const insertSql = `INSERT INTO video_media (video_id, media_type, media_location, watched, notes)
-                           VALUES ($id, $media_type, $media_location, $watched, $notes)`;
-        
-        for (const medium of media) {
-            let key: keyof VideoMedia;
-            const params: { [key: string]: unknown} = { '$id': id };
-            for (key in medium) {
-                params[`$${key}`] = medium[key];
-            }
-            await this.database?.runWithParams(insertSql, params);
-        }
-    }
-
     public async getVideo(id: number): Promise<VideoWithId> {
         await this.throwIfNoVideo(id);
         const sql = `SELECT id, ${videoFields.join(', ')}
@@ -192,20 +171,9 @@ export class VideoDb implements IVideoDb {
         if (!video) {
             throw new Error(`Unexpected error getting video ${id}`);
         }
-        video.media = await this.getVideoMedia(id);
         video.tags = await this.getVideoTags(id);
 
         return video;
-    }
-
-    private async getVideoMedia(id: number): Promise<VideoMedia[] | undefined> {
-        const sql = `SELECT media_type, media_location, watched, notes
-                     FROM video_media
-                     INNER JOIN l_media_types
-                     ON video_media.media_type = l_media_types.code
-                     WHERE video_id = ${id}
-                     ORDER BY priority`;
-        return await this.database?.getAll<VideoMedia>(sql);
     }
 
     private async getVideoTags(id: number): Promise<string[] | undefined> {

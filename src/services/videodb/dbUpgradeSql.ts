@@ -106,24 +106,6 @@ dbUpgradeSql.push(`
             REFERENCES l_media_locations (code)
     );
 
-    CREATE TABLE IF NOT EXISTS video_media (
-        video_id INTEGER NOT NULL,
-        media_type VARCHAR(5) NOT NULL,
-        media_location VARCHAR(5),
-        watched VARCHAR(1),
-        notes VARCHAR(100),
-
-        PRIMARY KEY (video_id, media_type),
-        FOREIGN KEY (media_type)
-            REFERENCES l_media_types (code),
-        FOREIGN KEY (media_location)
-            REFERENCES l_media_locations (code),
-        FOREIGN KEY (video_id)
-            REFERENCES videos (id),
-        FOREIGN KEY (watched)
-            REFERENCES l_watched_status (code)
-    );
-
     CREATE TABLE IF NOT EXISTS video_tags (
         video_id INTEGER NOT NULL,
         tag VARCHAR(100) NOT NULL,

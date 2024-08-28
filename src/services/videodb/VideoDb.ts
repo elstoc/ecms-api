@@ -230,28 +230,13 @@ export class VideoDb implements IVideoDb {
         let params: { [key: string]: unknown } = {};
         const whereClauses: string[] = [];
         let sql = `SELECT v.${videoSummaryFields.join(', v.')},
-                             pm.media_type pm_media_type, pm.watched pm_watched,
                              vt.tags
                       FROM   videos v
 					  LEFT OUTER JOIN (
 					    SELECT video_id, GROUP_CONCAT(tag) AS tags
                         FROM video_tags
                         GROUP BY video_id ) vt
-					  ON v.id =  vt.video_id
-                      LEFT OUTER JOIN (
-                        SELECT vm.*
-                        FROM   video_media vm
-                        INNER JOIN l_media_types lmt
-                        ON vm.media_type = lmt.code
-                        WHERE lmt.priority = (
-                            SELECT MIN(lmt2.priority)
-                            FROM   video_media vm2
-                            INNER JOIN l_media_types lmt2
-                            ON vm2.media_type = lmt2.code
-                            AND vm.video_id = vm2.video_id
-                        )
-                      ) pm
-                      ON v.id = pm.video_id`;
+					  ON v.id =  vt.video_id`;
 
         const { maxLength, categories, tags, titleContains } = filters || {};
         if (maxLength !== undefined) {

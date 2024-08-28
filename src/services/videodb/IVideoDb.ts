@@ -22,11 +22,18 @@ export type Video = {
     plot: string | null;
     media?: VideoMedia[];
     tags?: string[];
+    primary_media_type: string | null;
+    primary_media_location: string | null;
+    primary_media_watched: string | null;
+    other_media_type: string | null;
+    other_media_location: string | null;
+    media_notes: string | null;
 }
 
 export const videoFields = [
     'title', 'category', 'director', 'length_mins', 'watched', 'to_watch_priority', 'progress',
-    'imdb_id', 'image_url', 'year', 'actors', 'plot'
+    'imdb_id', 'image_url', 'year', 'actors', 'plot', 'primary_media_type', 'primary_media_location',
+    'primary_media_watched', 'other_media_type', 'other_media_location', 'media_notes'
 ];
 
 type VideoIdOnly = {
@@ -49,11 +56,18 @@ export type VideoSummary = {
     pm_media_type: string | null;
     pm_watched: string | null;
     tags: string | null;
+    primary_media_type: string | null;
+    primary_media_location: string | null;
+    primary_media_watched: string | null;
+    other_media_type: string | null;
+    other_media_location: string | null;
+    media_notes: string | null;
 }
 
 export const videoSummaryFields = [
     'id', 'title', 'category', 'director', 'length_mins', 'watched', 'to_watch_priority', 'progress',
-    'year', 'actors'
+    'year', 'actors', 'primary_media_type', 'primary_media_location',
+    'primary_media_watched', 'other_media_type', 'other_media_location', 'media_notes'
 ];
 
 export type PrimaryMedium = {

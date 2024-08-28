@@ -83,11 +83,27 @@ dbUpgradeSql.push(`
         year INTEGER,
         actors VARCHAR(200),
         plot VARCHAR(5000),
+        primary_media_type VARCHAR(5),
+        primary_media_location VARCHAR(5),
+        primary_media_watched VARCHAR(1),
+        other_media_type VARCHAR(5),
+        other_media_location VARCHAR(5),
+        media_notes VARCHAR(100),
 
         FOREIGN KEY (category)
             REFERENCES l_categories (code),
         FOREIGN KEY (watched)
-            REFERENCES l_watched_status (code)
+            REFERENCES l_watched_status (code),
+        FOREIGN KEY (primary_media_type)
+            REFERENCES l_media_types (code),
+        FOREIGN KEY (primary_media_location)
+            REFERENCES l_media_locations (code),
+        FOREIGN KEY (primary_media_watched)
+            REFERENCES l_watched_status (code),
+        FOREIGN KEY (other_media_type)
+            REFERENCES l_media_types (code),
+        FOREIGN KEY (other_media_location)
+            REFERENCES l_media_locations (code)
     );
 
     CREATE TABLE IF NOT EXISTS video_media (

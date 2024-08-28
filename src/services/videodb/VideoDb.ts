@@ -44,6 +44,7 @@ export class VideoDb implements IVideoDb {
             this.database = await this.storage.getContentDb(dbContentPath);
             await this.upgrade();
             this.initialising = false;
+            this.logger.info(`initialised database at ${this.apiPath}`);
         }
     }
 

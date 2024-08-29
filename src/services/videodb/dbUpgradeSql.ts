@@ -20,7 +20,7 @@ dbUpgradeSql.push(`
         ('TV', 'TV Series'),
         ('TVD', 'TV Documentary'),
         ('MOV', 'Movie'),
-        ('MOVD', 'Feature Length Documentary'),
+        ('MOVD', 'Feature Documentary'),
         ('MUS', 'Music');
 
     CREATE TABLE IF NOT EXISTS l_media_types (

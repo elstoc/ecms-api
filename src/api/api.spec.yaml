@@ -269,6 +269,19 @@ paths:
       responses:
         '200':
           description: OK
+    delete:
+      description: Delete a video from the database
+      parameters:
+        - $ref: '#/components/parameters/ComponentPath'
+        - in: query
+          name: id
+          description: The video id
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: OK
   /videodb/videos:
     get:
       description: Get a list of videos from the database, filtering accordingly

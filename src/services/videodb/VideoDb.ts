@@ -177,6 +177,14 @@ export class VideoDb implements IVideoDb {
         return video;
     }
 
+    public async deleteVideo(id: number): Promise<void> {
+        await this.throwIfNoVideo(id);
+        const sql = `DELETE
+                     FROM   videos
+                     WHERE  id = ${id}`;
+        await this.database?.exec(sql);
+    }
+
     private async getVideoTags(id: number): Promise<string[] | undefined> {
         const sql = `SELECT tag FROM video_tags WHERE video_id = ${id} ORDER BY tag`;
         const tags = await this.database?.getAll<{ tag: string }>(sql);

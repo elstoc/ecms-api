@@ -706,6 +706,32 @@ describe('VideoDb', () => {
         });
     });
 
+    describe('deleteVideo', () => {
+        beforeEach(async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValue({ ver: 4 });
+            await videoDb.initialise();
+        });
+
+        it('throws error if video id does not exist', async () => {
+            mockGet.mockResolvedValue({ video_exists: 0 });
+
+            await expect(videoDb.deleteVideo(12)).rejects.toThrow(new NotFoundError('video id 12 does not exist'));
+            expect(mockGet).toHaveBeenCalledWith('SELECT COUNT() AS video_exists FROM videos WHERE id=12');
+        });
+
+        it('attempts to delete video', async () => {
+            mockGet.mockResolvedValue({ video_exists: 1 });
+
+            const expectedSql = 'DELETE FROM videos WHERE id = 12';
+
+            await videoDb.deleteVideo(12);
+
+            const actualSql = mockExec.mock.calls[0][0];
+            expect(stripWhiteSpace(actualSql)).toBe(stripWhiteSpace(expectedSql));
+        });
+    });
+
     describe('queryVideos', () => {
         const baseSql = `SELECT v.id, v.title, v.category, v.director, v.length_mins, v.watched, v.to_watch_priority, v.progress, v.year, v.actors,
                                 v.primary_media_type, v.primary_media_location, v.primary_media_watched, v.other_media_type, v.other_media_location, v.media_notes,

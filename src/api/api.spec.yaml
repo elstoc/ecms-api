@@ -431,6 +431,19 @@ components:
           nullable: true
           items:
             type: string
+        primary_media_type:
+          $ref: '#/components/schemas/VideoMediaType'
+        primary_media_location:
+          $ref: '#/components/schemas/VideoMediaLocation'
+        primary_media_watched:
+          $ref: '#/components/schemas/VideoMediaWatchedStatus'
+        other_media_type:
+          $ref: '#/components/schemas/VideoMediaType'
+        other_media_location:
+          $ref: '#/components/schemas/VideoMediaLocation'
+        media_notes:
+          type: string
+          nullable: true
     VideoWithId:
       type: object
       additionalProperties: false

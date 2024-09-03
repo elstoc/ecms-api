@@ -330,6 +330,17 @@ paths:
             minItems: 1
             items:
               type: string
+        - in: query
+          name: watchedStatuses
+          required: false
+          description: A list of watched statuses
+          explode: false
+          style: pipeDelimited
+          schema:
+            type: array
+            minItems: 1
+            items:
+              $ref: '#/components/schemas/watchedStatus'
       responses:
         '200':
           description: OK
@@ -412,12 +423,7 @@ components:
           type: integer
           nullable: true
         watched:
-          type: string
-          nullable: true
-          enum:
-            - Y
-            - N
-            - P
+          $ref: '#/components/schemas/watchedStatus'
         to_watch_priority:
           type: integer
           nullable: true
@@ -490,12 +496,7 @@ components:
           type: integer
           nullable: true
         watched:
-          type: string
-          nullable: true
-          enum:
-            - Y
-            - N
-            - P
+          $ref: '#/components/schemas/watchedStatus'
         to_watch_priority:
           type: integer
           nullable: true
@@ -535,6 +536,12 @@ components:
           nullable: true
           items:
             type: string
+    watchedStatus:
+      type: string
+      enum:
+        - Y
+        - N
+        - P
     category:
       type: string
       enum:

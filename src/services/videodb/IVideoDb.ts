@@ -90,6 +90,7 @@ export type VideoFilters = {
     categories?: string[];
     tags?: string[];
     titleContains?: string;
+    watchedStatuses?: string[];
 }
 
 export interface IVideoDb {

@@ -215,7 +215,7 @@ export class VideoDb implements IVideoDb {
                         GROUP BY video_id ) vt
 					  ON v.id =  vt.video_id`;
 
-        const { maxLength, categories, tags, titleContains } = filters || {};
+        const { maxLength, categories, tags, titleContains, watchedStatuses } = filters || {};
         if (maxLength !== undefined) {
             whereClauses.push('length_mins <= $maxLength');
             params['$maxLength'] = maxLength;
@@ -239,6 +239,14 @@ export class VideoDb implements IVideoDb {
         if (titleContains !== undefined) {
             whereClauses.push('LOWER(title) LIKE $titleContains');
             params['$titleContains'] = `%${titleContains.toLowerCase()}%`;
+        }
+        if (watchedStatuses !== undefined) {
+            const watchedStatusParams: { [key: string]: string } = {};
+            watchedStatuses.forEach((status, index) => {
+                watchedStatusParams['$watchedStatus' + index.toString()] = status;
+            });
+            whereClauses.push(`watched IN (${Object.keys(watchedStatusParams).join(', ')})`);
+            params = { ...params, ...watchedStatusParams };
         }
 
         if (whereClauses.length > 0) {

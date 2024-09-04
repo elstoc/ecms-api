@@ -32,14 +32,15 @@ export const createVideoDbRouter = (site: ISite): Router => {
                 const video = await videoDb.deleteVideo(parseInt(req.query.id as string));
                 res.json(video);
             } else if (fn === 'getVideos') {
-                const { maxLength, categories, tags, titleContains, limit, watchedStatuses, pmWatchedStatuses } = req.query;
+                const { maxLength, categories, tags, titleContains, limit, watchedStatuses, pmWatchedStatuses, primaryMediaTypes } = req.query;
                 const filters = {
                     maxLength: maxLength === undefined ? undefined : parseInt(maxLength as string),
                     categories: categories === undefined ? undefined : (categories as string)?.split('|'),
                     tags: tags === undefined ? undefined : (tags as string)?.split('|'),
                     titleContains: titleContains === undefined ? undefined : titleContains as string,
                     watchedStatuses: watchedStatuses === undefined ? undefined : (watchedStatuses as string)?.split('|'),
-                    pmWatchedStatuses: pmWatchedStatuses === undefined ? undefined : (pmWatchedStatuses as string)?.split('|')
+                    pmWatchedStatuses: pmWatchedStatuses === undefined ? undefined : (pmWatchedStatuses as string)?.split('|'),
+                    primaryMediaTypes: primaryMediaTypes === undefined ? undefined : (primaryMediaTypes as string)?.split('|')
                 };
                 const videos = await videoDb.queryVideos(filters, parseInt(limit as string));
                 res.json(videos);

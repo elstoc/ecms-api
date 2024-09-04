@@ -215,7 +215,7 @@ export class VideoDb implements IVideoDb {
                         GROUP BY video_id ) vt
 					  ON v.id =  vt.video_id`;
 
-        const { maxLength, categories, tags, titleContains, watchedStatuses } = filters || {};
+        const { maxLength, categories, tags, titleContains, watchedStatuses, pmWatchedStatuses } = filters || {};
         if (maxLength !== undefined) {
             whereClauses.push('length_mins <= $maxLength');
             params['$maxLength'] = maxLength;
@@ -247,6 +247,14 @@ export class VideoDb implements IVideoDb {
             });
             whereClauses.push(`watched IN (${Object.keys(watchedStatusParams).join(', ')})`);
             params = { ...params, ...watchedStatusParams };
+        }
+        if (pmWatchedStatuses !== undefined) {
+            const pmWatchedStatusParams: { [key: string]: string } = {};
+            pmWatchedStatuses.forEach((status, index) => {
+                pmWatchedStatusParams['$pmWatchedStatus' + index.toString()] = status;
+            });
+            whereClauses.push(`primary_media_watched IN (${Object.keys(pmWatchedStatusParams).join(', ')})`);
+            params = { ...params, ...pmWatchedStatusParams };
         }
 
         if (whereClauses.length > 0) {

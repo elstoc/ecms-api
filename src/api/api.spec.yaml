@@ -341,6 +341,17 @@ paths:
             minItems: 1
             items:
               $ref: '#/components/schemas/watchedStatus'
+        - in: query
+          name: pmWatchedStatuses
+          required: false
+          description: A list of primary medim watched statuses
+          explode: false
+          style: pipeDelimited
+          schema:
+            type: array
+            minItems: 1
+            items:
+              $ref: '#/components/schemas/watchedStatus'
       responses:
         '200':
           description: OK

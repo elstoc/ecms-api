@@ -723,12 +723,17 @@ describe('VideoDb', () => {
         it('attempts to delete video', async () => {
             mockGet.mockResolvedValue({ video_exists: 1 });
 
-            const expectedSql = 'DELETE FROM videos WHERE id = 12';
+            const expectedTagDeleteSql = 'DELETE FROM video_tags WHERE video_id = 12';
+            const expectedVideoDeleteSql = 'DELETE FROM videos WHERE id = 12';
 
             await videoDb.deleteVideo(12);
 
-            const actualSql = mockExec.mock.calls[0][0];
-            expect(stripWhiteSpace(actualSql)).toBe(stripWhiteSpace(expectedSql));
+            expect(mockExec).toHaveBeenCalledTimes(2);
+            const actualTagDeleteSql = mockExec.mock.calls[0][0];
+            const actualVideoDeleteSql = mockExec.mock.calls[1][0];
+
+            expect(stripWhiteSpace(actualTagDeleteSql)).toBe(stripWhiteSpace(expectedTagDeleteSql));
+            expect(stripWhiteSpace(actualVideoDeleteSql)).toBe(stripWhiteSpace(expectedVideoDeleteSql));
         });
     });
 

@@ -149,8 +149,7 @@ export class VideoDb implements IVideoDb {
     }
 
     private async createOrReplaceVideoTags(id: number, tags?: string[]): Promise<void> {
-        const deleteSql = `DELETE FROM video_tags WHERE video_id = ${id}`;
-        await this.database?.exec(deleteSql);
+        await this.deleteVideoTags(id);
 
         if (!tags) return;
 
@@ -161,6 +160,11 @@ export class VideoDb implements IVideoDb {
             const params = { '$id': id, $tag: tag };
             await this.database?.runWithParams(insertSql, params);
         }
+    }
+
+    private async deleteVideoTags(id: number): Promise<void> {
+        const deleteSql = `DELETE FROM video_tags WHERE video_id = ${id}`;
+        await this.database?.exec(deleteSql);
     }
 
     public async getVideo(id: number): Promise<VideoWithId> {
@@ -179,6 +183,9 @@ export class VideoDb implements IVideoDb {
 
     public async deleteVideo(id: number): Promise<void> {
         await this.throwIfNoVideo(id);
+
+        await this.deleteVideoTags(id);
+
         const sql = `DELETE
                      FROM   videos
                      WHERE  id = ${id}`;

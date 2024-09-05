@@ -449,6 +449,8 @@ components:
         to_watch_priority:
           type: integer
           nullable: true
+          minimum: 0
+          maximum: 1
         progress:
           type: string
           nullable: true
@@ -522,6 +524,8 @@ components:
         to_watch_priority:
           type: integer
           nullable: true
+          minimum: 0
+          maximum: 1
         progress:
           type: string
           nullable: true

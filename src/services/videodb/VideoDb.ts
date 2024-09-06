@@ -2,7 +2,7 @@ import path from 'path';
 import { Logger } from 'winston';
 
 import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
-import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoFilters, videoFields, videoSummaryFields, VideoSummaryAndPrimaryMedium } from './IVideoDb';
+import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoFilters, videoFields, videoSummaryFields, VideoSummaryAndPrimaryMedium, VideoUpdate } from './IVideoDb';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { dbUpgradeSql } from './dbUpgradeSql';
 import { NotFoundError, NotPermittedError } from '../../errors';
@@ -148,6 +148,30 @@ export class VideoDb implements IVideoDb {
         await this.createOrReplaceVideoTags(video.id, video.tags);
     }
 
+    public async updateVideos(videoUpdates: VideoUpdate[], user?: User): Promise<void> {
+        this.throwIfNotAdmin(user);
+
+        for (const newValue of [0, 1]) {
+            const updatedIds: number[] = [];
+
+            videoUpdates.forEach((update) => {
+                if (update.to_watch_priority === newValue) {
+                    updatedIds.push(update.id);
+                }
+            });
+
+            if (updatedIds.length === 0) {
+                continue;
+            }
+
+            const sql = `UPDATE videos
+                         SET to_watch_priority = ${newValue}
+                         WHERE id IN (${updatedIds.sort().join(',')})`;
+
+            await this.database?.exec(sql);
+        }
+    }
+
     private async createOrReplaceVideoTags(id: number, tags?: string[]): Promise<void> {
         await this.deleteVideoTags(id);
 
@@ -181,7 +205,8 @@ export class VideoDb implements IVideoDb {
         return video;
     }
 
-    public async deleteVideo(id: number): Promise<void> {
+    public async deleteVideo(id: number, user?: User): Promise<void> {
+        this.throwIfNotAdmin(user);
         await this.throwIfNoVideo(id);
 
         await this.deleteVideoTags(id);

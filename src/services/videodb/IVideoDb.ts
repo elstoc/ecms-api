@@ -35,7 +35,7 @@ type VideoIdOnly = {
 export type VideoWithId = Video & VideoIdOnly;
 
 export type VideoSummary = {
-    id: string;
+    id: number;
     title: string;
     category: string;
     director: string | null;
@@ -95,6 +95,11 @@ export type VideoFilters = {
     primaryMediaTypes?: string[];
 }
 
+export type VideoUpdate = {
+    id: number;
+    to_watch_priority: 0 | 1;
+}
+
 export interface IVideoDb {
     shutdown(): Promise<void>;
     initialise(): Promise<void>;
@@ -103,8 +108,9 @@ export interface IVideoDb {
     getAllTags(): Promise<string[]>;
     addVideo(video: Video, user?: User): Promise<number>;
     updateVideo(video: VideoWithId, user?: User): Promise<void>;
+    updateVideos(videoUpdates: VideoUpdate[], user?: User): Promise<void>;
     getVideo(id: number): Promise<VideoWithId>;
-    deleteVideo(id: number): Promise<void>;
+    deleteVideo(id: number, user?: User): Promise<void>;
     queryVideos(filters?: VideoFilters, limit?: number): Promise<VideoSummaryAndPrimaryMedium[]>;
     getOmdbApiKey(user?: User): string;
 }

@@ -706,11 +706,88 @@ describe('VideoDb', () => {
         });
     });
 
+    describe('updateVideos', () => {
+        beforeEach(async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValue({ ver: 4 });
+            await videoDb.initialise();
+        });
+
+        it('throws error if user is not admin and auth enabled', async () => {
+            const newConfig = {
+                ...config, enableAuthentication: true
+            } as any;
+            mockStorage.getContentDb.mockResolvedValue(mockDb);
+            videoDb = new VideoDb(apiPath, newConfig, mockLogger, mockStorage as any);
+
+            expect(() => videoDb.updateVideos([], regularUser)).rejects.toThrow(new NotPermittedError());
+        });
+
+        it.each([0, 1])('attempts to update priorties when all priorities are set to %s', async (value: number) => {
+            mockGet.mockResolvedValue({ video_exists: 1 });
+
+            const expectedSql = `UPDATE videos
+                                 SET to_watch_priority = ${value}
+                                 WHERE id IN (1,2,3,4)`;
+
+            await videoDb.updateVideos([
+                { id: 1, to_watch_priority: value as 0|1},
+                { id: 3, to_watch_priority: value as 0|1},
+                { id: 4, to_watch_priority: value as 0|1},
+                { id: 2, to_watch_priority: value as 0|1},
+            ]);
+
+            expect(mockExec).toHaveBeenCalledTimes(1);
+            const actualSql = mockExec.mock.calls[0][0];
+
+            expect(stripWhiteSpace(actualSql)).toBe(stripWhiteSpace(expectedSql));
+        });
+
+        it('attempts to update priorties when priorities are set to both 0 and 1', async () => {
+            mockGet.mockResolvedValue({ video_exists: 1 });
+
+            const expectedSql0 = `UPDATE videos
+                                  SET to_watch_priority = 0
+                                  WHERE id IN (1,2,3,4)`;
+            const expectedSql1 = `UPDATE videos
+                                  SET to_watch_priority = 1
+                                  WHERE id IN (5,6,7,8)`;
+
+            await videoDb.updateVideos([
+                { id: 1, to_watch_priority: 0},
+                { id: 8, to_watch_priority: 1},
+                { id: 7, to_watch_priority: 1},
+                { id: 3, to_watch_priority: 0},
+                { id: 5, to_watch_priority: 1},
+                { id: 2, to_watch_priority: 0},
+                { id: 6, to_watch_priority: 1},
+                { id: 4, to_watch_priority: 0},
+            ]);
+
+            expect(mockExec).toHaveBeenCalledTimes(2);
+            const actualSql0 = mockExec.mock.calls[0][0];
+            const actualSql1 = mockExec.mock.calls[1][0];
+
+            expect(stripWhiteSpace(actualSql0)).toBe(stripWhiteSpace(expectedSql0));
+            expect(stripWhiteSpace(actualSql1)).toBe(stripWhiteSpace(expectedSql1));
+        });
+    });
+
     describe('deleteVideo', () => {
         beforeEach(async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
             await videoDb.initialise();
+        });
+
+        it('throws error if user is not admin and auth enabled', async () => {
+            const newConfig = {
+                ...config, enableAuthentication: true
+            } as any;
+            mockStorage.getContentDb.mockResolvedValue(mockDb);
+            videoDb = new VideoDb(apiPath, newConfig, mockLogger, mockStorage as any);
+
+            expect(() => videoDb.deleteVideo(123, regularUser)).rejects.toThrow(new NotPermittedError());
         });
 
         it('throws error if video id does not exist', async () => {

@@ -283,6 +283,39 @@ paths:
         '200':
           description: OK
   /videodb/videos:
+    patch:
+      description: Bulk update videos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - path
+                - videos
+              properties:
+                path:
+                  type: string
+                  description: The path of the videodb component
+                videos:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required:
+                      - id
+                      - to_watch_priority
+                    properties:
+                      id:
+                        type: integer
+                        minimum: 0
+                      to_watch_priority:
+                        $ref: '#/components/schemas/booleanInt'
+      responses:
+        '200':
+          description: OK
     get:
       description: Get a list of videos from the database, filtering accordingly
       parameters:
@@ -447,10 +480,7 @@ components:
         watched:
           $ref: '#/components/schemas/watchedStatus'
         to_watch_priority:
-          type: integer
-          nullable: true
-          minimum: 0
-          maximum: 1
+          $ref: '#/components/schemas/booleanInt'
         progress:
           type: string
           nullable: true
@@ -522,10 +552,7 @@ components:
         watched:
           $ref: '#/components/schemas/watchedStatus'
         to_watch_priority:
-          type: integer
-          nullable: true
-          minimum: 0
-          maximum: 1
+          $ref: '#/components/schemas/booleanInt'
         progress:
           type: string
           nullable: true
@@ -562,6 +589,11 @@ components:
           nullable: true
           items:
             type: string
+    booleanInt:
+      type: integer
+      nullable: true
+      minimum: 0
+      maximum: 1
     watchedStatus:
       type: string
       enum:

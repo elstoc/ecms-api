@@ -177,7 +177,7 @@ describe('EndpointValidator', () => {
                             type: 'object', fullPath: 'requestBody', additionalProperties: false,
                             properties: {
                                 field1: { type: 'integer', fullPath: 'requestBody.field1' },
-                                field2: { type: 'integer', minimum: 10, fullPath: 'requestBody.field2' },
+                                field2: { type: 'integer', minimum: 10, maximum: 20, fullPath: 'requestBody.field2' },
                             }
                         } as any;
 
@@ -202,13 +202,22 @@ describe('EndpointValidator', () => {
                         expect(errors).toContainEqual({ property: 'requestBody.field1', error: 'invalid data type - integer expected' });
                     });
     
-                    it('that has a value less than the defined minimum', () => {
+                    it('that has a value lower than the defined minimum', () => {
                         const requestBody = {
                             field2: 9
                         };
                         const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
     
                         expect(errors).toContainEqual({ property: 'requestBody.field2', error: 'integer must not be less than 10' });
+                    });
+
+                    it('that has a value greater than the defined maximum', () => {
+                        const requestBody = {
+                            field2: 21
+                        };
+                        const errors = validator.validateEndpoint('put:/some/path', { requestBody } as any);
+    
+                        expect(errors).toContainEqual({ property: 'requestBody.field2', error: 'integer must not be more than 20' });
                     });
                 });
     
@@ -378,7 +387,7 @@ describe('EndpointValidator', () => {
                     required: ['field1', 'field3'],
                     properties: {
                         field1: { type: 'integer', fullPath: 'requestBody.field1' },
-                        field2: { type: 'integer', minimum: 10, fullPath: 'requestBody.field2' },
+                        field2: { type: 'integer', minimum: 10, maximum: 20, fullPath: 'requestBody.field2' },
                         field3: { type: 'integer', nullable: true, fullPath: 'requestBody.field3' },
                         field4: { type: 'integer', nullable: true, fullPath: 'requestBody.field4' },
                     }
@@ -478,7 +487,7 @@ describe('EndpointValidator', () => {
                     required: ['field1', 'field2'],
                     properties: {
                         field1: { type: 'integer', fullPath: 'params.field1' },
-                        field2: { type: 'integer', minimum: 10, fullPath: 'params.field2' },
+                        field2: { type: 'integer', minimum: 10, maximum: 20, fullPath: 'params.field2' },
                     }
                 } as any;
                 const queryParamsSchema = pathParamsSchema;

@@ -299,6 +299,15 @@ describe('OASParser.parseAndValidateSchema', () => {
                 await expect(oasParser.parseOAS())
                     .rejects.toThrow(new OASParsingError('integer at query.some-name for endpoint put:/some/path has a non-integer minimum'));
             });
+
+            it.each(['x', 3.1416])('has a non-integer maximum value (%s)', async (maximum) => {
+                const parameters = [{ in: 'query', name: 'some-name', schema: { type: 'integer', maximum } }];
+                const dereferencedSchema = buildOASSchema('/some/path', 'put', parameters, undefined);
+                dereferenceMock.mockResolvedValue(dereferencedSchema);
+
+                await expect(oasParser.parseOAS())
+                    .rejects.toThrow(new OASParsingError('integer at query.some-name for endpoint put:/some/path has a non-integer maximum'));
+            });
         });
 
         describe('an array schema', () => {
@@ -414,7 +423,7 @@ describe('OASParser.parseAndValidateSchema', () => {
                         required: ['field4', 'field5'],
                         properties: {
                             field4: { type: 'string', enum: ['value1', 'value2'], description: 'some-description' },
-                            field5: { type: 'integer', minimum: 4, description: 'some-description' },
+                            field5: { type: 'integer', minimum: 4, maximum: 6, description: 'some-description' },
                             field6: { type: 'object', additionalProperties: true }
                         }
                     },
@@ -444,7 +453,7 @@ describe('OASParser.parseAndValidateSchema', () => {
                         required: ['field4', 'field5'],
                         properties: {
                             field4: { type: 'string', enum: ['value1', 'value2'], nullable: false, fullPath: 'requestBody.field3.field4' },
-                            field5: { type: 'integer', minimum: 4, nullable: false, fullPath: 'requestBody.field3.field5' },
+                            field5: { type: 'integer', minimum: 4, maximum: 6, nullable: false, fullPath: 'requestBody.field3.field5' },
                             field6: { type: 'object', nullable: false, fullPath: 'requestBody.field3.field6', additionalProperties: true, properties: {} }
                         }
                     },
@@ -460,7 +469,7 @@ describe('OASParser.parseAndValidateSchema', () => {
             const parameters = [
                 { name: 'field1', description: 'some-description', in: 'query', required: true, schema: { type: 'string', enum: ['value1'] } },
                 { name: 'field2', description: 'some-description', in: 'query', schema: { type: 'string', minLength: 1 } },
-                { name: 'field3', description: 'some-description', in: 'query', required: true, schema: { type: 'integer', minimum: 0 } },
+                { name: 'field3', description: 'some-description', in: 'query', required: true, schema: { type: 'integer', minimum: 0, maximum: 2 } },
                 { name: 'field4', description: 'some-description', in: 'query', schema: { type: 'integer' } },
                 { name: 'field5', description: 'some-description', in: 'query', explode: false, style: 'pipeDelimited', schema: { type: 'array', minItems: 1, items: { type: 'string' } } }
             ];
@@ -478,7 +487,7 @@ describe('OASParser.parseAndValidateSchema', () => {
                 properties: {
                     field1: { type: 'string', nullable: false, fullPath: 'query.field1', enum: ['value1'] },
                     field2: { type: 'string', nullable: false, fullPath: 'query.field2', minLength: 1 },
-                    field3: { type: 'integer', nullable: false, fullPath: 'query.field3', minimum: 0 },
+                    field3: { type: 'integer', nullable: false, fullPath: 'query.field3', minimum: 0, maximum: 2 },
                     field4: { type: 'integer', nullable: false, fullPath: 'query.field4' },
                     field5: {
                         type: 'array', nullable: false, fullPath: 'query.field5', minItems: 1, pipeDelimitedString: true,
@@ -495,7 +504,7 @@ describe('OASParser.parseAndValidateSchema', () => {
             const parameters = [
                 { name: 'field1', description: 'some-description', in: 'path', required: true, schema: { type: 'string', enum: ['value1'] } },
                 { name: 'field2', description: 'some-description', in: 'path', schema: { type: 'string' } },
-                { name: 'field3', description: 'some-description', in: 'path', required: true, schema: { type: 'integer',  minimum: 0 } },
+                { name: 'field3', description: 'some-description', in: 'path', required: true, schema: { type: 'integer',  minimum: 0, maximum: 2 } },
                 { name: 'field4', description: 'some-description', in: 'path', schema: { type: 'integer' } }
             ];
             const dereferencedSchema = buildOASSchema('/some/{field1}/path/{field2}/{field3}/{field4}', 'get', parameters, undefined);
@@ -512,7 +521,7 @@ describe('OASParser.parseAndValidateSchema', () => {
                 properties: {
                     field1: { type: 'string', nullable: false, fullPath: 'path.field1', enum: ['value1'] },
                     field2: { type: 'string', nullable: false, fullPath: 'path.field2' },
-                    field3: { type: 'integer', nullable: false, fullPath: 'path.field3', minimum: 0 },
+                    field3: { type: 'integer', nullable: false, fullPath: 'path.field3', minimum: 0, maximum: 2 },
                     field4: { type: 'integer', nullable: false, fullPath: 'path.field4' } }
             };
 

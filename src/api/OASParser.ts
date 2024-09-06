@@ -28,7 +28,7 @@ export class OASParser implements IOASParser {
         for (const [path, oasPathDetails] of Object.entries(oasPaths)) {
             const oasPathDetailsRecord = this.toRecordOrThrow(oasPathDetails, `no methods for path ${path}`);
             for (const [endpointMethod, oasEndpointDetails] of Object.entries(oasPathDetailsRecord)) {
-                if (!['get', 'put', 'post', 'delete'].includes(endpointMethod)) {
+                if (!['get', 'put', 'post', 'patch', 'delete'].includes(endpointMethod)) {
                     throw new OASParsingError(`invalid method ${endpointMethod} for path ${path}`);
                 }
                 const endpoint = `${endpointMethod}:${path}`;
@@ -301,6 +301,13 @@ export class OASParser implements IOASParser {
                 throw new OASParsingError(`integer at ${fullPath} for endpoint ${endpoint} has a non-integer minimum`);
             }
             validationSchema.minimum = oasIntSchema.minimum;
+        }
+
+        if (oasIntSchema.maximum !== undefined) {
+            if (typeof oasIntSchema.maximum !== 'number' || !Number.isInteger(oasIntSchema.maximum)) {
+                throw new OASParsingError(`integer at ${fullPath} for endpoint ${endpoint} has a non-integer maximum`);
+            }
+            validationSchema.maximum = oasIntSchema.maximum;
         }
 
         return validationSchema;

@@ -29,6 +29,7 @@ export type IntegerValidationSchema = {
     nullable: boolean;
     fullPath: string;
     minimum?: number;
+    maximum?: number;
 }
 
 export type ValidationSchema = ObjectValidationSchema | ArrayValidationSchema | StringValidationSchema | IntegerValidationSchema;

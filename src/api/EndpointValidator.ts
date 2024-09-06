@@ -194,7 +194,7 @@ export class EndpointValidator implements IEndpointValidator {
             return;
         }
 
-        const { minimum } = validationSchema;
+        const { minimum, maximum } = validationSchema;
 
         let valueToCheck = value;
         if (typeof value === 'string' && parseInt(value).toString() === value) {
@@ -203,8 +203,13 @@ export class EndpointValidator implements IEndpointValidator {
 
         if (typeof valueToCheck !== 'number' || !Number.isInteger(valueToCheck)) {
             this.pushError(errors, validationSchema.fullPath, 'invalid data type - integer expected');
-        } else if (minimum !== undefined && valueToCheck < minimum) {
-            this.pushError(errors, validationSchema.fullPath, `integer must not be less than ${minimum}`);
+        } else {
+            if (minimum !== undefined && valueToCheck < minimum) {
+                this.pushError(errors, validationSchema.fullPath, `integer must not be less than ${minimum}`);
+            }
+            if (maximum !== undefined && valueToCheck > maximum) {
+                this.pushError(errors, validationSchema.fullPath, `integer must not be more than ${maximum}`);
+            }
         }
     }
 

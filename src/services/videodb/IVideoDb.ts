@@ -93,6 +93,7 @@ export type VideoFilters = {
     watchedStatuses?: string[];
     pmWatchedStatuses?: string[];
     primaryMediaTypes?: string[];
+    sortPriorityFirst?: boolean;
 }
 
 export type VideoUpdate = {

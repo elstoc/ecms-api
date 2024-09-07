@@ -247,7 +247,7 @@ export class VideoDb implements IVideoDb {
                         GROUP BY video_id ) vt
 					  ON v.id =  vt.video_id`;
 
-        const { maxLength, categories, tags, titleContains, watchedStatuses, pmWatchedStatuses, primaryMediaTypes } = filters || {};
+        const { maxLength, categories, tags, titleContains, watchedStatuses, pmWatchedStatuses, primaryMediaTypes, sortPriorityFirst } = filters || {};
         if (maxLength !== undefined) {
             whereClauses.push('length_mins <= $maxLength');
             params['$maxLength'] = maxLength;
@@ -301,7 +301,13 @@ export class VideoDb implements IVideoDb {
             sql += ` WHERE (${whereClauses.join(') AND (')})`;
         }
 
-        sql += ` ORDER BY (
+        sql += ' ORDER BY ';
+
+        if (sortPriorityFirst) {
+            sql += 'to_watch_priority DESC, ';
+        }
+
+        sql += `(
             CASE WHEN UPPER(title) LIKE 'THE %' THEN SUBSTR(title, 5)
                  WHEN UPPER(title) LIKE 'AN %' THEN SUBSTR(title, 4)
                  WHEN UPPER(title) LIKE 'A %' THEN SUBSTR(title, 3)

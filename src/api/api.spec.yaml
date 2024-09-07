@@ -396,6 +396,12 @@ paths:
             minItems: 1
             items:
               $ref: '#/components/schemas/VideoMediaType'
+        - in: query
+          name: sortPriorityFirst
+          required: false
+          description: Whether to sort priority-flagged videos first
+          schema:
+            $ref: '#/components/schemas/booleanInt'
       responses:
         '200':
           description: OK

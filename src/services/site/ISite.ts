@@ -2,7 +2,7 @@ import { User } from '../auth';
 import { IGallery } from '../gallery';
 import { IMarkdown } from '../markdown';
 import { IVideoDb } from '../videodb';
-import { ComponentMetadata } from './ISiteComponent';
+import { ComponentMetadata } from './IComponent';
 
 export type SiteConfig = {
     authEnabled: boolean;

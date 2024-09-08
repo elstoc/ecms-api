@@ -4,14 +4,14 @@ import { Config } from '../../utils';
 import { userHasReadAccess } from '../auth/accessUtils';
 import { Gallery, IGallery } from '../gallery';
 import { IMarkdown, Markdown } from '../markdown';
-import { ISiteComponent, ComponentTypes, ComponentMetadataCommon, ComponentMetadata } from './ISiteComponent';
+import { IComponent, ComponentTypes, ComponentMetadataCommon, ComponentMetadata } from './IComponent';
 import { IStorageAdapter } from '../../adapters';
 import { NotFoundError } from '../../errors';
 import { User } from '../auth';
 import { IVideoDb, VideoDb } from '../videodb';
 import { Logger } from 'winston';
 
-export class SiteComponent implements ISiteComponent {
+export class Component implements IComponent {
     private contentYamlPath: string;
     private gallery?: IGallery;
     private markdown?: IMarkdown;

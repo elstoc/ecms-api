@@ -3,7 +3,7 @@ import YAML from 'yaml';
 import { Gallery } from '../../../src/services/gallery/Gallery';
 import { Markdown } from '../../../src/services/markdown/Markdown';
 import { VideoDb } from '../../../src/services/videodb/VideoDb';
-import { SiteComponent } from '../../../src/services';
+import { Component } from '../../../src/services';
 import { NotFoundError } from '../../../src/errors';
 
 jest.mock('yaml');
@@ -34,11 +34,11 @@ const mockVideoDb = VideoDb as jest.Mock;
 const contentFileBuf = Buffer.from('content-file');
 const yamlParseMock = YAML.parse as jest.Mock;
 
-describe('SiteComponent', () => {
-    let component: SiteComponent;
+describe('Component', () => {
+    let component: Component;
 
     beforeEach(() => {
-        component = new SiteComponent(config, 'my-component', mockStorage as any, mockLogger);
+        component = new Component(config, 'my-component', mockStorage as any, mockLogger);
     });
 
     describe('getMetadata', () => {
@@ -379,7 +379,7 @@ describe('SiteComponent', () => {
                 });
                 const newConfig = { ...config, enableAuthentication: false };
     
-                component = new SiteComponent(newConfig, 'my-component', mockStorage as any, mockLogger);
+                component = new Component(newConfig, 'my-component', mockStorage as any, mockLogger);
                 const actualMetadata = await component.getMetadata({ roles: ['role1', 'role2'] } as any);
     
                 expect(actualMetadata).toBeDefined();

@@ -1,7 +1,7 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { SiteRootComponent, SiteComponent } from '../../../src/services';
+import { SiteRootComponent, Component } from '../../../src/services';
 
-jest.mock('../../../src/services/site/SiteComponent');
+jest.mock('../../../src/services/site/Component');
 
 const config = {
     dataDir: '/path/to/data',
@@ -18,14 +18,14 @@ const mockLogger = {
     error: jest.fn()
 } as any;
 
-const mockSiteComponent = SiteComponent as jest.Mock;
+const mockComponent = Component as jest.Mock;
 
 describe('SiteRootComponent', () => {
     describe('listComponents', () => {
         let rootComponent: SiteRootComponent;
         
         it('only attempts to process yaml files in the content directory (ignores other files/extensions/directories)', async () => {
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
+            mockComponent.mockImplementation((_, inputFilePath) => ({
                 getMetadata: () => ({ uiPath: inputFilePath })
             }));
             mockStorage.listContentChildren.mockImplementation(async (_, fileMatcher) => {
@@ -46,16 +46,16 @@ describe('SiteRootComponent', () => {
                 { uiPath: 'component02' },
                 { uiPath: 'component03' },
             ];
-            expect(mockSiteComponent).toHaveBeenCalledTimes(3);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component01', mockStorage, mockLogger);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component02', mockStorage, mockLogger);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component03', mockStorage, mockLogger);
+            expect(mockComponent).toHaveBeenCalledTimes(3);
+            expect(mockComponent).toHaveBeenCalledWith(config, 'component01', mockStorage, mockLogger);
+            expect(mockComponent).toHaveBeenCalledWith(config, 'component02', mockStorage, mockLogger);
+            expect(mockComponent).toHaveBeenCalledWith(config, 'component03', mockStorage, mockLogger);
 
             expect(actualComponentList).toStrictEqual(expectedComponentList);
         });
 
-        it('only creates new SiteComponent instances for yaml files it has not seen before', async () => {
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
+        it('only creates new Component instances for yaml files it has not seen before', async () => {
+            mockComponent.mockImplementation((_, inputFilePath) => ({
                 getMetadata: () => ({ uiPath: inputFilePath })
             }));
             mockStorage.listContentChildren.mockResolvedValueOnce([
@@ -79,18 +79,18 @@ describe('SiteRootComponent', () => {
                 { uiPath: 'component03' },
             ];
             const expectedComponentList2 = [...expectedComponentList1, { uiPath: 'component04' }];
-            expect(mockSiteComponent).toHaveBeenCalledTimes(4);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component01', mockStorage, mockLogger);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component02', mockStorage, mockLogger);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component03', mockStorage, mockLogger);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component04', mockStorage, mockLogger);
+            expect(mockComponent).toHaveBeenCalledTimes(4);
+            expect(mockComponent).toHaveBeenCalledWith(config, 'component01', mockStorage, mockLogger);
+            expect(mockComponent).toHaveBeenCalledWith(config, 'component02', mockStorage, mockLogger);
+            expect(mockComponent).toHaveBeenCalledWith(config, 'component03', mockStorage, mockLogger);
+            expect(mockComponent).toHaveBeenCalledWith(config, 'component04', mockStorage, mockLogger);
 
             expect(actualComponentList1).toStrictEqual(expectedComponentList1);
             expect(actualComponentList2).toStrictEqual(expectedComponentList2);
         });
 
         it('no longer sends metadata for files that have been deleted', async () => {
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
+            mockComponent.mockImplementation((_, inputFilePath) => ({
                 getMetadata: () => ({ uiPath: inputFilePath })
             }));
             mockStorage.listContentChildren.mockResolvedValueOnce([
@@ -120,7 +120,7 @@ describe('SiteRootComponent', () => {
         });
 
         it('sorts weighted components first, ascending numerically by weight, then unweighted components ascending alphabetically by title', async () => {
-            (SiteComponent as jest.Mock).mockImplementation((_, inputFilePath) => ({
+            (Component as jest.Mock).mockImplementation((_, inputFilePath) => ({
                 getMetadata: () => {
                     const returnData = { uiPath: inputFilePath, title: inputFilePath } as any;
                     if (inputFilePath.endsWith('componentE')) returnData.weight = 10;
@@ -155,7 +155,7 @@ describe('SiteRootComponent', () => {
         });
 
         it('filters out any undefined metadata returned by the component (due to no permission)', async () => {
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
+            mockComponent.mockImplementation((_, inputFilePath) => ({
                 getMetadata: () => (inputFilePath.endsWith('01') ? undefined : { uiPath: inputFilePath })
             }));
             mockStorage.listContentChildren.mockImplementation(async (_, fileMatcher) => {
@@ -183,7 +183,7 @@ describe('SiteRootComponent', () => {
     describe('getGallery', () => {
         it('gets the appropriate gallery object', async () => {
             const site = new SiteRootComponent(config, mockStorage as any, mockLogger);
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
+            mockComponent.mockImplementation((_, inputFilePath) => ({
                 getGallery: () => inputFilePath
             }));
             const gallery = await site.getGallery('galleryComponent');
@@ -195,7 +195,7 @@ describe('SiteRootComponent', () => {
     describe('getMarkdown', () => {
         it('gets the appropriate markdown object', async () => {
             const site = new SiteRootComponent(config, mockStorage as any, mockLogger);
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
+            mockComponent.mockImplementation((_, inputFilePath) => ({
                 getMarkdown: () => inputFilePath
             }));
             const markdown = await site.getMarkdown('markdownComponent');
@@ -207,7 +207,7 @@ describe('SiteRootComponent', () => {
     describe('getVideoDb', () => {
         it('gets the appropriate videodb object', async () => {
             const site = new SiteRootComponent(config, mockStorage as any, mockLogger);
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
+            mockComponent.mockImplementation((_, inputFilePath) => ({
                 getVideoDb: () => inputFilePath
             }));
             const videodb = await site.getVideoDb('videoDbComponent');
@@ -219,7 +219,7 @@ describe('SiteRootComponent', () => {
     describe('shutdown', () => {
         it('runs shutdown on every created site component', async () => {
             const mockShutdown = jest.fn();
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
+            mockComponent.mockImplementation((_, inputFilePath) => ({
                 getMetadata: () => ({ uiPath: inputFilePath }),
                 shutdown: mockShutdown
             }));

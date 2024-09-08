@@ -34,7 +34,7 @@ export type VideoDbComponentMetadata = ComponentMetadataCommon & {
 
 export type ComponentMetadata = GalleryComponentMetadata | MarkdownComponentMetadata | VideoDbComponentMetadata;
 
-export interface ISiteComponent {
+export interface IComponent {
     getMetadata(user?: User): Promise<ComponentMetadata | undefined>;
     getGallery(): Promise<IGallery>;
     getMarkdown(): Promise<IMarkdown>;

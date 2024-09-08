@@ -7,8 +7,8 @@ export const createSiteRouter = (site: ISite): Router => {
     const siteHandler = async (req: RequestWithUser, res: Response, next: NextFunction, fn: string): Promise<void> => {
         try {
             if (fn === 'getComponents') {
-                const siteComponents = await site.listComponents(req.user);
-                res.json(siteComponents);
+                const components = await site.listComponents(req.user);
+                res.json(components);
             } else if (fn === 'getConfig') {
                 res.json(site.getConfig());
             }

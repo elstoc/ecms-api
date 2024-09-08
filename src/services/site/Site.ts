@@ -4,7 +4,7 @@ import { Config } from '../../utils';
 import { ISite, SiteConfig } from './ISite';
 import { SiteRootComponent } from './SiteRootComponent';
 import { User } from '../auth';
-import { ComponentMetadata } from './ISiteComponent';
+import { ComponentMetadata } from './IComponent';
 import { IGallery } from '../gallery';
 import { IMarkdown } from '../markdown';
 import { IVideoDb } from '../videodb';

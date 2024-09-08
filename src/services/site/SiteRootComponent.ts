@@ -1,7 +1,7 @@
 import path from 'path';
-import { ISiteComponent, ComponentMetadata } from './ISiteComponent';
+import { IComponent, ComponentMetadata } from './IComponent';
 import { ISiteRootComponent } from './ISiteRootComponent';
-import { SiteComponent } from './SiteComponent';
+import { Component } from './Component';
 import { Config, sortByWeightAndTitle } from '../../utils';
 import { IGallery } from '../gallery';
 import { IStorageAdapter } from '../../adapters';
@@ -11,7 +11,7 @@ import { IVideoDb } from '../videodb';
 import { Logger } from 'winston';
 
 export class SiteRootComponent implements ISiteRootComponent {
-    private components: { [key: string]: ISiteComponent } = {};
+    private components: { [key: string]: IComponent } = {};
 
     constructor(
         private config: Config,
@@ -23,8 +23,8 @@ export class SiteRootComponent implements ISiteRootComponent {
         return this.storage.listContentChildren('', (file: string) => file.endsWith('.yaml'));
     }
 
-    private getComponent(apiPath: string): ISiteComponent {
-        this.components[apiPath] ??= new SiteComponent(this.config, apiPath, this.storage, this.logger);
+    private getComponent(apiPath: string): IComponent {
+        this.components[apiPath] ??= new Component(this.config, apiPath, this.storage, this.logger);
         return this.components[apiPath];
     }
 
@@ -59,7 +59,7 @@ export class SiteRootComponent implements ISiteRootComponent {
         return await this.getComponentAtPath(apiPath).getVideoDb();
     }
 
-    private getComponentAtPath(apiPath: string): ISiteComponent {
+    private getComponentAtPath(apiPath: string): IComponent {
         const componentPath = apiPath.replace(/^\//, '').split('/')[0];
         return this.getComponent(componentPath);
     }

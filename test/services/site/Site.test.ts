@@ -1,248 +1,70 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
-import { Site, SiteComponent } from '../../../src/services';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ISite, Site, SiteRootComponent } from '../../../src/services';
 
-jest.mock('../../../src/services/site/SiteComponent');
+jest.mock('../../../src/services/site/SiteRootComponent');
+
+const mockStorage = {
+    listContentChildren: jest.fn() as jest.Mock,
+};
+
+const mockLogger = {
+    debug: jest.fn(),
+    info: jest.fn(),
+    error: jest.fn()
+} as any;
+
+const mockSiteRootComponent = SiteRootComponent as any;
 
 const config = {
     dataDir: '/path/to/data',
     enableAuthentication: true
 } as any;
 
-const mockStorage = {
-    listContentChildren: jest.fn() as jest.Mock,
-};
-const mockLogger = {
-    debug: jest.fn(),
-    info: jest.fn(),
-    error: jest.fn()
-} as any;
-const mockSiteComponent = SiteComponent as jest.Mock;
-
 describe('Site', () => {
-    describe('listComponents', () => {
-        let site: Site;
-        
-        it('only attempts to process yaml files in the content directory (ignores other files/extensions/directories)', async () => {
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
-                getMetadata: () => ({ uiPath: inputFilePath })
-            }));
-            mockStorage.listContentChildren.mockImplementation(async (_, fileMatcher) => {
-                return [
-                    'component01.yaml',
-                    'component02.yaml',
-                    'component03.yaml',
-                    'notcomponent.txt',
-                    'notcomponent.jpg'
-                ].filter(fileMatcher);
-            });
+    let site: ISite;
+    const listComponents = jest.fn();
+    const getGallery = jest.fn();
+    const getMarkdown = jest.fn();
+    const getVideoDb = jest.fn();
+    const shutdown = jest.fn();
 
-            site = new Site(config, mockStorage as any, mockLogger);
-            const actualComponentList = await site.listComponents();
-
-            const expectedComponentList = [
-                { uiPath: 'component01' },
-                { uiPath: 'component02' },
-                { uiPath: 'component03' },
-            ];
-            expect(mockSiteComponent).toHaveBeenCalledTimes(3);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component01', mockStorage, mockLogger);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component02', mockStorage, mockLogger);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component03', mockStorage, mockLogger);
-
-            expect(actualComponentList).toStrictEqual(expectedComponentList);
-        });
-
-        it('only creates new SiteComponent instances for yaml files it has not seen before', async () => {
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
-                getMetadata: () => ({ uiPath: inputFilePath })
-            }));
-            mockStorage.listContentChildren.mockResolvedValueOnce([
-                'component01.yaml',
-                'component02.yaml',
-                'component03.yaml',
-            ]).mockResolvedValue([
-                'component01.yaml',
-                'component02.yaml',
-                'component03.yaml',
-                'component04.yaml',
-            ]);
-
-            site = new Site(config, mockStorage as any, mockLogger);
-            const actualComponentList1 = await site.listComponents();
-            const actualComponentList2 = await site.listComponents();
-
-            const expectedComponentList1 = [
-                { uiPath: 'component01' },
-                { uiPath: 'component02' },
-                { uiPath: 'component03' },
-            ];
-            const expectedComponentList2 = [...expectedComponentList1, { uiPath: 'component04' }];
-            expect(mockSiteComponent).toHaveBeenCalledTimes(4);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component01', mockStorage, mockLogger);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component02', mockStorage, mockLogger);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component03', mockStorage, mockLogger);
-            expect(mockSiteComponent).toHaveBeenCalledWith(config, 'component04', mockStorage, mockLogger);
-
-            expect(actualComponentList1).toStrictEqual(expectedComponentList1);
-            expect(actualComponentList2).toStrictEqual(expectedComponentList2);
-        });
-
-        it('no longer sends metadata for files that have been deleted', async () => {
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
-                getMetadata: () => ({ uiPath: inputFilePath })
-            }));
-            mockStorage.listContentChildren.mockResolvedValueOnce([
-                'component01.yaml',
-                'component02.yaml',
-                'component03.yaml',
-                'component04.yaml',
-            ]).mockResolvedValue([
-                'component01.yaml',
-                'component02.yaml',
-                'component03.yaml',
-            ]);
-
-            site = new Site(config, mockStorage as any, mockLogger);
-            const actualComponentList1 = await site.listComponents();
-            const actualComponentList2 = await site.listComponents();
-
-            const expectedComponentList2 = [
-                { uiPath: 'component01' },
-                { uiPath: 'component02' },
-                { uiPath: 'component03' },
-            ];
-            const expectedComponentList1 = [...expectedComponentList2, { uiPath: 'component04' }];
-
-            expect(actualComponentList1).toStrictEqual(expectedComponentList1);
-            expect(actualComponentList2).toStrictEqual(expectedComponentList2);
-        });
-
-        it('sorts weighted components first, ascending numerically by weight, then unweighted components ascending alphabetically by title', async () => {
-            (SiteComponent as jest.Mock).mockImplementation((_, inputFilePath) => ({
-                getMetadata: () => {
-                    const returnData = { uiPath: inputFilePath, title: inputFilePath } as any;
-                    if (inputFilePath.endsWith('componentE')) returnData.weight = 10;
-                    if (inputFilePath.endsWith('componentG')) returnData.weight = 20;
-                    if (inputFilePath.endsWith('componentB')) returnData.weight = 30;
-                    return returnData;
-                }
-            }));
-            mockStorage.listContentChildren.mockResolvedValue([
-                'componentA.yaml',
-                'componentB.yaml',
-                'componentC.yaml',
-                'componentD.yaml',
-                'componentE.yaml',
-                'componentF.yaml',
-                'componentG.yaml',
-            ]);
-
-            site = new Site(config, mockStorage as any, mockLogger);
-            const actualNavData = await site.listComponents();
-
-            const expectedNavData = [
-                { uiPath: 'componentE', title: 'componentE', weight: 10 },
-                { uiPath: 'componentG', title: 'componentG', weight: 20 },
-                { uiPath: 'componentB', title: 'componentB', weight: 30 },
-                { uiPath: 'componentA', title: 'componentA' },
-                { uiPath: 'componentC', title: 'componentC' },
-                { uiPath: 'componentD', title: 'componentD' },
-                { uiPath: 'componentF', title: 'componentF' },
-            ];
-            expect(actualNavData).toStrictEqual(expectedNavData);
-        });
-
-        it('filters out any undefined metadata returned by the component (due to no permission)', async () => {
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
-                getMetadata: () => (inputFilePath.endsWith('01') ? undefined : { uiPath: inputFilePath })
-            }));
-            mockStorage.listContentChildren.mockImplementation(async (_, fileMatcher) => {
-                return [
-                    'component01.yaml',
-                    'component02.yaml',
-                    'component03.yaml',
-                    'notcomponent.txt',
-                    'notcomponent.jpg'
-                ].filter(fileMatcher);
-            });
-
-            site = new Site(config, mockStorage as any, mockLogger);
-            const actualComponentList = await site.listComponents();
-
-            const expectedComponentList = [
-                { uiPath: 'component02' },
-                { uiPath: 'component03' },
-            ];
-            expect(actualComponentList).toStrictEqual(expectedComponentList);
-        });
-
+    beforeEach(() => {
+        mockSiteRootComponent.mockImplementation(() => ({
+            listComponents, getGallery, getMarkdown, getVideoDb, shutdown
+        }));
+        site = new Site(config, mockStorage as any, mockLogger);
     });
 
-    describe('getGallery', () => {
-        it('gets the appropriate gallery object', async () => {
-            const site = new Site(config, mockStorage as any, mockLogger);
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
-                getGallery: () => inputFilePath
-            }));
-            const gallery = await site.getGallery('galleryComponent');
-
-            expect(gallery).toBe('galleryComponent');
-        });
+    it('listComponents calls listComponents from root component', async () => {
+        await site.listComponents();
+        expect(listComponents).toHaveBeenCalledTimes(1);
     });
 
-    describe('getMarkdown', () => {
-        it('gets the appropriate markdown object', async () => {
-            const site = new Site(config, mockStorage as any, mockLogger);
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
-                getMarkdown: () => inputFilePath
-            }));
-            const markdown = await site.getMarkdown('markdownComponent');
-
-            expect(markdown).toBe('markdownComponent');
-        });
+    it('getGallery calls getGallery from root component', async () => {
+        await site.getGallery('/path');
+        expect(getGallery).toHaveBeenCalledTimes(1);
     });
 
-    describe('getVideoDb', () => {
-        it('gets the appropriate videodb object', async () => {
-            const site = new Site(config, mockStorage as any, mockLogger);
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
-                getVideoDb: () => inputFilePath
-            }));
-            const videodb = await site.getVideoDb('videoDbComponent');
-
-            expect(videodb).toBe('videoDbComponent');
-        });
+    it('getMarkdown calls getMarkdown from root component', async () => {
+        await site.getMarkdown('/path');
+        expect(getMarkdown).toHaveBeenCalledTimes(1);
     });
 
-    describe('shutdown', () => {
-        it('runs shutdown on every created site component', async () => {
-            const mockShutdown = jest.fn();
-            mockSiteComponent.mockImplementation((_, inputFilePath) => ({
-                getMetadata: () => ({ uiPath: inputFilePath }),
-                shutdown: mockShutdown
-            }));
-            mockStorage.listContentChildren.mockImplementation(async (_, fileMatcher) => {
-                return [
-                    'component01.yaml',
-                    'component02.yaml',
-                    'component03.yaml',
-                ].filter(fileMatcher);
-            });
+    it('getVideoDb calls getVideo from root component', async () => {
+        await site.getVideoDb('/path');
+        expect(getVideoDb).toHaveBeenCalledTimes(1);
+    });
 
-            const site = new Site(config, mockStorage as any, mockLogger);
-            await site.listComponents(); // required to create the components to be shut down
-
-            await site.shutdown();
-
-            expect(mockShutdown).toHaveBeenCalledTimes(3);
-        });
+    it('shutdown calls shutdown from root component', async () => {
+        await site.shutdown();
+        expect(shutdown).toHaveBeenCalledTimes(1);
     });
 
     describe('getConfig', () => {
         it('returns true & footer text if enableAuthentication is true', () => {
             const newConfig = { ...config, enableAuthentication: true, footerText: 'some-footer-text' };
 
-            const site = new Site(newConfig, mockStorage as any, mockLogger);
+            site = new Site(newConfig, mockStorage as any, mockLogger);
 
             expect(site.getConfig()).toStrictEqual({ authEnabled: true, footerText: 'some-footer-text' });
         });
@@ -250,7 +72,7 @@ describe('Site', () => {
         it('returns false & footer text if enableAuthentication is false', () => {
             const newConfig = { ...config, enableAuthentication: false, footerText: 'some-other-footer-text' };
 
-            const site = new Site(newConfig, mockStorage as any, mockLogger);
+            site = new Site(newConfig, mockStorage as any, mockLogger);
 
             expect(site.getConfig()).toStrictEqual({ authEnabled: false, footerText: 'some-other-footer-text' });
         });

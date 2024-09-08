@@ -19,15 +19,6 @@ export class RootComponent implements IRootComponent {
         private logger: Logger
     ) { }
 
-    private async listComponentYamlFiles(): Promise<string[]> {
-        return this.storage.listContentChildren('', (file: string) => file.endsWith('.yaml'));
-    }
-
-    private getComponent(apiPath: string): IComponent {
-        this.components[apiPath] ??= new Component(this.config, apiPath, this.storage, this.logger);
-        return this.components[apiPath];
-    }
-
     public async listComponents(user?: User): Promise<ComponentMetadata[]> {
         this.logger.debug(`Site.listComponents(${user})`);
         const componentPromises = (await this.listComponentYamlFiles()).map(async (file) => (
@@ -39,14 +30,28 @@ export class RootComponent implements IRootComponent {
         return sortByWeightAndTitle(components as ComponentMetadata[]);
     }
 
+    private async listComponentYamlFiles(): Promise<string[]> {
+        return this.storage.listContentChildren('', (file: string) => file.endsWith('.yaml'));
+    }
+
     private async getComponentMetadata(apiRootPath: string, user?: User): Promise<ComponentMetadata | undefined> {
         const component = this.getComponent(apiRootPath);
         return component.getMetadata(user);
     }
 
+    private getComponent(apiPath: string): IComponent {
+        this.components[apiPath] ??= new Component(this.config, apiPath, this.storage, this.logger);
+        return this.components[apiPath];
+    }
+
     public async getGallery(apiPath: string): Promise<IGallery> {
         this.logger.debug(`Site.getGallery(${apiPath})`);
         return await this.getComponentAtPath(apiPath).getGallery();
+    }
+
+    private getComponentAtPath(apiPath: string): IComponent {
+        const componentPath = apiPath.replace(/^\//, '').split('/')[0];
+        return this.getComponent(componentPath);
     }
 
     public async getMarkdown(apiPath: string): Promise<IMarkdown> {
@@ -57,11 +62,6 @@ export class RootComponent implements IRootComponent {
     public async getVideoDb(apiPath: string): Promise<IVideoDb> {
         this.logger.debug(`Site.getVideoDb(${apiPath})`);
         return await this.getComponentAtPath(apiPath).getVideoDb();
-    }
-
-    private getComponentAtPath(apiPath: string): IComponent {
-        const componentPath = apiPath.replace(/^\//, '').split('/')[0];
-        return this.getComponent(componentPath);
     }
 
     public async shutdown(): Promise<void> {

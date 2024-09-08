@@ -3,7 +3,6 @@ import { User } from '../auth';
 export type MarkdownTree = {
     apiPath?: string;
     title?: string;
-    uiPath?: string;
     weight?: number;
     restrict?: string;
     allowWrite?: string;

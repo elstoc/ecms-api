@@ -201,13 +201,13 @@ export class Markdown implements IMarkdown {
         const frontMatter = await this.parseFrontMatter();
         this.hasFrontMatter = Boolean(frontMatter && Object.keys(frontMatter).length);
 
-        const { apiPath, title, uiPath, weight, restrict, allowWrite } = frontMatter ?? {};
+        const { apiPath, title, weight, restrict, allowWrite } = frontMatter ?? {};
 
         this.metadata = {
             apiPath: apiPath ?? this.apiPath,
             title: title ?? path.basename(this.apiPath),
             weight: weight ? parseInt(weight) : undefined,
-            uiPath, restrict, allowWrite
+            restrict, allowWrite
         };
 
         this.metadataFromSourceFileTime = contentModifiedTime;

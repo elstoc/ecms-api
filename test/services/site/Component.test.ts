@@ -67,7 +67,6 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    uiPath: 'test',
                     title: 'The Title',
                     type: 'invalid-type'
                 });
@@ -82,7 +81,6 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    uiPath: 'test',
                     title: 'The Title',
                     type: 'gallery',
                     weight: 'boo'
@@ -102,7 +100,6 @@ describe('Component', () => {
 
                 it('if marginPx is not a number', async () => {
                     yamlParseMock.mockReturnValue({
-                        uiPath: 'test',
                         title: 'The Title',
                         type: 'gallery',
                         marginPx: 'boo',
@@ -115,7 +112,6 @@ describe('Component', () => {
 
                 it('if batchSize is not a number', async () => {
                     yamlParseMock.mockReturnValue({
-                        uiPath: 'test',
                         title: 'The Title',
                         type: 'gallery',
                         marginPx: 3,
@@ -134,7 +130,6 @@ describe('Component', () => {
                     mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                     mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                     yamlParseMock.mockReturnValue({
-                        uiPath: 'test',
                         title: 'The Title',
                         type: 'markdown',
                         includeNav: 'boo'
@@ -153,9 +148,9 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    uiPath: 'test',
                     title: 'The Title',
                     type: 'gallery',
+                    defaultComponent: true,
                     marginPx: 1,
                     batchSize: 2,
                 });
@@ -163,9 +158,9 @@ describe('Component', () => {
                 const actualMetadata = await component.getMetadata();
     
                 const expectedMetadata = {
-                    uiPath: 'test',
                     apiPath: 'my-component',
                     title: 'The Title',
+                    defaultComponent: true,
                     type: 'gallery',
                     marginPx: 1,
                     batchSize: 2,
@@ -179,8 +174,8 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    uiPath: 'test',
                     title: 'The Title',
+                    defaultComponent: true,
                     type: 'markdown',
                     includeNav: true
                 });
@@ -188,9 +183,9 @@ describe('Component', () => {
                 const actualMetadata = await component.getMetadata();
     
                 const expectedMetadata = {
-                    uiPath: 'test',
                     apiPath: 'my-component',
                     title: 'The Title',
+                    defaultComponent: true,
                     type: 'markdown',
                     includeNav: true
                 };
@@ -203,17 +198,17 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    uiPath: 'test',
                     title: 'The Title',
                     type: 'videodb',
+                    defaultComponent: true,
                 });
     
                 const actualMetadata = await component.getMetadata();
     
                 const expectedMetadata = {
-                    uiPath: 'test',
                     apiPath: 'my-component',
                     title: 'The Title',
+                    defaultComponent: true,
                     type: 'videodb',
                 };
                 expect(actualMetadata).toEqual(expectedMetadata);
@@ -224,7 +219,6 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    uiPath: 'test',
                     title: 'The Title',
                     type: 'videodb',
                 });
@@ -232,9 +226,9 @@ describe('Component', () => {
                 const actualMetadata = await component.getMetadata();
     
                 const expectedMetadata = {
-                    uiPath: 'test',
                     apiPath: 'my-component',
                     title: 'The Title',
+                    defaultComponent: false,
                     type: 'videodb',
                 };
                 expect(mockStorage.contentDirectoryExists).toHaveBeenCalled();
@@ -251,7 +245,6 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    uiPath: 'test',
                     title: 'The Title',
                     type: 'videodb',
                 });
@@ -260,9 +253,9 @@ describe('Component', () => {
                 const actualMetadata2 = await component.getMetadata();
     
                 const expectedMetadata = {
-                    uiPath: 'test',
                     apiPath: 'my-component',
                     title: 'The Title',
+                    defaultComponent: false,
                     type: 'videodb',
                 };
                 expect(mockStorage.contentDirectoryExists).toHaveBeenCalledTimes(2);
@@ -282,11 +275,9 @@ describe('Component', () => {
                     .mockReturnValue(2345);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValueOnce({
-                    uiPath: 'test',
                     title: 'The Title',
                     type: 'videodb'
                 }).mockReturnValue({
-                    uiPath: 'test',
                     title: 'The New Title',
                     type: 'videodb'
                 });
@@ -295,9 +286,9 @@ describe('Component', () => {
                 const actualMetadata2 = await component.getMetadata();
     
                 const expectedMetadata1 = {
-                    uiPath: 'test',
                     apiPath: 'my-component',
                     title: 'The Title',
+                    defaultComponent: false,
                     type: 'videodb',
                 };
                 const expectedMetadata2 = { ...expectedMetadata1, title: 'The New Title' };
@@ -310,7 +301,7 @@ describe('Component', () => {
                 expect(actualMetadata2).toEqual(expectedMetadata2);
             });
     
-            it('sets uiPath and title to apiPath if they do not exist', async () => {
+            it('sets title to apiPath if they do not exist', async () => {
                 mockStorage.contentFileExists.mockReturnValue(true);
                 mockStorage.contentDirectoryExists.mockReturnValue(true);
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
@@ -322,9 +313,9 @@ describe('Component', () => {
                 const actualMetadata = await component.getMetadata();
     
                 const expectedMetadata = {
-                    uiPath: 'my-component',
                     apiPath: 'my-component',
                     title: 'my-component',
+                    defaultComponent: false,
                     type: 'videodb',
                 };
                 expect(actualMetadata).toEqual(expectedMetadata);
@@ -338,7 +329,6 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    uiPath: 'test',
                     title: 'The Title',
                     type: 'videodb',
                     restrict: 'admin'
@@ -355,7 +345,6 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    uiPath: 'test',
                     title: 'The Title',
                     type: 'videodb',
                     restrict: 'admin'
@@ -372,7 +361,6 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    uiPath: 'test',
                     title: 'The Title',
                     type: 'videodb',
                     restrict: 'admin'
@@ -391,7 +379,6 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    uiPath: 'test',
                     title: 'The Title',
                     type: 'videodb',
                     restrict: 'role1'
@@ -408,7 +395,6 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    uiPath: 'test',
                     title: 'The Title',
                     type: 'videodb',
                     restrict: 'role1'

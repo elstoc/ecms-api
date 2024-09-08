@@ -26,7 +26,7 @@ describe('RootComponent', () => {
         
         it('only attempts to process yaml files in the content directory (ignores other files/extensions/directories)', async () => {
             mockComponent.mockImplementation((_, inputFilePath) => ({
-                getMetadata: () => ({ uiPath: inputFilePath })
+                getMetadata: () => ({ apiPath: inputFilePath })
             }));
             mockStorage.listContentChildren.mockImplementation(async (_, fileMatcher) => {
                 return [
@@ -42,9 +42,9 @@ describe('RootComponent', () => {
             const actualComponentList = await rootComponent.listComponents();
 
             const expectedComponentList = [
-                { uiPath: 'component01' },
-                { uiPath: 'component02' },
-                { uiPath: 'component03' },
+                { apiPath: 'component01' },
+                { apiPath: 'component02' },
+                { apiPath: 'component03' },
             ];
             expect(mockComponent).toHaveBeenCalledTimes(3);
             expect(mockComponent).toHaveBeenCalledWith(config, 'component01', mockStorage, mockLogger);
@@ -56,7 +56,7 @@ describe('RootComponent', () => {
 
         it('only creates new Component instances for yaml files it has not seen before', async () => {
             mockComponent.mockImplementation((_, inputFilePath) => ({
-                getMetadata: () => ({ uiPath: inputFilePath })
+                getMetadata: () => ({ apiPath: inputFilePath })
             }));
             mockStorage.listContentChildren.mockResolvedValueOnce([
                 'component01.yaml',
@@ -74,11 +74,11 @@ describe('RootComponent', () => {
             const actualComponentList2 = await rootComponent.listComponents();
 
             const expectedComponentList1 = [
-                { uiPath: 'component01' },
-                { uiPath: 'component02' },
-                { uiPath: 'component03' },
+                { apiPath: 'component01' },
+                { apiPath: 'component02' },
+                { apiPath: 'component03' },
             ];
-            const expectedComponentList2 = [...expectedComponentList1, { uiPath: 'component04' }];
+            const expectedComponentList2 = [...expectedComponentList1, { apiPath: 'component04' }];
             expect(mockComponent).toHaveBeenCalledTimes(4);
             expect(mockComponent).toHaveBeenCalledWith(config, 'component01', mockStorage, mockLogger);
             expect(mockComponent).toHaveBeenCalledWith(config, 'component02', mockStorage, mockLogger);
@@ -91,7 +91,7 @@ describe('RootComponent', () => {
 
         it('no longer sends metadata for files that have been deleted', async () => {
             mockComponent.mockImplementation((_, inputFilePath) => ({
-                getMetadata: () => ({ uiPath: inputFilePath })
+                getMetadata: () => ({ apiPath: inputFilePath })
             }));
             mockStorage.listContentChildren.mockResolvedValueOnce([
                 'component01.yaml',
@@ -109,11 +109,11 @@ describe('RootComponent', () => {
             const actualComponentList2 = await rootComponent.listComponents();
 
             const expectedComponentList2 = [
-                { uiPath: 'component01' },
-                { uiPath: 'component02' },
-                { uiPath: 'component03' },
+                { apiPath: 'component01' },
+                { apiPath: 'component02' },
+                { apiPath: 'component03' },
             ];
-            const expectedComponentList1 = [...expectedComponentList2, { uiPath: 'component04' }];
+            const expectedComponentList1 = [...expectedComponentList2, { apiPath: 'component04' }];
 
             expect(actualComponentList1).toStrictEqual(expectedComponentList1);
             expect(actualComponentList2).toStrictEqual(expectedComponentList2);
@@ -122,7 +122,7 @@ describe('RootComponent', () => {
         it('sorts weighted components first, ascending numerically by weight, then unweighted components ascending alphabetically by title', async () => {
             (Component as jest.Mock).mockImplementation((_, inputFilePath) => ({
                 getMetadata: () => {
-                    const returnData = { uiPath: inputFilePath, title: inputFilePath } as any;
+                    const returnData = { apiPath: inputFilePath, title: inputFilePath } as any;
                     if (inputFilePath.endsWith('componentE')) returnData.weight = 10;
                     if (inputFilePath.endsWith('componentG')) returnData.weight = 20;
                     if (inputFilePath.endsWith('componentB')) returnData.weight = 30;
@@ -143,20 +143,20 @@ describe('RootComponent', () => {
             const actualNavData = await rootComponent.listComponents();
 
             const expectedNavData = [
-                { uiPath: 'componentE', title: 'componentE', weight: 10 },
-                { uiPath: 'componentG', title: 'componentG', weight: 20 },
-                { uiPath: 'componentB', title: 'componentB', weight: 30 },
-                { uiPath: 'componentA', title: 'componentA' },
-                { uiPath: 'componentC', title: 'componentC' },
-                { uiPath: 'componentD', title: 'componentD' },
-                { uiPath: 'componentF', title: 'componentF' },
+                { apiPath: 'componentE', title: 'componentE', weight: 10 },
+                { apiPath: 'componentG', title: 'componentG', weight: 20 },
+                { apiPath: 'componentB', title: 'componentB', weight: 30 },
+                { apiPath: 'componentA', title: 'componentA' },
+                { apiPath: 'componentC', title: 'componentC' },
+                { apiPath: 'componentD', title: 'componentD' },
+                { apiPath: 'componentF', title: 'componentF' },
             ];
             expect(actualNavData).toStrictEqual(expectedNavData);
         });
 
         it('filters out any undefined metadata returned by the component (due to no permission)', async () => {
             mockComponent.mockImplementation((_, inputFilePath) => ({
-                getMetadata: () => (inputFilePath.endsWith('01') ? undefined : { uiPath: inputFilePath })
+                getMetadata: () => (inputFilePath.endsWith('01') ? undefined : { apiPath: inputFilePath })
             }));
             mockStorage.listContentChildren.mockImplementation(async (_, fileMatcher) => {
                 return [
@@ -172,8 +172,8 @@ describe('RootComponent', () => {
             const actualComponentList = await rootComponent.listComponents();
 
             const expectedComponentList = [
-                { uiPath: 'component02' },
-                { uiPath: 'component03' },
+                { apiPath: 'component02' },
+                { apiPath: 'component03' },
             ];
             expect(actualComponentList).toStrictEqual(expectedComponentList);
         });
@@ -220,7 +220,7 @@ describe('RootComponent', () => {
         it('runs shutdown on every created site component', async () => {
             const mockShutdown = jest.fn();
             mockComponent.mockImplementation((_, inputFilePath) => ({
-                getMetadata: () => ({ uiPath: inputFilePath }),
+                getMetadata: () => ({ apiPath: inputFilePath }),
                 shutdown: mockShutdown
             }));
             mockStorage.listContentChildren.mockImplementation(async (_, fileMatcher) => {

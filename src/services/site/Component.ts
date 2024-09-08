@@ -65,23 +65,33 @@ export class Component implements IComponent {
         const commonMetadata = this.getCommonMetadata(parsedYaml);
 
         if (type === ComponentTypes.gallery) {
-            const { marginPx, batchSize } = parsedYaml;
+            const { marginPx, batchSize, defaultComponent } = parsedYaml;
             if (typeof marginPx !== 'number' || typeof batchSize !== 'number') {
                 throw new Error('Gallery components must include marginPx and batchSize as numbers');
             }
             return {
-                type, marginPx, batchSize, ...commonMetadata
+                type, marginPx, batchSize,
+                defaultComponent: defaultComponent === true,
+                ...commonMetadata
             };
         } else if (type === ComponentTypes.markdown) {
-            const { includeNav } = parsedYaml;
+            const { includeNav, defaultComponent } = parsedYaml;
             if (typeof includeNav !== 'boolean') {
                 throw new Error('Markdown components must include the includeNav parameter as a boolean');
             }
             return {
                 type, includeNav,
+                defaultComponent: defaultComponent === true,
                 ...commonMetadata
             };
-        } 
+        } else if (type === ComponentTypes.videodb) {
+            const { defaultComponent } = parsedYaml;
+            return {
+                type,
+                defaultComponent: defaultComponent === true,
+                ...commonMetadata
+            };
+        }
 
         return {
             type,
@@ -96,7 +106,6 @@ export class Component implements IComponent {
         }
         return {
             apiPath: this.contentDir,
-            uiPath: parsedYaml?.uiPath ?? this.contentDir,
             title: parsedYaml?.title ?? this.contentDir,
             weight: parsedYaml.weight,
             restrict: parsedYaml.restrict

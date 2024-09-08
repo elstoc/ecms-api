@@ -11,7 +11,6 @@ export enum ComponentTypes {
 
 export type ComponentMetadataCommon = {
     apiPath: string;
-    uiPath: string;
     title: string;
     weight?: number;
     restrict?: string;
@@ -21,15 +20,18 @@ export type GalleryComponentMetadata = ComponentMetadataCommon & {
     type: ComponentTypes.gallery;
     marginPx: number;
     batchSize: number;
+    defaultComponent?: boolean;
 }
 
 export type MarkdownComponentMetadata = ComponentMetadataCommon & {
     type: ComponentTypes.markdown;
     includeNav: boolean;
+    defaultComponent?: boolean;
 }
 
 export type VideoDbComponentMetadata = ComponentMetadataCommon & {
     type: ComponentTypes.videodb;
+    defaultComponent?: boolean;
 }
 
 export type ComponentMetadata = GalleryComponentMetadata | MarkdownComponentMetadata | VideoDbComponentMetadata;

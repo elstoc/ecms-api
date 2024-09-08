@@ -2,7 +2,7 @@ import { Logger } from 'winston';
 import { IStorageAdapter } from '../../adapters';
 import { Config } from '../../utils';
 import { ISite, SiteConfig } from './ISite';
-import { SiteRootComponent } from './SiteRootComponent';
+import { RootComponent } from './RootComponent';
 import { User } from '../auth';
 import { ComponentMetadata } from './IComponent';
 import { IGallery } from '../gallery';
@@ -10,14 +10,14 @@ import { IMarkdown } from '../markdown';
 import { IVideoDb } from '../videodb';
 
 export class Site implements ISite {
-    private rootComponent: SiteRootComponent;
+    private rootComponent: RootComponent;
 
     constructor(
         private config: Config,
         storage: IStorageAdapter,
         private logger: Logger
     ) {
-        this.rootComponent = new SiteRootComponent(config, storage, logger);
+        this.rootComponent = new RootComponent(config, storage, logger);
     }
 
     public async listComponents(user?: User): Promise<ComponentMetadata[]> {

@@ -4,7 +4,7 @@ import { IMarkdown } from '../markdown';
 import { IVideoDb } from '../videodb';
 import { ComponentMetadata } from './IComponent';
 
-export interface ISiteRootComponent {
+export interface IRootComponent {
     listComponents(user?: User): Promise<ComponentMetadata[]>;
     getGallery(apiPath: string): Promise<IGallery>;
     getMarkdown(apiPath: string): Promise<IMarkdown>;

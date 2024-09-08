@@ -1,5 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { SiteRootComponent, Component } from '../../../src/services';
+import { RootComponent, Component } from '../../../src/services';
 
 jest.mock('../../../src/services/site/Component');
 
@@ -20,9 +20,9 @@ const mockLogger = {
 
 const mockComponent = Component as jest.Mock;
 
-describe('SiteRootComponent', () => {
+describe('RootComponent', () => {
     describe('listComponents', () => {
-        let rootComponent: SiteRootComponent;
+        let rootComponent: RootComponent;
         
         it('only attempts to process yaml files in the content directory (ignores other files/extensions/directories)', async () => {
             mockComponent.mockImplementation((_, inputFilePath) => ({
@@ -38,7 +38,7 @@ describe('SiteRootComponent', () => {
                 ].filter(fileMatcher);
             });
 
-            rootComponent = new SiteRootComponent(config, mockStorage as any, mockLogger);
+            rootComponent = new RootComponent(config, mockStorage as any, mockLogger);
             const actualComponentList = await rootComponent.listComponents();
 
             const expectedComponentList = [
@@ -69,7 +69,7 @@ describe('SiteRootComponent', () => {
                 'component04.yaml',
             ]);
 
-            rootComponent = new SiteRootComponent(config, mockStorage as any, mockLogger);
+            rootComponent = new RootComponent(config, mockStorage as any, mockLogger);
             const actualComponentList1 = await rootComponent.listComponents();
             const actualComponentList2 = await rootComponent.listComponents();
 
@@ -104,7 +104,7 @@ describe('SiteRootComponent', () => {
                 'component03.yaml',
             ]);
 
-            rootComponent = new SiteRootComponent(config, mockStorage as any, mockLogger);
+            rootComponent = new RootComponent(config, mockStorage as any, mockLogger);
             const actualComponentList1 = await rootComponent.listComponents();
             const actualComponentList2 = await rootComponent.listComponents();
 
@@ -139,7 +139,7 @@ describe('SiteRootComponent', () => {
                 'componentG.yaml',
             ]);
 
-            rootComponent = new SiteRootComponent(config, mockStorage as any, mockLogger);
+            rootComponent = new RootComponent(config, mockStorage as any, mockLogger);
             const actualNavData = await rootComponent.listComponents();
 
             const expectedNavData = [
@@ -168,7 +168,7 @@ describe('SiteRootComponent', () => {
                 ].filter(fileMatcher);
             });
 
-            rootComponent = new SiteRootComponent(config, mockStorage as any, mockLogger);
+            rootComponent = new RootComponent(config, mockStorage as any, mockLogger);
             const actualComponentList = await rootComponent.listComponents();
 
             const expectedComponentList = [
@@ -182,7 +182,7 @@ describe('SiteRootComponent', () => {
 
     describe('getGallery', () => {
         it('gets the appropriate gallery object', async () => {
-            const site = new SiteRootComponent(config, mockStorage as any, mockLogger);
+            const site = new RootComponent(config, mockStorage as any, mockLogger);
             mockComponent.mockImplementation((_, inputFilePath) => ({
                 getGallery: () => inputFilePath
             }));
@@ -194,7 +194,7 @@ describe('SiteRootComponent', () => {
 
     describe('getMarkdown', () => {
         it('gets the appropriate markdown object', async () => {
-            const site = new SiteRootComponent(config, mockStorage as any, mockLogger);
+            const site = new RootComponent(config, mockStorage as any, mockLogger);
             mockComponent.mockImplementation((_, inputFilePath) => ({
                 getMarkdown: () => inputFilePath
             }));
@@ -206,7 +206,7 @@ describe('SiteRootComponent', () => {
 
     describe('getVideoDb', () => {
         it('gets the appropriate videodb object', async () => {
-            const site = new SiteRootComponent(config, mockStorage as any, mockLogger);
+            const site = new RootComponent(config, mockStorage as any, mockLogger);
             mockComponent.mockImplementation((_, inputFilePath) => ({
                 getVideoDb: () => inputFilePath
             }));
@@ -231,7 +231,7 @@ describe('SiteRootComponent', () => {
                 ].filter(fileMatcher);
             });
 
-            const site = new SiteRootComponent(config, mockStorage as any, mockLogger);
+            const site = new RootComponent(config, mockStorage as any, mockLogger);
             await site.listComponents(); // required to create the components to be shut down
 
             await site.shutdown();

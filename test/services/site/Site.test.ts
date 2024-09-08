@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ISite, Site, SiteRootComponent } from '../../../src/services';
+import { ISite, Site, RootComponent } from '../../../src/services';
 
-jest.mock('../../../src/services/site/SiteRootComponent');
+jest.mock('../../../src/services/site/RootComponent');
 
 const mockStorage = {
     listContentChildren: jest.fn() as jest.Mock,
@@ -13,7 +13,7 @@ const mockLogger = {
     error: jest.fn()
 } as any;
 
-const mockSiteRootComponent = SiteRootComponent as any;
+const mockRootComponent = RootComponent as any;
 
 const config = {
     dataDir: '/path/to/data',
@@ -29,7 +29,7 @@ describe('Site', () => {
     const shutdown = jest.fn();
 
     beforeEach(() => {
-        mockSiteRootComponent.mockImplementation(() => ({
+        mockRootComponent.mockImplementation(() => ({
             listComponents, getGallery, getMarkdown, getVideoDb, shutdown
         }));
         site = new Site(config, mockStorage as any, mockLogger);

@@ -1,6 +1,6 @@
 import path from 'path';
 import { IComponent, ComponentMetadata } from './IComponent';
-import { ISiteRootComponent } from './ISiteRootComponent';
+import { IRootComponent } from './IRootComponent';
 import { Component } from './Component';
 import { Config, sortByWeightAndTitle } from '../../utils';
 import { IGallery } from '../gallery';
@@ -10,7 +10,7 @@ import { IMarkdown } from '../markdown/IMarkdown';
 import { IVideoDb } from '../videodb';
 import { Logger } from 'winston';
 
-export class SiteRootComponent implements ISiteRootComponent {
+export class RootComponent implements IRootComponent {
     private components: { [key: string]: IComponent } = {};
 
     constructor(

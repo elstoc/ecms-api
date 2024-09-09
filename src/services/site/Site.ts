@@ -10,30 +10,30 @@ import { IMarkdown } from '../markdown';
 import { IVideoDb } from '../videodb';
 
 export class Site implements ISite {
-    private componentGroup: ComponentGroup;
+    private components: ComponentGroup;
 
     constructor(
         private config: Config,
         storage: IStorageAdapter,
         private logger: Logger
     ) {
-        this.componentGroup = new ComponentGroup(config, storage, logger);
+        this.components = new ComponentGroup(config, storage, logger);
     }
 
     public async listComponents(user?: User): Promise<ComponentMetadata[]> {
-        return await this.componentGroup.list(user);
+        return await this.components.list(user);
     }
 
     public async getGallery(apiPath: string): Promise<IGallery> {
-        return await this.componentGroup.getGallery(apiPath);
+        return await this.components.getGallery(apiPath);
     }
 
     public async getMarkdown(apiPath: string): Promise<IMarkdown> {
-        return await this.componentGroup.getMarkdown(apiPath);
+        return await this.components.getMarkdown(apiPath);
     }
 
     public async getVideoDb(apiPath: string): Promise<IVideoDb> {
-        return await this.componentGroup.getVideoDb(apiPath);
+        return await this.components.getVideoDb(apiPath);
     }
 
     public getConfig(): SiteConfig {
@@ -46,6 +46,6 @@ export class Site implements ISite {
 
     public async shutdown(): Promise<void> {
         this.logger.debug('Site.shutdown()');
-        return await this.componentGroup.shutdown();
+        return await this.components.shutdown();
     }
 }

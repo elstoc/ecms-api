@@ -1,6 +1,6 @@
 import path from 'path';
 import { IComponent, ComponentMetadata } from './IComponent';
-import { IRootComponent } from './IRootComponent';
+import { IComponentGroup } from './IComponentGroup';
 import { Component } from './Component';
 import { Config, sortByWeightAndTitle } from '../../utils';
 import { IGallery } from '../gallery';
@@ -10,7 +10,7 @@ import { IMarkdown } from '../markdown/IMarkdown';
 import { IVideoDb } from '../videodb';
 import { Logger } from 'winston';
 
-export class RootComponent implements IRootComponent {
+export class ComponentGroup implements IComponentGroup {
     private components: { [key: string]: IComponent } = {};
 
     constructor(
@@ -19,7 +19,7 @@ export class RootComponent implements IRootComponent {
         private logger: Logger
     ) { }
 
-    public async listComponents(user?: User): Promise<ComponentMetadata[]> {
+    public async list(user?: User): Promise<ComponentMetadata[]> {
         this.logger.debug(`Site.listComponents(${user})`);
         const componentPromises = (await this.listComponentYamlFiles()).map(async (file) => (
             this.getComponentMetadata(path.basename(file, '.yaml'), user)

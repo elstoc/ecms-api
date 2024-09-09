@@ -1,5 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { RootComponent, Component } from '../../../src/services';
+import { ComponentGroup, Component } from '../../../src/services';
 
 jest.mock('../../../src/services/site/Component');
 
@@ -21,8 +21,8 @@ const mockLogger = {
 const mockComponent = Component as jest.Mock;
 
 describe('RootComponent', () => {
-    describe('listComponents', () => {
-        let rootComponent: RootComponent;
+    describe('list', () => {
+        let componentGroup: ComponentGroup;
         
         it('only attempts to process yaml files in the content directory (ignores other files/extensions/directories)', async () => {
             mockComponent.mockImplementation((_, inputFilePath) => ({
@@ -38,8 +38,8 @@ describe('RootComponent', () => {
                 ].filter(fileMatcher);
             });
 
-            rootComponent = new RootComponent(config, mockStorage as any, mockLogger);
-            const actualComponentList = await rootComponent.listComponents();
+            componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger);
+            const actualComponentList = await componentGroup.list();
 
             const expectedComponentList = [
                 { apiPath: 'component01' },
@@ -69,9 +69,9 @@ describe('RootComponent', () => {
                 'component04.yaml',
             ]);
 
-            rootComponent = new RootComponent(config, mockStorage as any, mockLogger);
-            const actualComponentList1 = await rootComponent.listComponents();
-            const actualComponentList2 = await rootComponent.listComponents();
+            componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger);
+            const actualComponentList1 = await componentGroup.list();
+            const actualComponentList2 = await componentGroup.list();
 
             const expectedComponentList1 = [
                 { apiPath: 'component01' },
@@ -104,9 +104,9 @@ describe('RootComponent', () => {
                 'component03.yaml',
             ]);
 
-            rootComponent = new RootComponent(config, mockStorage as any, mockLogger);
-            const actualComponentList1 = await rootComponent.listComponents();
-            const actualComponentList2 = await rootComponent.listComponents();
+            componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger);
+            const actualComponentList1 = await componentGroup.list();
+            const actualComponentList2 = await componentGroup.list();
 
             const expectedComponentList2 = [
                 { apiPath: 'component01' },
@@ -139,8 +139,8 @@ describe('RootComponent', () => {
                 'componentG.yaml',
             ]);
 
-            rootComponent = new RootComponent(config, mockStorage as any, mockLogger);
-            const actualNavData = await rootComponent.listComponents();
+            componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger);
+            const actualNavData = await componentGroup.list();
 
             const expectedNavData = [
                 { apiPath: 'componentE', title: 'componentE', weight: 10 },
@@ -168,8 +168,8 @@ describe('RootComponent', () => {
                 ].filter(fileMatcher);
             });
 
-            rootComponent = new RootComponent(config, mockStorage as any, mockLogger);
-            const actualComponentList = await rootComponent.listComponents();
+            componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger);
+            const actualComponentList = await componentGroup.list();
 
             const expectedComponentList = [
                 { apiPath: 'component02' },
@@ -182,7 +182,7 @@ describe('RootComponent', () => {
 
     describe('getGallery', () => {
         it('gets the appropriate gallery object', async () => {
-            const site = new RootComponent(config, mockStorage as any, mockLogger);
+            const site = new ComponentGroup(config, mockStorage as any, mockLogger);
             mockComponent.mockImplementation((_, inputFilePath) => ({
                 getGallery: () => inputFilePath
             }));
@@ -194,7 +194,7 @@ describe('RootComponent', () => {
 
     describe('getMarkdown', () => {
         it('gets the appropriate markdown object', async () => {
-            const site = new RootComponent(config, mockStorage as any, mockLogger);
+            const site = new ComponentGroup(config, mockStorage as any, mockLogger);
             mockComponent.mockImplementation((_, inputFilePath) => ({
                 getMarkdown: () => inputFilePath
             }));
@@ -206,7 +206,7 @@ describe('RootComponent', () => {
 
     describe('getVideoDb', () => {
         it('gets the appropriate videodb object', async () => {
-            const site = new RootComponent(config, mockStorage as any, mockLogger);
+            const site = new ComponentGroup(config, mockStorage as any, mockLogger);
             mockComponent.mockImplementation((_, inputFilePath) => ({
                 getVideoDb: () => inputFilePath
             }));
@@ -231,8 +231,8 @@ describe('RootComponent', () => {
                 ].filter(fileMatcher);
             });
 
-            const site = new RootComponent(config, mockStorage as any, mockLogger);
-            await site.listComponents(); // required to create the components to be shut down
+            const site = new ComponentGroup(config, mockStorage as any, mockLogger);
+            await site.list(); // required to create the components to be shut down
 
             await site.shutdown();
 

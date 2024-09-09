@@ -4,8 +4,8 @@ import { IMarkdown } from '../markdown';
 import { IVideoDb } from '../videodb';
 import { ComponentMetadata } from './IComponent';
 
-export interface IRootComponent {
-    listComponents(user?: User): Promise<ComponentMetadata[]>;
+export interface IComponentGroup {
+    list(user?: User): Promise<ComponentMetadata[]>;
     getGallery(apiPath: string): Promise<IGallery>;
     getMarkdown(apiPath: string): Promise<IMarkdown>;
     getVideoDb(apiPath: string): Promise<IVideoDb>;

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ISite, Site, RootComponent } from '../../../src/services';
+import { ISite, Site, ComponentGroup } from '../../../src/services';
 
-jest.mock('../../../src/services/site/RootComponent');
+jest.mock('../../../src/services/site/ComponentGroup');
 
 const mockStorage = {
     listContentChildren: jest.fn() as jest.Mock,
@@ -13,7 +13,7 @@ const mockLogger = {
     error: jest.fn()
 } as any;
 
-const mockRootComponent = RootComponent as any;
+const mockComponentGroup = ComponentGroup as any;
 
 const config = {
     dataDir: '/path/to/data',
@@ -22,22 +22,22 @@ const config = {
 
 describe('Site', () => {
     let site: ISite;
-    const listComponents = jest.fn();
+    const list = jest.fn();
     const getGallery = jest.fn();
     const getMarkdown = jest.fn();
     const getVideoDb = jest.fn();
     const shutdown = jest.fn();
 
     beforeEach(() => {
-        mockRootComponent.mockImplementation(() => ({
-            listComponents, getGallery, getMarkdown, getVideoDb, shutdown
+        mockComponentGroup.mockImplementation(() => ({
+            list, getGallery, getMarkdown, getVideoDb, shutdown
         }));
         site = new Site(config, mockStorage as any, mockLogger);
     });
 
     it('listComponents calls listComponents from root component', async () => {
         await site.listComponents();
-        expect(listComponents).toHaveBeenCalledTimes(1);
+        expect(list).toHaveBeenCalledTimes(1);
     });
 
     it('getGallery calls getGallery from root component', async () => {

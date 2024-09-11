@@ -16,13 +16,14 @@ export class ComponentGroup implements IComponentGroup {
     constructor(
         private config: Config,
         private storage: IStorageAdapter,
-        private logger: Logger
+        private logger: Logger,
+        private parentPath: string
     ) { }
 
     public async list(user?: User): Promise<ComponentMetadata[]> {
         this.logger.debug(`Site.listComponents(${user})`);
         const componentPromises = (await this.listComponentYamlFiles()).map(async (file) => (
-            this.getComponentMetadata(path.basename(file, '.yaml'), user)
+            this.getComponentMetadata(path.join(this.parentPath, path.basename(file, '.yaml')), user)
         ));
 
         const components = (await Promise.all(componentPromises));
@@ -31,7 +32,7 @@ export class ComponentGroup implements IComponentGroup {
     }
 
     private async listComponentYamlFiles(): Promise<string[]> {
-        return this.storage.listContentChildren('', (file: string) => file.endsWith('.yaml'));
+        return this.storage.listContentChildren(this.parentPath, (file: string) => file.endsWith('.yaml'));
     }
 
     private async getComponentMetadata(apiRootPath: string, user?: User): Promise<ComponentMetadata | undefined> {
@@ -46,22 +47,25 @@ export class ComponentGroup implements IComponentGroup {
 
     public async getGallery(apiPath: string): Promise<IGallery> {
         this.logger.debug(`Site.getGallery(${apiPath})`);
-        return await this.getComponentAtPath(apiPath).getGallery();
+        return await this.getComponentAtPath(apiPath).getGallery(apiPath);
     }
 
     private getComponentAtPath(apiPath: string): IComponent {
-        const componentPath = apiPath.replace(/^\//, '').split('/')[0];
+        const baseDirOfComponent = apiPath.replace(this.parentPath, '')
+            .replace(/^\//, '')
+            .split('/')[0];
+        const componentPath = path.join(this.parentPath, baseDirOfComponent);
         return this.getComponent(componentPath);
     }
 
     public async getMarkdown(apiPath: string): Promise<IMarkdown> {
         this.logger.debug(`Site.getMarkdown(${apiPath})`);
-        return await this.getComponentAtPath(apiPath).getMarkdown();
+        return await this.getComponentAtPath(apiPath).getMarkdown(apiPath);
     }
 
     public async getVideoDb(apiPath: string): Promise<IVideoDb> {
         this.logger.debug(`Site.getVideoDb(${apiPath})`);
-        return await this.getComponentAtPath(apiPath).getVideoDb();
+        return await this.getComponentAtPath(apiPath).getVideoDb(apiPath);
     }
 
     public async shutdown(): Promise<void> {

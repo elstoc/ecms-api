@@ -6,7 +6,8 @@ import { IVideoDb } from '../videodb';
 export enum ComponentTypes {
     gallery = 'gallery',
     markdown = 'markdown',
-    videodb = 'videodb'
+    videodb = 'videodb',
+    componentgroup = 'componentgroup'
 }
 
 export type ComponentMetadataCommon = {
@@ -16,30 +17,36 @@ export type ComponentMetadataCommon = {
     restrict?: string;
 }
 
-export type GalleryComponentMetadata = ComponentMetadataCommon & {
+export type GalleryMetadata = ComponentMetadataCommon & {
     type: ComponentTypes.gallery;
     marginPx: number;
     batchSize: number;
     defaultComponent?: boolean;
 }
 
-export type MarkdownComponentMetadata = ComponentMetadataCommon & {
+export type MarkdownMetadata = ComponentMetadataCommon & {
     type: ComponentTypes.markdown;
     includeNav: boolean;
     defaultComponent?: boolean;
 }
 
-export type VideoDbComponentMetadata = ComponentMetadataCommon & {
+export type VideoDbMetadata = ComponentMetadataCommon & {
     type: ComponentTypes.videodb;
     defaultComponent?: boolean;
 }
 
-export type ComponentMetadata = GalleryComponentMetadata | MarkdownComponentMetadata | VideoDbComponentMetadata;
+export type ComponentGroupMetadata = ComponentMetadataCommon & {
+    type: ComponentTypes.componentgroup;
+    components: ComponentMetadata[];
+    defaultComponent: false;
+}
+
+export type ComponentMetadata = GalleryMetadata | MarkdownMetadata | VideoDbMetadata | ComponentGroupMetadata;
 
 export interface IComponent {
     getMetadata(user?: User): Promise<ComponentMetadata | undefined>;
-    getGallery(): Promise<IGallery>;
-    getMarkdown(): Promise<IMarkdown>;
-    getVideoDb(): Promise<IVideoDb>;
+    getGallery(apiPath: string): Promise<IGallery>;
+    getMarkdown(apiPath: string): Promise<IMarkdown>;
+    getVideoDb(apiPath: string): Promise<IVideoDb>;
     shutdown(): Promise<void>;
 }

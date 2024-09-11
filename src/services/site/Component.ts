@@ -10,12 +10,15 @@ import { NotFoundError } from '../../errors';
 import { User } from '../auth';
 import { IVideoDb, VideoDb } from '../videodb';
 import { Logger } from 'winston';
+import { IComponentGroup } from './IComponentGroup';
+import { ComponentGroup } from './ComponentGroup';
 
 export class Component implements IComponent {
     private contentYamlPath: string;
     private gallery?: IGallery;
     private markdown?: IMarkdown;
     private videoDb?: IVideoDb;
+    private componentGroup?: IComponentGroup;
     private metadataFromSourceTime = -1;
     private metadata?: ComponentMetadata;
 
@@ -30,7 +33,7 @@ export class Component implements IComponent {
 
     public async getMetadata(user?: User): Promise<ComponentMetadata | undefined> {
         this.throwIfNoContent();
-        await this.refreshMetadata();
+        await this.refreshMetadata(user);
         if (!this.metadata) {
             throw new Error('No metadata found');
         }
@@ -40,7 +43,7 @@ export class Component implements IComponent {
         return this.metadata;
     }
 
-    private async refreshMetadata(): Promise<void> {
+    private async refreshMetadata(user?: User): Promise<void> {
         const sourceFileModifiedTime = this.storage.getContentFileModifiedTime(this.contentYamlPath);
         if (sourceFileModifiedTime === this.metadataFromSourceTime && this.metadata) {
             return;
@@ -51,12 +54,12 @@ export class Component implements IComponent {
             throw new NotFoundError('Valid component type not found');
         }
 
-        this.metadata = this.getComponentMetadata(parsedYaml);
+        this.metadata = await this.getComponentMetadata(parsedYaml, user);
         this.metadataFromSourceTime = sourceFileModifiedTime;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private getComponentMetadata(parsedYaml: any): ComponentMetadata {
+    private async getComponentMetadata(parsedYaml: any, user?: User): Promise<ComponentMetadata> {
         const { type } = parsedYaml;
         if (!(type in ComponentTypes)) {
             throw new NotFoundError('Valid component type not found');
@@ -91,6 +94,15 @@ export class Component implements IComponent {
                 defaultComponent: defaultComponent === true,
                 ...commonMetadata
             };
+        } else if (type === ComponentTypes.componentgroup) {
+            this.componentGroup ??= new ComponentGroup(this.config, this.storage, this.logger, commonMetadata.apiPath);
+            const components = await this.componentGroup.list(user);
+            return {
+                type,
+                defaultComponent: false,
+                components,
+                ...commonMetadata
+            };
         }
 
         return {
@@ -121,27 +133,41 @@ export class Component implements IComponent {
         }
     }
 
-    private async checkComponentExistsHere(type: ComponentTypes): Promise<void> {
+    public async getGallery(apiPath: string): Promise<IGallery> {
         await this.getMetadata();
-        if (this.metadata?.type !== type) {
-            throw new NotFoundError(`No ${type} component found at the path ${this.contentDir}`);
+        if (this.metadata?.type === ComponentTypes.componentgroup) {
+            this.componentGroup ??= new ComponentGroup(this.config, this.storage, this.logger, this.contentDir);
+            return this.componentGroup.getGallery(apiPath);
         }
-    }
-
-    public async getGallery(): Promise<IGallery> {
-        await this.checkComponentExistsHere(ComponentTypes.gallery);
+        if (this.metadata?.type !== ComponentTypes.gallery) {
+            throw new NotFoundError(`No ${ComponentTypes.gallery} component found at the path ${this.contentDir}`);
+        }
         this.gallery ??= new Gallery(this.contentDir, this.config, this.storage, this.logger);
         return this.gallery;
     }
 
-    public async getMarkdown(): Promise<IMarkdown> {
-        await this.checkComponentExistsHere(ComponentTypes.markdown);
+    public async getMarkdown(apiPath: string): Promise<IMarkdown> {
+        await this.getMetadata();
+        if (this.metadata?.type === ComponentTypes.componentgroup) {
+            this.componentGroup ??= new ComponentGroup(this.config, this.storage, this.logger, this.contentDir);
+            return this.componentGroup.getMarkdown(apiPath);
+        }
+        if (this.metadata?.type !== ComponentTypes.markdown) {
+            throw new NotFoundError(`No ${ComponentTypes.markdown} component found at the path ${this.contentDir}`);
+        }
         this.markdown ??= new Markdown(this.contentDir, this.config, this.storage, this.logger, true);
         return this.markdown;
     }
 
-    public async getVideoDb(): Promise<IVideoDb> {
-        await this.checkComponentExistsHere(ComponentTypes.videodb);
+    public async getVideoDb(apiPath: string): Promise<IVideoDb> {
+        await this.getMetadata();
+        if (this.metadata?.type === ComponentTypes.componentgroup) {
+            this.componentGroup ??= new ComponentGroup(this.config, this.storage, this.logger, this.contentDir);
+            return this.componentGroup.getVideoDb(apiPath);
+        }
+        if (this.metadata?.type !== ComponentTypes.videodb) {
+            throw new NotFoundError(`No ${ComponentTypes.videodb} component found at the path ${this.contentDir}`);
+        }
         this.videoDb ??= new VideoDb(this.contentDir, this.config, this.logger, this.storage);
         await this.videoDb.initialise();
         return this.videoDb;
@@ -149,5 +175,6 @@ export class Component implements IComponent {
 
     public async shutdown(): Promise<void> {
         await this.videoDb?.shutdown();
+        await this?.componentGroup?.shutdown();
     }
 }

@@ -3,6 +3,7 @@ import YAML from 'yaml';
 import { Gallery } from '../../../src/services/gallery/Gallery';
 import { Markdown } from '../../../src/services/markdown/Markdown';
 import { VideoDb } from '../../../src/services/videodb/VideoDb';
+import { ComponentGroup } from '../../../src/services/site/ComponentGroup';
 import { Component } from '../../../src/services';
 import { NotFoundError } from '../../../src/errors';
 
@@ -10,6 +11,7 @@ jest.mock('yaml');
 jest.mock('../../../src/services/gallery/Gallery');
 jest.mock('../../../src/services/markdown/Markdown');
 jest.mock('../../../src/services/videodb/VideoDb');
+jest.mock('../../../src/services/site/ComponentGroup');
 
 const config = {
     dataDir: '/path/to/data',
@@ -22,6 +24,7 @@ const mockStorage = {
     getContentFileModifiedTime: jest.fn() as jest.Mock,
     contentDirectoryExists: jest.fn() as jest.Mock,
 };
+
 const mockLogger = {
     debug: jest.fn(),
     info: jest.fn(),
@@ -31,6 +34,7 @@ const mockLogger = {
 const mockGallery = Gallery as jest.Mock;
 const mockMarkdown = Markdown as jest.Mock;
 const mockVideoDb = VideoDb as jest.Mock;
+const mockComponentGroup = ComponentGroup as jest.Mock;
 const contentFileBuf = Buffer.from('content-file');
 const yamlParseMock = YAML.parse as jest.Mock;
 
@@ -213,6 +217,7 @@ describe('Component', () => {
                 };
                 expect(actualMetadata).toEqual(expectedMetadata);
             });
+
             it('gets metadata by parsing the component file on the first run', async () => {
                 mockStorage.contentFileExists.mockReturnValue(true);
                 mockStorage.contentDirectoryExists.mockReturnValue(true);
@@ -413,7 +418,7 @@ describe('Component', () => {
                 mockStorage.contentFileExists.mockReturnValue(false);
                 mockStorage.contentDirectoryExists.mockReturnValue(true);
     
-                await expect(component.getGallery()).rejects
+                await expect(component.getGallery('x')).rejects
                     .toThrow(new NotFoundError('A yaml file does not exist for the path my-component'));
                 expect(mockStorage.contentFileExists).toHaveBeenCalledWith('my-component.yaml');
             });
@@ -422,7 +427,7 @@ describe('Component', () => {
                 mockStorage.contentFileExists.mockReturnValue(true);
                 mockStorage.contentDirectoryExists.mockReturnValue(false);
     
-                await expect(component.getGallery()).rejects
+                await expect(component.getGallery('x')).rejects
                     .toThrow(new NotFoundError('A content directory does not exist for the path my-component'));
                 expect(mockStorage.contentDirectoryExists).toHaveBeenCalledWith('my-component');
             });
@@ -436,7 +441,7 @@ describe('Component', () => {
                     type: 'invalid-type'
                 });
     
-                await expect(component.getGallery()).rejects
+                await expect(component.getGallery('x')).rejects
                     .toThrow(new NotFoundError('Valid component type not found'));
             });
 
@@ -449,7 +454,7 @@ describe('Component', () => {
                     type, marginPx: 1, batchSize: 2, includeNav: true
                 });
 
-                await expect(component.getGallery()).rejects
+                await expect(component.getGallery('x')).rejects
                     .toThrow(new NotFoundError('No gallery component found at the path my-component'));
             });
         });
@@ -466,9 +471,29 @@ describe('Component', () => {
                 name: 'mocked gallery'
             }));
 
-            const galleryComponent = await component.getGallery();
+            const galleryComponent = await component.getGallery('x');
 
             expect(galleryComponent).toEqual({ name: 'mocked gallery' });
+        });
+
+        it('creates a ComponentGroup and calls getGallery on it, when called for a componentgroup component', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                type: 'componentgroup'
+            });
+            const listComponents = jest.fn();
+            mockComponentGroup.mockImplementation(() => ({
+                getGallery: () => ({ name: 'mocked gallery via componentGroup' }),
+                list: listComponents
+            }));
+
+            const galleryComponent = await component.getGallery('x');
+
+            expect(listComponents).toHaveBeenCalled();
+            expect(galleryComponent).toEqual({ name: 'mocked gallery via componentGroup' });
         });
     });
 
@@ -478,7 +503,7 @@ describe('Component', () => {
                 mockStorage.contentFileExists.mockReturnValue(false);
                 mockStorage.contentDirectoryExists.mockReturnValue(true);
     
-                await expect(component.getMarkdown()).rejects
+                await expect(component.getMarkdown('x')).rejects
                     .toThrow(new NotFoundError('A yaml file does not exist for the path my-component'));
                 expect(mockStorage.contentFileExists).toHaveBeenCalledWith('my-component.yaml');
             });
@@ -487,7 +512,7 @@ describe('Component', () => {
                 mockStorage.contentFileExists.mockReturnValue(true);
                 mockStorage.contentDirectoryExists.mockReturnValue(false);
     
-                await expect(component.getMarkdown()).rejects
+                await expect(component.getMarkdown('x')).rejects
                     .toThrow(new NotFoundError('A content directory does not exist for the path my-component'));
                 expect(mockStorage.contentDirectoryExists).toHaveBeenCalledWith('my-component');
             });
@@ -501,7 +526,7 @@ describe('Component', () => {
                     type: 'invalid-type'
                 });
     
-                await expect(component.getMarkdown()).rejects
+                await expect(component.getMarkdown('x')).rejects
                     .toThrow(new NotFoundError('Valid component type not found'));
             });
 
@@ -514,7 +539,7 @@ describe('Component', () => {
                     type, marginPx: 1, batchSize: 2, includeNav: true
                 });
     
-                await expect(component.getMarkdown()).rejects
+                await expect(component.getMarkdown('x')).rejects
                     .toThrow(new NotFoundError('No markdown component found at the path my-component'));
             });
         });
@@ -532,9 +557,29 @@ describe('Component', () => {
                 name: 'mocked markdown'
             }));
 
-            const markdownComponent = await component.getMarkdown();
+            const markdownComponent = await component.getMarkdown('x');
 
             expect(markdownComponent).toEqual({ name: 'mocked markdown' });
+        });
+
+        it('creates a ComponentGroup and calls getMarkdown on it, when called for a componentgroup component', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                type: 'componentgroup'
+            });
+            const listComponents = jest.fn();
+            mockComponentGroup.mockImplementation(() => ({
+                getMarkdown: () => ({ name: 'mocked markdown via componentGroup' }),
+                list: listComponents
+            }));
+
+            const markdownComponent = await component.getMarkdown('x');
+
+            expect(listComponents).toHaveBeenCalled();
+            expect(markdownComponent).toEqual({ name: 'mocked markdown via componentGroup' });
         });
     });
 
@@ -544,7 +589,7 @@ describe('Component', () => {
                 mockStorage.contentFileExists.mockReturnValue(false);
                 mockStorage.contentDirectoryExists.mockReturnValue(true);
     
-                await expect(component.getVideoDb()).rejects
+                await expect(component.getVideoDb('x')).rejects
                     .toThrow(new NotFoundError('A yaml file does not exist for the path my-component'));
                 expect(mockStorage.contentFileExists).toHaveBeenCalledWith('my-component.yaml');
             });
@@ -553,7 +598,7 @@ describe('Component', () => {
                 mockStorage.contentFileExists.mockReturnValue(true);
                 mockStorage.contentDirectoryExists.mockReturnValue(false);
     
-                await expect(component.getVideoDb()).rejects
+                await expect(component.getVideoDb('x')).rejects
                     .toThrow(new NotFoundError('A content directory does not exist for the path my-component'));
                 expect(mockStorage.contentDirectoryExists).toHaveBeenCalledWith('my-component');
             });
@@ -567,7 +612,7 @@ describe('Component', () => {
                     type: 'invalid-type'
                 });
     
-                await expect(component.getVideoDb()).rejects
+                await expect(component.getVideoDb('x')).rejects
                     .toThrow(new NotFoundError('Valid component type not found'));
             });
 
@@ -580,7 +625,7 @@ describe('Component', () => {
                     type, marginPx: 1, batchSize: 2, includeNav: true
                 });
 
-                await expect(component.getVideoDb()).rejects
+                await expect(component.getVideoDb('x')).rejects
                     .toThrow(new NotFoundError('No videodb component found at the path my-component'));
             });
         });
@@ -598,21 +643,48 @@ describe('Component', () => {
                 initialise: () => true
             }));
 
-            const videoDbComponent = await component.getVideoDb();
+            const videoDbComponent = await component.getVideoDb('x');
 
             expect((videoDbComponent as any)?.name).toEqual('mocked videodb');
+        });
+
+        it('creates a ComponentGroup and calls getVideoDb on it, when called for a componentgroup component', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                type: 'componentgroup'
+            });
+            const listComponents = jest.fn();
+            mockComponentGroup.mockImplementation(() => ({
+                getVideoDb: () => ({ name: 'mocked videodb via componentGroup' }),
+                list: listComponents
+            }));
+
+            const videoDbComponent = await component.getVideoDb('x');
+
+            expect(listComponents).toHaveBeenCalled();
+            expect(videoDbComponent).toEqual({ name: 'mocked videodb via componentGroup' });
         });
     });
 
     describe('shutdown', () => {
         const initialise = jest.fn(),
-            shutdown = jest.fn();
+            shutdown = jest.fn(),
+            list = jest.fn(),
+            getVideoDb = jest.fn();
 
         beforeEach(() => {
             jest.resetAllMocks();
             mockVideoDb.mockImplementation(() => ({
                 initialise,
                 shutdown
+            }));
+            mockComponentGroup.mockImplementation(() => ({
+                shutdown,
+                list,
+                getVideoDb
             }));
         });
 
@@ -625,13 +697,28 @@ describe('Component', () => {
                 type: 'videodb'
             });
 
-            await component.getVideoDb();
+            await component.getVideoDb('x');
             await component.shutdown();
 
             expect(shutdown).toHaveBeenCalledTimes(1);
         });
 
-        it('does not calls videoDb.shutdown if a videoDb object has not been created', async () => {
+        it('calls componentGroup.shutdown if a componentGroup object has been created', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.contentDirectoryExists.mockReturnValue(true);
+            mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
+            mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+            yamlParseMock.mockReturnValue({
+                type: 'componentgroup'
+            });
+
+            await component.getVideoDb('x');
+            await component.shutdown();
+
+            expect(shutdown).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not call videoDb.shutdown or componentGroup.shutdown if a videoDb or componentgroup object has not been created', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockStorage.contentDirectoryExists.mockReturnValue(true);
             mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
@@ -642,7 +729,7 @@ describe('Component', () => {
 
             await component.shutdown();
 
-            expect(shutdown).toHaveBeenCalledTimes(0);
+            expect(shutdown).not.toHaveBeenCalled();
         });
     });
 });

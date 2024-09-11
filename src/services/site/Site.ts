@@ -17,7 +17,7 @@ export class Site implements ISite {
         storage: IStorageAdapter,
         private logger: Logger
     ) {
-        this.components = new ComponentGroup(config, storage, logger);
+        this.components = new ComponentGroup(config, storage, logger, '');
     }
 
     public async listComponents(user?: User): Promise<ComponentMetadata[]> {

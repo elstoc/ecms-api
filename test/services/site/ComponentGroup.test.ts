@@ -38,18 +38,18 @@ describe('RootComponent', () => {
                 ].filter(fileMatcher);
             });
 
-            componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger);
+            componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger, 'parent');
             const actualComponentList = await componentGroup.list();
 
             const expectedComponentList = [
-                { apiPath: 'component01' },
-                { apiPath: 'component02' },
-                { apiPath: 'component03' },
+                { apiPath: 'parent/component01' },
+                { apiPath: 'parent/component02' },
+                { apiPath: 'parent/component03' },
             ];
             expect(mockComponent).toHaveBeenCalledTimes(3);
-            expect(mockComponent).toHaveBeenCalledWith(config, 'component01', mockStorage, mockLogger);
-            expect(mockComponent).toHaveBeenCalledWith(config, 'component02', mockStorage, mockLogger);
-            expect(mockComponent).toHaveBeenCalledWith(config, 'component03', mockStorage, mockLogger);
+            expect(mockComponent).toHaveBeenCalledWith(config, 'parent/component01', mockStorage, mockLogger);
+            expect(mockComponent).toHaveBeenCalledWith(config, 'parent/component02', mockStorage, mockLogger);
+            expect(mockComponent).toHaveBeenCalledWith(config, 'parent/component03', mockStorage, mockLogger);
 
             expect(actualComponentList).toStrictEqual(expectedComponentList);
         });
@@ -69,7 +69,7 @@ describe('RootComponent', () => {
                 'component04.yaml',
             ]);
 
-            componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger);
+            componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger, '');
             const actualComponentList1 = await componentGroup.list();
             const actualComponentList2 = await componentGroup.list();
 
@@ -104,7 +104,7 @@ describe('RootComponent', () => {
                 'component03.yaml',
             ]);
 
-            componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger);
+            componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger, '');
             const actualComponentList1 = await componentGroup.list();
             const actualComponentList2 = await componentGroup.list();
 
@@ -139,7 +139,7 @@ describe('RootComponent', () => {
                 'componentG.yaml',
             ]);
 
-            componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger);
+            componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger, '');
             const actualNavData = await componentGroup.list();
 
             const expectedNavData = [
@@ -168,7 +168,7 @@ describe('RootComponent', () => {
                 ].filter(fileMatcher);
             });
 
-            componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger);
+            componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger, '');
             const actualComponentList = await componentGroup.list();
 
             const expectedComponentList = [
@@ -182,37 +182,37 @@ describe('RootComponent', () => {
 
     describe('getGallery', () => {
         it('gets the appropriate gallery object', async () => {
-            const site = new ComponentGroup(config, mockStorage as any, mockLogger);
+            const site = new ComponentGroup(config, mockStorage as any, mockLogger, 'parent');
             mockComponent.mockImplementation((_, inputFilePath) => ({
                 getGallery: () => inputFilePath
             }));
-            const gallery = await site.getGallery('galleryComponent');
+            const gallery = await site.getGallery('parent/galleryComponent/foo/bar');
 
-            expect(gallery).toBe('galleryComponent');
+            expect(gallery).toBe('parent/galleryComponent');
         });
     });
 
     describe('getMarkdown', () => {
         it('gets the appropriate markdown object', async () => {
-            const site = new ComponentGroup(config, mockStorage as any, mockLogger);
+            const site = new ComponentGroup(config, mockStorage as any, mockLogger, 'parent');
             mockComponent.mockImplementation((_, inputFilePath) => ({
                 getMarkdown: () => inputFilePath
             }));
-            const markdown = await site.getMarkdown('markdownComponent');
+            const markdown = await site.getMarkdown('parent/markdownComponent/foo/bar');
 
-            expect(markdown).toBe('markdownComponent');
+            expect(markdown).toBe('parent/markdownComponent');
         });
     });
 
     describe('getVideoDb', () => {
         it('gets the appropriate videodb object', async () => {
-            const site = new ComponentGroup(config, mockStorage as any, mockLogger);
+            const site = new ComponentGroup(config, mockStorage as any, mockLogger, 'parent');
             mockComponent.mockImplementation((_, inputFilePath) => ({
                 getVideoDb: () => inputFilePath
             }));
-            const videodb = await site.getVideoDb('videoDbComponent');
+            const videodb = await site.getVideoDb('parent/videoDbComponent/foo/bar');
 
-            expect(videodb).toBe('videoDbComponent');
+            expect(videodb).toBe('parent/videoDbComponent');
         });
     });
 
@@ -231,10 +231,10 @@ describe('RootComponent', () => {
                 ].filter(fileMatcher);
             });
 
-            const site = new ComponentGroup(config, mockStorage as any, mockLogger);
-            await site.list(); // required to create the components to be shut down
+            const componentGroup = new ComponentGroup(config, mockStorage as any, mockLogger, '');
+            await componentGroup.list(); // required to create the components that are to be shut down
 
-            await site.shutdown();
+            await componentGroup.shutdown();
 
             expect(mockShutdown).toHaveBeenCalledTimes(3);
         });

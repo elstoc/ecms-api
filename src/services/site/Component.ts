@@ -33,17 +33,25 @@ export class Component implements IComponent {
 
     public async getMetadata(user?: User): Promise<ComponentMetadata | undefined> {
         this.throwIfNoContent();
-        await this.refreshMetadata(user);
+        await this.refreshMetadata();
         if (!this.metadata) {
             throw new Error('No metadata found');
         }
         if (this.config.enableAuthentication && !userHasReadAccess(user, this.metadata.restrict)) {
             return undefined;
         }
+        if (this.metadata.type === ComponentTypes.componentgroup) {
+            this.componentGroup ??= new ComponentGroup(this.config, this.storage, this.logger, this.metadata.apiPath);
+            const components = await this.componentGroup.list(user);
+            return {
+                ...this.metadata,
+                components
+            };
+        }
         return this.metadata;
     }
 
-    private async refreshMetadata(user?: User): Promise<void> {
+    private async refreshMetadata(): Promise<void> {
         const sourceFileModifiedTime = this.storage.getContentFileModifiedTime(this.contentYamlPath);
         if (sourceFileModifiedTime === this.metadataFromSourceTime && this.metadata) {
             return;
@@ -54,12 +62,12 @@ export class Component implements IComponent {
             throw new NotFoundError('Valid component type not found');
         }
 
-        this.metadata = await this.getComponentMetadata(parsedYaml, user);
+        this.metadata = await this.getComponentMetadata(parsedYaml);
         this.metadataFromSourceTime = sourceFileModifiedTime;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private async getComponentMetadata(parsedYaml: any, user?: User): Promise<ComponentMetadata> {
+    private async getComponentMetadata(parsedYaml: any): Promise<ComponentMetadata> {
         const { type } = parsedYaml;
         if (!(type in ComponentTypes)) {
             throw new NotFoundError('Valid component type not found');
@@ -95,12 +103,9 @@ export class Component implements IComponent {
                 ...commonMetadata
             };
         } else if (type === ComponentTypes.componentgroup) {
-            this.componentGroup ??= new ComponentGroup(this.config, this.storage, this.logger, commonMetadata.apiPath);
-            const components = await this.componentGroup.list(user);
             return {
                 type,
                 defaultComponent: false,
-                components,
                 ...commonMetadata
             };
         }

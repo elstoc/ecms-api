@@ -19,7 +19,6 @@ export type ComponentMetadataCommon = {
 
 export type GalleryMetadata = ComponentMetadataCommon & {
     type: ComponentTypes.gallery;
-    marginPx: number;
     batchSize: number;
     defaultComponent?: boolean;
 }

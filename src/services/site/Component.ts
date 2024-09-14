@@ -76,12 +76,12 @@ export class Component implements IComponent {
         const commonMetadata = this.getCommonMetadata(parsedYaml);
 
         if (type === ComponentTypes.gallery) {
-            const { marginPx, batchSize, defaultComponent } = parsedYaml;
-            if (typeof marginPx !== 'number' || typeof batchSize !== 'number') {
-                throw new Error('Gallery components must include marginPx and batchSize as numbers');
+            const { batchSize, defaultComponent } = parsedYaml;
+            if (typeof batchSize !== 'number') {
+                throw new Error('Gallery components must include the batchSize parameter as a number');
             }
             return {
-                type, marginPx, batchSize,
+                type, batchSize,
                 defaultComponent: defaultComponent === true,
                 ...commonMetadata
             };

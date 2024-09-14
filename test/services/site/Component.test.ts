@@ -102,28 +102,15 @@ describe('Component', () => {
                     mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 });
 
-                it('if marginPx is not a number', async () => {
-                    yamlParseMock.mockReturnValue({
-                        title: 'The Title',
-                        type: 'gallery',
-                        marginPx: 'boo',
-                        batchSize: 3,
-                    });
-        
-                    await expect(component.getMetadata()).rejects
-                        .toThrow(new NotFoundError('Gallery components must include marginPx and batchSize as numbers'));
-                });
-
                 it('if batchSize is not a number', async () => {
                     yamlParseMock.mockReturnValue({
                         title: 'The Title',
                         type: 'gallery',
-                        marginPx: 3,
                         batchSize: 'boo',
                     });
         
                     await expect(component.getMetadata()).rejects
-                        .toThrow(new NotFoundError('Gallery components must include marginPx and batchSize as numbers'));
+                        .toThrow(new NotFoundError('Gallery components must include the batchSize parameter as a number'));
                 });
             });
 
@@ -155,7 +142,6 @@ describe('Component', () => {
                     title: 'The Title',
                     type: 'gallery',
                     defaultComponent: true,
-                    marginPx: 1,
                     batchSize: 2,
                 });
     
@@ -166,7 +152,6 @@ describe('Component', () => {
                     title: 'The Title',
                     defaultComponent: true,
                     type: 'gallery',
-                    marginPx: 1,
                     batchSize: 2,
                 };
                 expect(actualMetadata).toEqual(expectedMetadata);
@@ -451,7 +436,7 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    type, marginPx: 1, batchSize: 2, includeNav: true
+                    type, batchSize: 2, includeNav: true
                 });
 
                 await expect(component.getGallery('x')).rejects
@@ -465,7 +450,7 @@ describe('Component', () => {
             mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
             mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
             yamlParseMock.mockReturnValue({
-                type: 'gallery', marginPx: 1, batchSize: 2
+                type: 'gallery', batchSize: 2
             });
             (mockGallery).mockImplementation(() => ({
                 name: 'mocked gallery'
@@ -536,7 +521,7 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    type, marginPx: 1, batchSize: 2, includeNav: true
+                    type, batchSize: 2, includeNav: true
                 });
     
                 await expect(component.getMarkdown('x')).rejects
@@ -622,7 +607,7 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    type, marginPx: 1, batchSize: 2, includeNav: true
+                    type, batchSize: 2, includeNav: true
                 });
 
                 await expect(component.getVideoDb('x')).rejects

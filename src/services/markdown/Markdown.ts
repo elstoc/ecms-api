@@ -41,7 +41,7 @@ export class Markdown implements IMarkdown {
                 const [, markdown] = splitFrontMatter(content);
                 content = this.getFrontMatterTemplate(this.apiPath) + (markdown || '');
             }
-            const canDelete = !this.isRoot && userIsAdmin(user) && (await this.getChildFiles()).length === 0;
+            const canDelete = !this.isRoot && this.userIsAdmin(user) && (await this.getChildFiles()).length === 0;
             return {
                 content,
                 pageExists: true,
@@ -55,7 +55,7 @@ export class Markdown implements IMarkdown {
             const nextChild = this.getNextChildInTargetPath(targetApiPath);
             return await nextChild.getPage(targetApiPath, user);
         } catch (e: unknown) {
-            if (e instanceof NotFoundError && userIsAdmin(user)) {
+            if (e instanceof NotFoundError && this.userIsAdmin(user)) {
                 const pathValid = this.apiPathIsValid(targetApiPath);
                 return {
                     content: pathValid ? this.getFrontMatterTemplate(targetApiPath) : '',
@@ -107,7 +107,7 @@ export class Markdown implements IMarkdown {
             try {
                 await nextChild.writePage(targetApiPath, fileContent, user);
             } catch (e: unknown) {
-                if (e instanceof NotFoundError && userIsAdmin(user) && this.apiPathIsValid(targetApiPath)) {
+                if (e instanceof NotFoundError && this.userIsAdmin(user) && this.apiPathIsValid(targetApiPath)) {
                     await nextChild.createContentFile();
                     await nextChild.writePage(targetApiPath, fileContent, user);
                 } else {
@@ -141,6 +141,10 @@ export class Markdown implements IMarkdown {
 
     private userHasWriteAccess(user?: User): boolean {
         return !this.config.enableAuthentication || userHasWriteAccess(user, this.metadata?.allowWrite);
+    }
+
+    private userIsAdmin(user?: User): boolean {
+        return !this.config.enableAuthentication || userIsAdmin(user);
     }
 
     private throwIfNotAdmin(user?: User): void {

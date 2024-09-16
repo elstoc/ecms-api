@@ -61,20 +61,20 @@ describe('Site', () => {
     });
 
     describe('getConfig', () => {
-        it('returns true & footer text if enableAuthentication is true', () => {
-            const newConfig = { ...config, enableAuthentication: true, footerText: 'some-footer-text' };
+        it('returns true & site title / footer text if enableAuthentication is true', () => {
+            const newConfig = { ...config, enableAuthentication: true, footerText: 'some-footer-text', siteTitle: 'some-site-title' };
 
             site = new Site(newConfig, mockStorage as any, mockLogger);
 
-            expect(site.getConfig()).toStrictEqual({ authEnabled: true, footerText: 'some-footer-text' });
+            expect(site.getConfig()).toStrictEqual({ authEnabled: true, footerText: 'some-footer-text', siteTitle: 'some-site-title' });
         });
 
-        it('returns false & footer text if enableAuthentication is false', () => {
-            const newConfig = { ...config, enableAuthentication: false, footerText: 'some-other-footer-text' };
+        it('returns false & site title / footer text if enableAuthentication is false', () => {
+            const newConfig = { ...config, enableAuthentication: false, footerText: 'some-other-footer-text', siteTitle: 'some-other-site-title' };
 
             site = new Site(newConfig, mockStorage as any, mockLogger);
 
-            expect(site.getConfig()).toStrictEqual({ authEnabled: false, footerText: 'some-other-footer-text' });
+            expect(site.getConfig()).toStrictEqual({ authEnabled: false, footerText: 'some-other-footer-text', siteTitle: 'some-other-site-title' });
         });
     });
 });

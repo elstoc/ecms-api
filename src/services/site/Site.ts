@@ -40,7 +40,8 @@ export class Site implements ISite {
         this.logger.debug('Site.getConfig()');
         return {
             authEnabled: this.config.enableAuthentication,
-            footerText: this.config.footerText
+            footerText: this.config.footerText,
+            siteTitle: this.config.siteTitle
         };
     }
 

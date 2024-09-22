@@ -92,8 +92,8 @@ export type VideoFilters = {
     titleContains?: string;
     watchedStatuses?: string[];
     pmWatchedStatuses?: string[];
-    primaryMediaTypes?: string[];
     sortPriorityFirst?: boolean;
+    minResolution?: string;
 }
 
 export type VideoUpdate = {

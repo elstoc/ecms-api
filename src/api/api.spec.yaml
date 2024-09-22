@@ -386,16 +386,15 @@ paths:
             items:
               $ref: '#/components/schemas/watchedStatus'
         - in: query
-          name: primaryMediaTypes
+          name: minResolution
           required: false
-          description: A list of the primary media types to include
-          explode: false
-          style: pipeDelimited
+          description: Minimum image resolution
           schema:
-            type: array
-            minItems: 1
-            items:
-              $ref: '#/components/schemas/VideoMediaType'
+            type: string
+            nullable: true
+            enum:
+              - HD
+              - UHD
         - in: query
           name: sortPriorityFirst
           required: false

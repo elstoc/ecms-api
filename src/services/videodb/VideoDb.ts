@@ -247,7 +247,7 @@ export class VideoDb implements IVideoDb {
                         GROUP BY video_id ) vt
 					  ON v.id =  vt.video_id`;
 
-        const { maxLength, categories, tags, titleContains, watchedStatuses, pmWatchedStatuses, primaryMediaTypes, sortPriorityFirst } = filters || {};
+        const { maxLength, categories, tags, titleContains, watchedStatuses, pmWatchedStatuses, minResolution, sortPriorityFirst } = filters || {};
         if (maxLength !== undefined) {
             whereClauses.push('length_mins <= $maxLength');
             params['$maxLength'] = maxLength;
@@ -288,13 +288,12 @@ export class VideoDb implements IVideoDb {
             whereClauses.push(`primary_media_watched IN (${Object.keys(pmWatchedStatusParams).join(', ')})`);
             params = { ...params, ...pmWatchedStatusParams };
         }
-        if (primaryMediaTypes !== undefined) {
-            const primaryMediaTypeParams: { [key: string]: string } = {};
-            primaryMediaTypes.forEach((type, index) => {
-                primaryMediaTypeParams['$pmType' + index.toString()] = type;
-            });
-            whereClauses.push(`primary_media_type IN (${Object.keys(primaryMediaTypeParams).join(', ')})`);
-            params = { ...params, ...primaryMediaTypeParams };
+        if (minResolution && ['HD','UHD'].includes(minResolution)) {
+            if (minResolution === 'HD') {
+                whereClauses.push("primary_media_type IN ('BD4K', 'DL2160', 'BD', 'DL1080', 'DL720')");
+            } else {
+                whereClauses.push("primary_media_type IN ('BD4K', 'DL2160')");
+            }
         }
 
         if (whereClauses.length > 0) {

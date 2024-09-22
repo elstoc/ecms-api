@@ -939,20 +939,33 @@ describe('VideoDb', () => {
             expect(videos).toBe('videos');
         });
 
-        it('runs the correct sql with filter params when primaryMediaTypes filter param is defined', async () => {
+        it('runs the correct sql with HD and UHD media types when minResolution is set to HD', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = baseSQL + ' WHERE (primary_media_type IN ($pmType0, $pmType1, $pmType2))' + baseOrderBy;
-            const expectedParams = { '$pmType0': 'BD', '$pmType1': 'BD4K', '$pmType2': 'DL1080' };
+            const expectedSql = baseSQL + " WHERE (primary_media_type IN ('BD4K', 'DL2160', 'BD', 'DL1080', 'DL720'))" + baseOrderBy;
 
             mockGetAllWithParams.mockResolvedValue('videos');
-            const videos = await videoDb.queryVideos({ primaryMediaTypes: ['BD','BD4K','DL1080'] });
+            const videos = await videoDb.queryVideos({ minResolution: 'HD' });
 
             expect(mockGetAllWithParams).toHaveBeenCalled();
-            const [sql, params] = mockGetAllWithParams.mock.calls[0];
+            const [sql] = mockGetAllWithParams.mock.calls[0];
             expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
-            expect(params).toEqual(expectedParams);
+            expect(videos).toBe('videos');
+        });
+
+        it('runs the correct sql with UHD media types when minResolution is set to UHD', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValueOnce({ ver: 4 });
+            await videoDb.initialise();
+            const expectedSql = baseSQL + " WHERE (primary_media_type IN ('BD4K', 'DL2160'))" + baseOrderBy;
+
+            mockGetAllWithParams.mockResolvedValue('videos');
+            const videos = await videoDb.queryVideos({ minResolution: 'UHD' });
+
+            expect(mockGetAllWithParams).toHaveBeenCalled();
+            const [sql] = mockGetAllWithParams.mock.calls[0];
+            expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
             expect(videos).toBe('videos');
         });
 
@@ -1024,7 +1037,7 @@ describe('VideoDb', () => {
             expect(videos).toBe('videos');
         });
 
-        it('runs the correct sql with filter params when titleContains, categories, tags, watchedStatuses, pmWatchedStatuses, primaryMediaTypes and maxLength filter param are all defined', async () => {
+        it('runs the correct sql with filter params when titleContains, categories, tags, watchedStatuses, pmWatchedStatuses, minResolution and maxLength filter param are all defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
@@ -1034,13 +1047,12 @@ describe('VideoDb', () => {
                                             AND (LOWER(title) LIKE $titleContains)
                                             AND (watched IN ($watchedStatus0, $watchedStatus1, $watchedStatus2))
                                             AND (primary_media_watched IN ($pmWatchedStatus0, $pmWatchedStatus1, $pmWatchedStatus2))
-                                            AND (primary_media_type IN ($pmType0, $pmType1, $pmType2))` + baseOrderBy;
+                                            AND (primary_media_type IN ('BD4K', 'DL2160'))` + baseOrderBy;
             const expectedParams = {
                 '$titleContains': '%title%',
                 '$category0': 'MOV', '$category1': 'TV', '$category2': 'TVDOC',
                 '$watchedStatus0': 'Y', '$watchedStatus1': 'N', '$watchedStatus2': 'P',
                 '$pmWatchedStatus0': 'Y', '$pmWatchedStatus1': 'N', '$pmWatchedStatus2': 'P',
-                '$pmType0': 'BD', '$pmType1': 'BD4K', '$pmType2': 'DL1080',
                 '$tag0': 'tag0', '$tag1': 'tag1', '$tag2': 'tag2',
                 '$maxLength': 120
             };
@@ -1052,7 +1064,7 @@ describe('VideoDb', () => {
                 tags: ['tag0', 'tag1', 'tag2'],
                 watchedStatuses: ['Y', 'N', 'P'],
                 pmWatchedStatuses: ['Y', 'N', 'P'],
-                primaryMediaTypes: ['BD', 'BD4K', 'DL1080'],
+                minResolution: 'UHD',
             });
 
             expect(mockGetAllWithParams).toHaveBeenCalled();

@@ -364,27 +364,25 @@ paths:
             items:
               type: string
         - in: query
-          name: watchedStatuses
+          name: watched
           required: false
-          description: A list of watched statuses to include
-          explode: false
-          style: pipeDelimited
+          description: Include only watched/unwatched videos (always include partially watched)
           schema:
-            type: array
-            minItems: 1
-            items:
-              $ref: '#/components/schemas/watchedStatus'
+            type: string
+            nullable: true
+            enum:
+              - Y
+              - N
         - in: query
-          name: pmWatchedStatuses
+          name: mediaWatched
           required: false
-          description: A list of primary medium watched statuses to include
-          explode: false
-          style: pipeDelimited
+          description: Include only watched/unwatched media (always include partially watched)
           schema:
-            type: array
-            minItems: 1
-            items:
-              $ref: '#/components/schemas/watchedStatus'
+            type: string
+            nullable: true
+            enum:
+              - Y
+              - N
         - in: query
           name: minResolution
           required: false

@@ -905,37 +905,63 @@ describe('VideoDb', () => {
             expect(videos).toBe('videos');
         });
 
-        it('runs the correct sql with filter params when watchedStatuses filter param is defined', async () => {
+        it('runs the correct sql with filter params when watched filter param is Y', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = baseSQL + ' WHERE (watched IN ($watchedStatus0, $watchedStatus1, $watchedStatus2))' + baseOrderBy;
-            const expectedParams = { '$watchedStatus0': 'Y', '$watchedStatus1': 'N', '$watchedStatus2': 'P' };
+            const expectedSql = baseSQL + " WHERE (watched IN ('Y', 'P'))" + baseOrderBy;
 
             mockGetAllWithParams.mockResolvedValue('videos');
-            const videos = await videoDb.queryVideos({ watchedStatuses: ['Y','N','P'] });
+            const videos = await videoDb.queryVideos({ watched: 'Y' });
 
             expect(mockGetAllWithParams).toHaveBeenCalled();
-            const [sql, params] = mockGetAllWithParams.mock.calls[0];
+            const [sql] = mockGetAllWithParams.mock.calls[0];
             expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
-            expect(params).toEqual(expectedParams);
             expect(videos).toBe('videos');
         });
 
-        it('runs the correct sql with filter params when pmWatchedStatuses filter param is defined', async () => {
+        it('runs the correct sql with filter params when watched filter param is N', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
-            const expectedSql = baseSQL + ' WHERE (primary_media_watched IN ($pmWatchedStatus0, $pmWatchedStatus1, $pmWatchedStatus2))' + baseOrderBy;
-            const expectedParams = { '$pmWatchedStatus0': 'Y', '$pmWatchedStatus1': 'N', '$pmWatchedStatus2': 'P' };
+            const expectedSql = baseSQL + " WHERE (watched IN ('N', 'P'))" + baseOrderBy;
 
             mockGetAllWithParams.mockResolvedValue('videos');
-            const videos = await videoDb.queryVideos({ pmWatchedStatuses: ['Y','N','P'] });
+            const videos = await videoDb.queryVideos({ watched: 'N' });
 
             expect(mockGetAllWithParams).toHaveBeenCalled();
-            const [sql, params] = mockGetAllWithParams.mock.calls[0];
+            const [sql] = mockGetAllWithParams.mock.calls[0];
             expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
-            expect(params).toEqual(expectedParams);
+            expect(videos).toBe('videos');
+        });
+
+        it('runs the correct sql with filter params when mediaWatched filter param is Y', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValueOnce({ ver: 4 });
+            await videoDb.initialise();
+            const expectedSql = baseSQL + " WHERE (primary_media_watched IN ('Y', 'P'))" + baseOrderBy;
+
+            mockGetAllWithParams.mockResolvedValue('videos');
+            const videos = await videoDb.queryVideos({ mediaWatched: 'Y' });
+
+            expect(mockGetAllWithParams).toHaveBeenCalled();
+            const [sql] = mockGetAllWithParams.mock.calls[0];
+            expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
+            expect(videos).toBe('videos');
+        });
+
+        it('runs the correct sql with filter params when mediaWatched filter param is N', async () => {
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockGet.mockResolvedValueOnce({ ver: 4 });
+            await videoDb.initialise();
+            const expectedSql = baseSQL + " WHERE (primary_media_watched IN ('N', 'P'))" + baseOrderBy;
+
+            mockGetAllWithParams.mockResolvedValue('videos');
+            const videos = await videoDb.queryVideos({ mediaWatched: 'N' });
+
+            expect(mockGetAllWithParams).toHaveBeenCalled();
+            const [sql] = mockGetAllWithParams.mock.calls[0];
+            expect(stripWhiteSpace(sql)).toBe(stripWhiteSpace(expectedSql));
             expect(videos).toBe('videos');
         });
 
@@ -1037,7 +1063,7 @@ describe('VideoDb', () => {
             expect(videos).toBe('videos');
         });
 
-        it('runs the correct sql with filter params when titleContains, categories, tags, watchedStatuses, pmWatchedStatuses, minResolution and maxLength filter param are all defined', async () => {
+        it('runs the correct sql with filter params when all filter params are defined', async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValueOnce({ ver: 4 });
             await videoDb.initialise();
@@ -1045,14 +1071,12 @@ describe('VideoDb', () => {
                                             AND (category IN ($category0, $category1, $category2))
                                             AND (EXISTS (SELECT 1 FROM video_tags WHERE video_id = id AND tag IN ($tag0, $tag1, $tag2)))
                                             AND (LOWER(title) LIKE $titleContains)
-                                            AND (watched IN ($watchedStatus0, $watchedStatus1, $watchedStatus2))
-                                            AND (primary_media_watched IN ($pmWatchedStatus0, $pmWatchedStatus1, $pmWatchedStatus2))
+                                            AND (watched IN ('Y', 'P'))
+                                            AND (primary_media_watched IN ('N', 'P'))
                                             AND (primary_media_type IN ('BD4K', 'DL2160'))` + baseOrderBy;
             const expectedParams = {
                 '$titleContains': '%title%',
                 '$category0': 'MOV', '$category1': 'TV', '$category2': 'TVDOC',
-                '$watchedStatus0': 'Y', '$watchedStatus1': 'N', '$watchedStatus2': 'P',
-                '$pmWatchedStatus0': 'Y', '$pmWatchedStatus1': 'N', '$pmWatchedStatus2': 'P',
                 '$tag0': 'tag0', '$tag1': 'tag1', '$tag2': 'tag2',
                 '$maxLength': 120
             };
@@ -1062,8 +1086,8 @@ describe('VideoDb', () => {
                 titleContains: 'title', maxLength: 120,
                 categories: ['MOV', 'TV', 'TVDOC'],
                 tags: ['tag0', 'tag1', 'tag2'],
-                watchedStatuses: ['Y', 'N', 'P'],
-                pmWatchedStatuses: ['Y', 'N', 'P'],
+                watched: 'Y',
+                mediaWatched: 'N',
                 minResolution: 'UHD',
             });
 

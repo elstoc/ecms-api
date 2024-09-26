@@ -247,7 +247,7 @@ export class VideoDb implements IVideoDb {
                         GROUP BY video_id ) vt
 					  ON v.id =  vt.video_id`;
 
-        const { maxLength, categories, tags, titleContains, watchedStatuses, pmWatchedStatuses, minResolution, sortPriorityFirst } = filters || {};
+        const { maxLength, categories, tags, titleContains, watched, mediaWatched, minResolution, sortPriorityFirst } = filters || {};
         if (maxLength !== undefined) {
             whereClauses.push('length_mins <= $maxLength');
             params['$maxLength'] = maxLength;
@@ -272,28 +272,17 @@ export class VideoDb implements IVideoDb {
             whereClauses.push('LOWER(title) LIKE $titleContains');
             params['$titleContains'] = `%${titleContains.toLowerCase()}%`;
         }
-        if (watchedStatuses !== undefined) {
-            const watchedStatusParams: { [key: string]: string } = {};
-            watchedStatuses.forEach((status, index) => {
-                watchedStatusParams['$watchedStatus' + index.toString()] = status;
-            });
-            whereClauses.push(`watched IN (${Object.keys(watchedStatusParams).join(', ')})`);
-            params = { ...params, ...watchedStatusParams };
+        if (watched === 'Y' || watched === 'N') {
+            whereClauses.push(`watched IN ('${watched}', 'P')`);
         }
-        if (pmWatchedStatuses !== undefined) {
-            const pmWatchedStatusParams: { [key: string]: string } = {};
-            pmWatchedStatuses.forEach((status, index) => {
-                pmWatchedStatusParams['$pmWatchedStatus' + index.toString()] = status;
-            });
-            whereClauses.push(`primary_media_watched IN (${Object.keys(pmWatchedStatusParams).join(', ')})`);
-            params = { ...params, ...pmWatchedStatusParams };
+        if (mediaWatched === 'Y' || mediaWatched === 'N') {
+            whereClauses.push(`primary_media_watched IN ('${mediaWatched}', 'P')`);
         }
-        if (minResolution && ['HD','UHD'].includes(minResolution)) {
-            if (minResolution === 'HD') {
-                whereClauses.push("primary_media_type IN ('BD4K', 'DL2160', 'BD', 'DL1080', 'DL720')");
-            } else {
-                whereClauses.push("primary_media_type IN ('BD4K', 'DL2160')");
-            }
+        if (minResolution === 'HD') {
+            whereClauses.push("primary_media_type IN ('BD4K', 'DL2160', 'BD', 'DL1080', 'DL720')");
+        }
+        if (minResolution === 'UHD') {
+            whereClauses.push("primary_media_type IN ('BD4K', 'DL2160')");
         }
 
         if (whereClauses.length > 0) {

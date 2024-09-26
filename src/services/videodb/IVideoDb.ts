@@ -90,8 +90,8 @@ export type VideoFilters = {
     categories?: string[];
     tags?: string[];
     titleContains?: string;
-    watchedStatuses?: string[];
-    pmWatchedStatuses?: string[];
+    watched?: string;
+    mediaWatched?: string;
     sortPriorityFirst?: boolean;
     minResolution?: string;
 }

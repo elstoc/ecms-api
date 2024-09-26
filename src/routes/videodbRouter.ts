@@ -32,14 +32,14 @@ export const createVideoDbRouter = (site: ISite): Router => {
                 const video = await videoDb.deleteVideo(parseInt(req.query.id as string));
                 res.json(video);
             } else if (fn === 'getVideos') {
-                const { maxLength, categories, tags, titleContains, limit, watchedStatuses, pmWatchedStatuses, sortPriorityFirst, minResolution } = req.query;
+                const { maxLength, categories, tags, titleContains, limit, watched, mediaWatched, sortPriorityFirst, minResolution } = req.query;
                 const filters = {
                     maxLength: maxLength === undefined ? undefined : parseInt(maxLength as string),
                     categories: categories === undefined ? undefined : (categories as string)?.split('|'),
                     tags: tags === undefined ? undefined : (tags as string)?.split('|'),
                     titleContains: titleContains === undefined ? undefined : titleContains as string,
-                    watchedStatuses: watchedStatuses === undefined ? undefined : (watchedStatuses as string)?.split('|'),
-                    pmWatchedStatuses: pmWatchedStatuses === undefined ? undefined : (pmWatchedStatuses as string)?.split('|'),
+                    watched: watched === undefined ? undefined : watched as string,
+                    mediaWatched: mediaWatched === undefined ? undefined : mediaWatched as string,
                     sortPriorityFirst: sortPriorityFirst === undefined ? undefined : parseInt(sortPriorityFirst as string) === 1,
                     minResolution: minResolution === undefined ? undefined : minResolution as string,
                 };

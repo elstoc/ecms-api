@@ -609,7 +609,6 @@ components:
       type: string
       enum:
         - TV
-        - TVD
+        - DOC
         - MOV
-        - MOVD
         - MUS

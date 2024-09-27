@@ -1,3 +1,3 @@
 {
-    "watch": ["api.spec.yaml", ".env", "src/**"]
+    "watch": ["src/api/api.spec.yaml", ".env", "src/**"]
 }

@@ -17,10 +17,9 @@ dbUpgradeSql.push(`
 
     INSERT INTO l_categories (code, description)
     VALUES
-        ('TV', 'TV Series'),
-        ('TVD', 'TV Documentary'),
+        ('TV', 'TV'),
+        ('DOC', 'Documentary'),
         ('MOV', 'Movie'),
-        ('MOVD', 'Feature Documentary'),
         ('MUS', 'Music');
 
     CREATE TABLE IF NOT EXISTS l_media_types (

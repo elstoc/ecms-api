@@ -821,7 +821,7 @@ describe('VideoDb', () => {
     });
 
     describe('queryVideos', () => {
-        const baseSQL = `SELECT v.id, v.title, v.category, v.director, v.length_mins, v.watched, v.to_watch_priority, v.progress, v.year, v.actors,
+        const baseSQL = `SELECT v.id, v.title, v.category, v.director, v.length_mins, v.watched, v.to_watch_priority, v.progress, v.imdb_id, v.image_url, v.year, v.actors, v.plot,
                                 v.primary_media_type, v.primary_media_location, v.primary_media_watched, v.other_media_type, v.other_media_location, v.media_notes,
                                 vt.tags
                          FROM   videos v

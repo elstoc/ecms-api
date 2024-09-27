@@ -2,7 +2,7 @@ import path from 'path';
 import { Logger } from 'winston';
 
 import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
-import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoFilters, videoFields, videoSummaryFields, VideoSummaryAndPrimaryMedium, VideoUpdate } from './IVideoDb';
+import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoFilters, videoFields, videoWithIdFields, VideoUpdate } from './IVideoDb';
 import { IStorageAdapter } from '../../adapters/IStorageAdapter';
 import { dbUpgradeSql } from './dbUpgradeSql';
 import { NotFoundError, NotPermittedError } from '../../errors';
@@ -238,10 +238,10 @@ export class VideoDb implements IVideoDb {
         }
     }
 
-    public async queryVideos(filters?: VideoFilters, limit?: number): Promise<VideoSummaryAndPrimaryMedium[]> {
+    public async queryVideos(filters?: VideoFilters, limit?: number): Promise<VideoWithId[]> {
         let params: { [key: string]: unknown } = {};
         const whereClauses: string[] = [];
-        let sql = `SELECT v.${videoSummaryFields.join(', v.')},
+        let sql = `SELECT v.${videoWithIdFields.join(', v.')},
                              vt.tags
                       FROM   videos v
 					  LEFT OUTER JOIN (
@@ -310,7 +310,7 @@ export class VideoDb implements IVideoDb {
             sql += ` LIMIT ${limit}`;
         }
 
-        const videos = await this.database?.getAllWithParams<VideoSummaryAndPrimaryMedium>(sql, params);
+        const videos = await this.database?.getAllWithParams<VideoWithId>(sql, params);
         if (!videos) {
             throw new Error('Unexpected error querying videos');
         }

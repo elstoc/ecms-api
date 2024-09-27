@@ -8,9 +8,9 @@ export type Video = {
     watched: string;
     to_watch_priority: number | null;
     progress: string | null;
+    year: number | null;
     imdb_id: string | null;
     image_url: string | null;
-    year: number | null;
     actors: string | null;
     plot: string | null;
     tags: string | null;
@@ -22,52 +22,15 @@ export type Video = {
     media_notes: string | null;
 }
 
+export type VideoWithId = Video & { id: number; };
+
 export const videoFields = [
     'title', 'category', 'director', 'length_mins', 'watched', 'to_watch_priority', 'progress',
     'imdb_id', 'image_url', 'year', 'actors', 'plot', 'primary_media_type', 'primary_media_location',
     'primary_media_watched', 'other_media_type', 'other_media_location', 'media_notes'
 ];
 
-type VideoIdOnly = {
-    id: number;
-}
-
-export type VideoWithId = Video & VideoIdOnly;
-
-export type VideoSummary = {
-    id: number;
-    title: string;
-    category: string;
-    director: string | null;
-    length_mins: number | null;
-    watched: string;
-    to_watch_priority: number | null;
-    progress: string | null;
-    year: number | null;
-    actors: string | null;
-    pm_media_type: string | null;
-    pm_watched: string | null;
-    tags: string | null;
-    primary_media_type: string | null;
-    primary_media_location: string | null;
-    primary_media_watched: string | null;
-    other_media_type: string | null;
-    other_media_location: string | null;
-    media_notes: string | null;
-}
-
-export const videoSummaryFields = [
-    'id', 'title', 'category', 'director', 'length_mins', 'watched', 'to_watch_priority', 'progress',
-    'year', 'actors', 'primary_media_type', 'primary_media_location',
-    'primary_media_watched', 'other_media_type', 'other_media_location', 'media_notes'
-];
-
-export type PrimaryMedium = {
-    pm_media_type: string | null;
-    pm_watched: string | null;
-}
-
-export type VideoSummaryAndPrimaryMedium = VideoSummary & PrimaryMedium;
+export const videoWithIdFields = ['id', ...videoFields];
 
 export enum LookupTables {
     video_category = 'l_categories',
@@ -112,6 +75,6 @@ export interface IVideoDb {
     updateVideos(videoUpdates: VideoUpdate[], user?: User): Promise<void>;
     getVideo(id: number): Promise<VideoWithId>;
     deleteVideo(id: number, user?: User): Promise<void>;
-    queryVideos(filters?: VideoFilters, limit?: number): Promise<VideoSummaryAndPrimaryMedium[]>;
+    queryVideos(filters?: VideoFilters, limit?: number): Promise<VideoWithId[]>;
     getOmdbApiKey(user?: User): string;
 }

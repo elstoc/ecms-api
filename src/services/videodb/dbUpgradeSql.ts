@@ -52,9 +52,9 @@ dbUpgradeSql.push(`
         ('NAS', 'NAS'),
         ('TVDOW', 'Drama Wallet'),
         ('TVCOW', 'Comedy Wallet'),
-        ('TVDRW', 'Documentary Wallet'),
-        ('TVBOX', 'TV Series Box'),
-        ('EXT', 'External Drive'),
+        ('TVDRW', 'Doc Wallet'),
+        ('TVBOX', 'TV Box'),
+        ('EXT', 'Ext Drive'),
         ('OTH', 'Other');
 
     CREATE TABLE IF NOT EXISTS l_watched_status (

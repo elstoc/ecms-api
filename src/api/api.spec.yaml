@@ -503,10 +503,8 @@ components:
           type: string
           nullable: true
         tags:
-          type: array
+          type: string
           nullable: true
-          items:
-            type: string
         primary_media_type:
           $ref: '#/components/schemas/VideoMediaType'
         primary_media_location:
@@ -588,10 +586,8 @@ components:
           type: string
           nullable: true
         tags:
-          type: array
+          type: string
           nullable: true
-          items:
-            type: string
     booleanInt:
       type: integer
       nullable: true

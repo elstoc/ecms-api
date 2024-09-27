@@ -269,6 +269,7 @@ describe('VideoDb', () => {
                 year: 1923,
                 actors: 'some-actors',
                 plot: 'stuff happened',
+                tags: null,
                 primary_media_type: 'BD4K',
                 primary_media_location: 'MOVW',
                 primary_media_watched: 'Y',
@@ -306,6 +307,7 @@ describe('VideoDb', () => {
                 year: 1923,
                 actors: 'some-actors',
                 plot: 'stuff happened',
+                tags: null,
                 primary_media_type: 'BD4K',
                 primary_media_location: 'MOVW',
                 primary_media_watched: 'Y',
@@ -343,6 +345,7 @@ describe('VideoDb', () => {
                 year: 1923,
                 actors: 'some-actors',
                 plot: 'stuff happened',
+                tags: null,
                 primary_media_type: 'BD4K',
                 primary_media_location: 'MOVW',
                 primary_media_watched: 'Y',
@@ -374,6 +377,7 @@ describe('VideoDb', () => {
                 year: 1923,
                 actors: 'some-actors',
                 plot: 'stuff happened',
+                tags: null,
                 primary_media_type: 'BD4K',
                 primary_media_location: 'MOVW',
                 primary_media_watched: 'Y',
@@ -438,6 +442,7 @@ describe('VideoDb', () => {
                 year: 1923,
                 actors: 'some-actors',
                 plot: 'stuff happened',
+                tags: null,
                 primary_media_type: 'BD4K',
                 primary_media_location: 'MOVW',
                 primary_media_watched: 'Y',
@@ -468,7 +473,7 @@ describe('VideoDb', () => {
                 watched: 'Y',
                 to_watch_priority: 1,
                 progress: 'some-progress',
-                tags: ['tag1', 'tag2'],
+                tags: 'tag1|tag2',
             };
             const expectedTagInsertParams1 = { '$id': 2468, '$tag': 'tag1' };
             const expectedTagInsertParams2 = { '$id': 2468, '$tag': 'tag2' };
@@ -503,6 +508,7 @@ describe('VideoDb', () => {
             year: 1923,
             actors: 'some-actors',
             plot: 'stuff happened',
+            tags: null,
             primary_media_type: 'BD4K',
             primary_media_location: 'MOVW',
             primary_media_watched: 'Y',
@@ -651,7 +657,7 @@ describe('VideoDb', () => {
                 watched: 'Y',
                 to_watch_priority: 1,
                 progress: 'some-progress',
-                tags: ['tag1', 'tag2'],
+                tags: 'tag1|tag2',
             };
             const expectedTagInsertParams1 = { '$id': 1, '$tag': 'tag1' };
             const expectedTagInsertParams2 = { '$id': 1, '$tag': 'tag2' };
@@ -702,7 +708,7 @@ describe('VideoDb', () => {
             const actualTagSql = mockGetAll.mock.calls[0][0];
             expect(stripWhiteSpace(actualVideoSql)).toBe(stripWhiteSpace(expectedVideoSql));
             expect(stripWhiteSpace(actualTagSql)).toBe(stripWhiteSpace(expectedTagSql));
-            expect(video).toEqual({ video: 'video', tags: ['tag1', 'tag2'] });
+            expect(video).toEqual({ video: 'video', tags: 'tag1|tag2' });
         });
     });
 
@@ -820,7 +826,7 @@ describe('VideoDb', () => {
                                 vt.tags
                          FROM   videos v
                         LEFT OUTER JOIN (
-                            SELECT video_id, GROUP_CONCAT(tag) AS tags
+                            SELECT video_id, GROUP_CONCAT(tag, '|') AS tags
                             FROM video_tags
                             GROUP BY video_id ) vt
                         ON v.id =  vt.video_id`;

@@ -172,15 +172,17 @@ export class VideoDb implements IVideoDb {
         }
     }
 
-    private async createOrReplaceVideoTags(id: number, tags?: string[]): Promise<void> {
+    private async createOrReplaceVideoTags(id: number, tags?: string | null): Promise<void> {
         await this.deleteVideoTags(id);
 
         if (!tags) return;
 
+        const tagsArray = tags.split('|');
+
         const insertSql = `INSERT INTO video_tags (video_id, tag)
                            VALUES ($id, $tag)`;
         
-        for (const tag of tags) {
+        for (const tag of tagsArray) {
             const params = { '$id': id, $tag: tag };
             await this.database?.runWithParams(insertSql, params);
         }
@@ -200,7 +202,8 @@ export class VideoDb implements IVideoDb {
         if (!video) {
             throw new Error(`Unexpected error getting video ${id}`);
         }
-        video.tags = await this.getVideoTags(id);
+        const tags = await this.getVideoTags(id);
+        video.tags = tags?.join('|') ?? '';
 
         return video;
     }
@@ -242,7 +245,7 @@ export class VideoDb implements IVideoDb {
                              vt.tags
                       FROM   videos v
 					  LEFT OUTER JOIN (
-					    SELECT video_id, GROUP_CONCAT(tag) AS tags
+					    SELECT video_id, GROUP_CONCAT(tag, '|') AS tags
                         FROM video_tags
                         GROUP BY video_id ) vt
 					  ON v.id =  vt.video_id`;

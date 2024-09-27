@@ -260,6 +260,7 @@ describe('VideoDb', () => {
                 title: 'some-title',
                 category: 'some-category',
                 director: 'some-director',
+                num_episodes: 12,
                 length_mins: 1234,
                 watched: 'Y',
                 priority_flag: 1,
@@ -298,6 +299,7 @@ describe('VideoDb', () => {
                 title: 'some-title',
                 category: 'some-category',
                 director: 'some-director',
+                num_episodes: 12,
                 length_mins: 1234,
                 watched: 'Y',
                 priority_flag: 1,
@@ -336,6 +338,7 @@ describe('VideoDb', () => {
                 title: 'some-title',
                 category: 'some-category',
                 director: 'some-director',
+                num_episodes: 12,
                 length_mins: 1234,
                 watched: 'Y',
                 priority_flag: 1,
@@ -368,6 +371,7 @@ describe('VideoDb', () => {
                 title: 'some-title',
                 category: 'some-category',
                 director: 'some-director',
+                num_episodes: 12,
                 length_mins: 1234,
                 watched: 'Y',
                 priority_flag: 1,
@@ -387,15 +391,16 @@ describe('VideoDb', () => {
             };
 
             const expectedSql = `INSERT INTO videos
-                                 (title, category, director, length_mins, watched, priority_flag, progress, imdb_id, image_url, year, actors, plot, primary_media_type, primary_media_location, primary_media_watched, other_media_type, other_media_location, media_notes)
+                                 (title, category, director, num_episodes, length_mins, watched, priority_flag, progress, imdb_id, image_url, year, actors, plot, primary_media_type, primary_media_location, primary_media_watched, other_media_type, other_media_location, media_notes)
                                  VALUES
-                                 ($title, $category, $director, $length_mins, $watched, $priority_flag, $progress, $imdb_id, $image_url, $year, $actors, $plot, $primary_media_type, $primary_media_location, $primary_media_watched, $other_media_type, $other_media_location, $media_notes)
+                                 ($title, $category, $director, $num_episodes, $length_mins, $watched, $priority_flag, $progress, $imdb_id, $image_url, $year, $actors, $plot, $primary_media_type, $primary_media_location, $primary_media_watched, $other_media_type, $other_media_location, $media_notes)
                                  RETURNING id`;
 
             const expectedVideoParameters = {
                 $title: 'some-title',
                 $category: 'some-category',
                 $director: 'some-director',
+                $num_episodes: 12,
                 $length_mins: 1234,
                 $watched: 'Y',
                 $priority_flag: 1,
@@ -433,6 +438,7 @@ describe('VideoDb', () => {
                 title: 'some-title',
                 category: 'some-category',
                 director: 'some-director',
+                num_episodes: 12,
                 length_mins: 1234,
                 watched: 'Y',
                 priority_flag: 1,
@@ -469,6 +475,7 @@ describe('VideoDb', () => {
                 title: 'some-title',
                 category: 'some-category',
                 director: 'some-director',
+                num_episodes: 12,
                 length_mins: 1234,
                 watched: 'Y',
                 priority_flag: 1,
@@ -499,6 +506,7 @@ describe('VideoDb', () => {
             title: 'some-title',
             category: 'some-category',
             director: 'some-director',
+            num_episodes: 12,
             length_mins: 1234,
             watched: 'Y',
             priority_flag: 1,
@@ -578,6 +586,7 @@ describe('VideoDb', () => {
                                  SET title = $title,
                                      category = $category,
                                      director = $director,
+                                     num_episodes = $num_episodes,
                                      length_mins = $length_mins,
                                      watched = $watched,
                                      priority_flag = $priority_flag,
@@ -600,6 +609,7 @@ describe('VideoDb', () => {
                 $title: 'some-title',
                 $category: 'some-category',
                 $director: 'some-director',
+                $num_episodes: 12,
                 $length_mins: 1234,
                 $watched: 'Y',
                 $priority_flag: 1,
@@ -653,6 +663,7 @@ describe('VideoDb', () => {
                 title: 'some-title',
                 category: 'some-category',
                 director: 'some-director',
+                num_episodes: 12,
                 length_mins: 1234,
                 watched: 'Y',
                 priority_flag: 1,
@@ -696,7 +707,7 @@ describe('VideoDb', () => {
                 .mockResolvedValue({ video: 'video' });
             mockGetAll.mockResolvedValue([{ tag: 'tag1' }, { tag: 'tag2' }]);
 
-            const expectedVideoSql = `SELECT id, title, category, director, length_mins, watched, priority_flag, progress,
+            const expectedVideoSql = `SELECT id, title, category, director, num_episodes, length_mins, watched, priority_flag, progress,
                               imdb_id, image_url, year, actors, plot, primary_media_type, primary_media_location, primary_media_watched, other_media_type, other_media_location, media_notes
                               FROM videos
                               WHERE id = 12`;
@@ -821,7 +832,7 @@ describe('VideoDb', () => {
     });
 
     describe('queryVideos', () => {
-        const baseSQL = `SELECT v.id, v.title, v.category, v.director, v.length_mins, v.watched, v.priority_flag, v.progress, v.imdb_id, v.image_url, v.year, v.actors, v.plot,
+        const baseSQL = `SELECT v.id, v.title, v.category, v.director, v.num_episodes, v.length_mins, v.watched, v.priority_flag, v.progress, v.imdb_id, v.image_url, v.year, v.actors, v.plot,
                                 v.primary_media_type, v.primary_media_location, v.primary_media_watched, v.other_media_type, v.other_media_location, v.media_notes,
                                 vt.tags
                          FROM   videos v

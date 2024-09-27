@@ -4,6 +4,7 @@ export type Video = {
     title: string;
     category: string;
     director: string | null;
+    num_episodes: number | null;
     length_mins: number | null;
     watched: string;
     priority_flag: number | null;
@@ -25,7 +26,7 @@ export type Video = {
 export type VideoWithId = Video & { id: number; };
 
 export const videoFields = [
-    'title', 'category', 'director', 'length_mins', 'watched', 'priority_flag', 'progress',
+    'title', 'category', 'director', 'num_episodes', 'length_mins', 'watched', 'priority_flag', 'progress',
     'imdb_id', 'image_url', 'year', 'actors', 'plot', 'primary_media_type', 'primary_media_location',
     'primary_media_watched', 'other_media_type', 'other_media_location', 'media_notes'
 ];

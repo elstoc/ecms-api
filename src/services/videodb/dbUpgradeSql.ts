@@ -74,6 +74,7 @@ dbUpgradeSql.push(`
         title VARCHAR(200),
         category VARCHAR(5),
         director VARCHAR(100),
+        num_episodes INTEGER,
         length_mins INTEGER,
         watched VARCHAR(1),
         priority_flag INTEGER,

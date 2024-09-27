@@ -477,6 +477,9 @@ components:
         director:
           type: string
           nullable: true
+        num_episodes:
+          type: integer
+          nullable: true
         length_mins:
           type: integer
           nullable: true
@@ -546,6 +549,9 @@ components:
           $ref: '#/components/schemas/category'
         director:
           type: string
+          nullable: true
+        num_episodes:
+          type: integer
           nullable: true
         length_mins:
           type: integer

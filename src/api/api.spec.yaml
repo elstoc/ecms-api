@@ -306,12 +306,12 @@ paths:
                     type: object
                     required:
                       - id
-                      - to_watch_priority
+                      - priority_flag
                     properties:
                       id:
                         type: integer
                         minimum: 0
-                      to_watch_priority:
+                      priority_flag:
                         $ref: '#/components/schemas/booleanInt'
       responses:
         '200':
@@ -461,7 +461,7 @@ components:
         - director
         - length_mins
         - watched
-        - to_watch_priority
+        - priority_flag
         - progress
         - imdb_id
         - image_url
@@ -482,7 +482,7 @@ components:
           nullable: true
         watched:
           $ref: '#/components/schemas/watchedStatus'
-        to_watch_priority:
+        priority_flag:
           $ref: '#/components/schemas/booleanInt'
         progress:
           type: string
@@ -528,7 +528,7 @@ components:
         - director
         - length_mins
         - watched
-        - to_watch_priority
+        - priority_flag
         - progress
         - imdb_id
         - image_url
@@ -552,7 +552,7 @@ components:
           nullable: true
         watched:
           $ref: '#/components/schemas/watchedStatus'
-        to_watch_priority:
+        priority_flag:
           $ref: '#/components/schemas/booleanInt'
         progress:
           type: string

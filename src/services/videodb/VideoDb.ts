@@ -155,7 +155,7 @@ export class VideoDb implements IVideoDb {
             const updatedIds: number[] = [];
 
             videoUpdates.forEach((update) => {
-                if (update.to_watch_priority === newValue) {
+                if (update.priority_flag === newValue) {
                     updatedIds.push(update.id);
                 }
             });
@@ -165,7 +165,7 @@ export class VideoDb implements IVideoDb {
             }
 
             const sql = `UPDATE videos
-                         SET to_watch_priority = ${newValue}
+                         SET priority_flag = ${newValue}
                          WHERE id IN (${updatedIds.sort().join(',')})`;
 
             await this.database?.exec(sql);
@@ -295,7 +295,7 @@ export class VideoDb implements IVideoDb {
         sql += ' ORDER BY ';
 
         if (sortPriorityFirst) {
-            sql += 'to_watch_priority DESC, ';
+            sql += 'priority_flag DESC, ';
         }
 
         sql += `(

@@ -6,7 +6,7 @@ export type Video = {
     director: string | null;
     length_mins: number | null;
     watched: string;
-    to_watch_priority: number | null;
+    priority_flag: number | null;
     progress: string | null;
     year: number | null;
     imdb_id: string | null;
@@ -25,7 +25,7 @@ export type Video = {
 export type VideoWithId = Video & { id: number; };
 
 export const videoFields = [
-    'title', 'category', 'director', 'length_mins', 'watched', 'to_watch_priority', 'progress',
+    'title', 'category', 'director', 'length_mins', 'watched', 'priority_flag', 'progress',
     'imdb_id', 'image_url', 'year', 'actors', 'plot', 'primary_media_type', 'primary_media_location',
     'primary_media_watched', 'other_media_type', 'other_media_location', 'media_notes'
 ];
@@ -61,7 +61,7 @@ export type VideoFilters = {
 
 export type VideoUpdate = {
     id: number;
-    to_watch_priority: 0 | 1;
+    priority_flag: 0 | 1;
 }
 
 export interface IVideoDb {

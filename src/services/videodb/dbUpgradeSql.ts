@@ -76,7 +76,7 @@ dbUpgradeSql.push(`
         director VARCHAR(100),
         length_mins INTEGER,
         watched VARCHAR(1),
-        to_watch_priority INTEGER,
+        priority_flag INTEGER,
         progress VARCHAR(50),
         imdb_id VARCHAR(50),
         image_url VARCHAR(500),

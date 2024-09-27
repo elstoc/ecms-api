@@ -262,7 +262,7 @@ describe('VideoDb', () => {
                 director: 'some-director',
                 length_mins: 1234,
                 watched: 'Y',
-                to_watch_priority: 1,
+                priority_flag: 1,
                 progress: 'some-progress',
                 imdb_id: 'imdb1234',
                 image_url: 'url',
@@ -300,7 +300,7 @@ describe('VideoDb', () => {
                 director: 'some-director',
                 length_mins: 1234,
                 watched: 'Y',
-                to_watch_priority: 1,
+                priority_flag: 1,
                 progress: 'some-progress',
                 imdb_id: 'imdb1234',
                 image_url: 'url',
@@ -338,7 +338,7 @@ describe('VideoDb', () => {
                 director: 'some-director',
                 length_mins: 1234,
                 watched: 'Y',
-                to_watch_priority: 1,
+                priority_flag: 1,
                 progress: 'some-progress',
                 imdb_id: 'imdb1234',
                 image_url: 'url',
@@ -370,7 +370,7 @@ describe('VideoDb', () => {
                 director: 'some-director',
                 length_mins: 1234,
                 watched: 'Y',
-                to_watch_priority: 1,
+                priority_flag: 1,
                 progress: 'some-progress',
                 imdb_id: 'imdb1234',
                 image_url: 'url',
@@ -387,9 +387,9 @@ describe('VideoDb', () => {
             };
 
             const expectedSql = `INSERT INTO videos
-                                 (title, category, director, length_mins, watched, to_watch_priority, progress, imdb_id, image_url, year, actors, plot, primary_media_type, primary_media_location, primary_media_watched, other_media_type, other_media_location, media_notes)
+                                 (title, category, director, length_mins, watched, priority_flag, progress, imdb_id, image_url, year, actors, plot, primary_media_type, primary_media_location, primary_media_watched, other_media_type, other_media_location, media_notes)
                                  VALUES
-                                 ($title, $category, $director, $length_mins, $watched, $to_watch_priority, $progress, $imdb_id, $image_url, $year, $actors, $plot, $primary_media_type, $primary_media_location, $primary_media_watched, $other_media_type, $other_media_location, $media_notes)
+                                 ($title, $category, $director, $length_mins, $watched, $priority_flag, $progress, $imdb_id, $image_url, $year, $actors, $plot, $primary_media_type, $primary_media_location, $primary_media_watched, $other_media_type, $other_media_location, $media_notes)
                                  RETURNING id`;
 
             const expectedVideoParameters = {
@@ -398,7 +398,7 @@ describe('VideoDb', () => {
                 $director: 'some-director',
                 $length_mins: 1234,
                 $watched: 'Y',
-                $to_watch_priority: 1,
+                $priority_flag: 1,
                 $progress: 'some-progress',
                 $imdb_id: 'imdb1234',
                 $image_url: 'url',
@@ -435,7 +435,7 @@ describe('VideoDb', () => {
                 director: 'some-director',
                 length_mins: 1234,
                 watched: 'Y',
-                to_watch_priority: 1,
+                priority_flag: 1,
                 progress: 'some-progress',
                 imdb_id: 'imdb1234',
                 image_url: 'url',
@@ -471,7 +471,7 @@ describe('VideoDb', () => {
                 director: 'some-director',
                 length_mins: 1234,
                 watched: 'Y',
-                to_watch_priority: 1,
+                priority_flag: 1,
                 progress: 'some-progress',
                 tags: 'tag1|tag2',
             };
@@ -501,7 +501,7 @@ describe('VideoDb', () => {
             director: 'some-director',
             length_mins: 1234,
             watched: 'Y',
-            to_watch_priority: 1,
+            priority_flag: 1,
             progress: 'some-progress',
             imdb_id: 'imdb1234',
             image_url: 'url',
@@ -580,7 +580,7 @@ describe('VideoDb', () => {
                                      director = $director,
                                      length_mins = $length_mins,
                                      watched = $watched,
-                                     to_watch_priority = $to_watch_priority,
+                                     priority_flag = $priority_flag,
                                      progress = $progress,
                                      imdb_id = $imdb_id,
                                      image_url = $image_url,
@@ -602,7 +602,7 @@ describe('VideoDb', () => {
                 $director: 'some-director',
                 $length_mins: 1234,
                 $watched: 'Y',
-                $to_watch_priority: 1,
+                $priority_flag: 1,
                 $progress: 'some-progress',
                 $imdb_id: 'imdb1234',
                 $image_url: 'url',
@@ -655,7 +655,7 @@ describe('VideoDb', () => {
                 director: 'some-director',
                 length_mins: 1234,
                 watched: 'Y',
-                to_watch_priority: 1,
+                priority_flag: 1,
                 progress: 'some-progress',
                 tags: 'tag1|tag2',
             };
@@ -696,7 +696,7 @@ describe('VideoDb', () => {
                 .mockResolvedValue({ video: 'video' });
             mockGetAll.mockResolvedValue([{ tag: 'tag1' }, { tag: 'tag2' }]);
 
-            const expectedVideoSql = `SELECT id, title, category, director, length_mins, watched, to_watch_priority, progress,
+            const expectedVideoSql = `SELECT id, title, category, director, length_mins, watched, priority_flag, progress,
                               imdb_id, image_url, year, actors, plot, primary_media_type, primary_media_location, primary_media_watched, other_media_type, other_media_location, media_notes
                               FROM videos
                               WHERE id = 12`;
@@ -733,14 +733,14 @@ describe('VideoDb', () => {
             mockGet.mockResolvedValue({ video_exists: 1 });
 
             const expectedSql = `UPDATE videos
-                                 SET to_watch_priority = ${value}
+                                 SET priority_flag = ${value}
                                  WHERE id IN (1,2,3,4)`;
 
             await videoDb.updateVideos([
-                { id: 1, to_watch_priority: value as 0|1},
-                { id: 3, to_watch_priority: value as 0|1},
-                { id: 4, to_watch_priority: value as 0|1},
-                { id: 2, to_watch_priority: value as 0|1},
+                { id: 1, priority_flag: value as 0|1},
+                { id: 3, priority_flag: value as 0|1},
+                { id: 4, priority_flag: value as 0|1},
+                { id: 2, priority_flag: value as 0|1},
             ]);
 
             expect(mockExec).toHaveBeenCalledTimes(1);
@@ -753,21 +753,21 @@ describe('VideoDb', () => {
             mockGet.mockResolvedValue({ video_exists: 1 });
 
             const expectedSql0 = `UPDATE videos
-                                  SET to_watch_priority = 0
+                                  SET priority_flag = 0
                                   WHERE id IN (1,2,3,4)`;
             const expectedSql1 = `UPDATE videos
-                                  SET to_watch_priority = 1
+                                  SET priority_flag = 1
                                   WHERE id IN (5,6,7,8)`;
 
             await videoDb.updateVideos([
-                { id: 1, to_watch_priority: 0},
-                { id: 8, to_watch_priority: 1},
-                { id: 7, to_watch_priority: 1},
-                { id: 3, to_watch_priority: 0},
-                { id: 5, to_watch_priority: 1},
-                { id: 2, to_watch_priority: 0},
-                { id: 6, to_watch_priority: 1},
-                { id: 4, to_watch_priority: 0},
+                { id: 1, priority_flag: 0},
+                { id: 8, priority_flag: 1},
+                { id: 7, priority_flag: 1},
+                { id: 3, priority_flag: 0},
+                { id: 5, priority_flag: 1},
+                { id: 2, priority_flag: 0},
+                { id: 6, priority_flag: 1},
+                { id: 4, priority_flag: 0},
             ]);
 
             expect(mockExec).toHaveBeenCalledTimes(2);
@@ -821,7 +821,7 @@ describe('VideoDb', () => {
     });
 
     describe('queryVideos', () => {
-        const baseSQL = `SELECT v.id, v.title, v.category, v.director, v.length_mins, v.watched, v.to_watch_priority, v.progress, v.imdb_id, v.image_url, v.year, v.actors, v.plot,
+        const baseSQL = `SELECT v.id, v.title, v.category, v.director, v.length_mins, v.watched, v.priority_flag, v.progress, v.imdb_id, v.image_url, v.year, v.actors, v.plot,
                                 v.primary_media_type, v.primary_media_location, v.primary_media_watched, v.other_media_type, v.other_media_location, v.media_notes,
                                 vt.tags
                          FROM   videos v
@@ -837,7 +837,7 @@ describe('VideoDb', () => {
                  ELSE title
             END
         )`;
-        const priorityFirstOrderBy = ` ORDER BY to_watch_priority DESC, (
+        const priorityFirstOrderBy = ` ORDER BY priority_flag DESC, (
             CASE WHEN UPPER(title) LIKE 'THE %' THEN SUBSTR(title, 5)
                  WHEN UPPER(title) LIKE 'AN %' THEN SUBSTR(title, 4)
                  WHEN UPPER(title) LIKE 'A %' THEN SUBSTR(title, 3)

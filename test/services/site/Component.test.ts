@@ -133,7 +133,7 @@ describe('Component', () => {
         });
 
         describe('returns metadata', () => {
-            it('correctly returns metadata for gallery component', async () => {
+            it('correctly returns metadata for gallery component (and empty uiPath if default component)', async () => {
                 mockStorage.contentFileExists.mockReturnValue(true);
                 mockStorage.contentDirectoryExists.mockReturnValue(true);
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
@@ -149,6 +149,7 @@ describe('Component', () => {
     
                 const expectedMetadata = {
                     apiPath: 'my-component',
+                    uiPath: '',
                     title: 'The Title',
                     defaultComponent: true,
                     type: 'gallery',
@@ -157,14 +158,14 @@ describe('Component', () => {
                 expect(actualMetadata).toEqual(expectedMetadata);
             });
 
-            it('correctly returns metadata for markdown component', async () => {
+            it('correctly returns metadata for markdown component (and populated uiPath if not default component)', async () => {
                 mockStorage.contentFileExists.mockReturnValue(true);
                 mockStorage.contentDirectoryExists.mockReturnValue(true);
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
                     title: 'The Title',
-                    defaultComponent: true,
+                    defaultComponent: false,
                     type: 'markdown',
                     includeNav: true
                 });
@@ -173,8 +174,9 @@ describe('Component', () => {
     
                 const expectedMetadata = {
                     apiPath: 'my-component',
+                    uiPath: 'my-component',
                     title: 'The Title',
-                    defaultComponent: true,
+                    defaultComponent: false,
                     type: 'markdown',
                     includeNav: true
                 };
@@ -196,6 +198,7 @@ describe('Component', () => {
     
                 const expectedMetadata = {
                     apiPath: 'my-component',
+                    uiPath: '',
                     title: 'The Title',
                     defaultComponent: true,
                     type: 'videodb',
@@ -217,6 +220,7 @@ describe('Component', () => {
     
                 const expectedMetadata = {
                     apiPath: 'my-component',
+                    uiPath: 'my-component',
                     title: 'The Title',
                     defaultComponent: false,
                     type: 'videodb',
@@ -244,6 +248,7 @@ describe('Component', () => {
     
                 const expectedMetadata = {
                     apiPath: 'my-component',
+                    uiPath: 'my-component',
                     title: 'The Title',
                     defaultComponent: false,
                     type: 'videodb',
@@ -277,6 +282,7 @@ describe('Component', () => {
     
                 const expectedMetadata1 = {
                     apiPath: 'my-component',
+                    uiPath: 'my-component',
                     title: 'The Title',
                     defaultComponent: false,
                     type: 'videodb',
@@ -304,6 +310,7 @@ describe('Component', () => {
     
                 const expectedMetadata = {
                     apiPath: 'my-component',
+                    uiPath: 'my-component',
                     title: 'my-component',
                     defaultComponent: false,
                     type: 'videodb',

@@ -123,6 +123,7 @@ export class Component implements IComponent {
         }
         return {
             apiPath: this.contentDir,
+            uiPath: parsedYaml?.defaultComponent ? '' : this.contentDir,
             title: parsedYaml?.title ?? this.contentDir,
             weight: parsedYaml.weight,
             restrict: parsedYaml.restrict

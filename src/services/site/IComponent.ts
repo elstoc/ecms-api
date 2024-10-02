@@ -12,6 +12,7 @@ export enum ComponentTypes {
 
 export type ComponentMetadataCommon = {
     apiPath: string;
+    uiPath: string;
     title: string;
     weight?: number;
     restrict?: string;

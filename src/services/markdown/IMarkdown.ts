@@ -1,7 +1,8 @@
 import { User } from '../auth';
 
 export type MarkdownTree = {
-    apiPath?: string;
+    apiPath: string;
+    uiPath: string;
     title?: string;
     weight?: number;
     restrict?: string;

@@ -54,7 +54,7 @@ describe('Markdown', () => {
 
             describe('and there are no read restrictions', () => {
                 it('returns the index.md content file for a root object where the targetPath matches the first object', async () => {
-                    const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
                     const actualPage = await page.getPage('path/to/root');
 
@@ -64,7 +64,7 @@ describe('Markdown', () => {
                 });
 
                 it('returns the requested content file for a non-root object where the targetPath matches the first object', async () => {
-                    const page = new Markdown('path/to/file', config, mockStorage as any, mockLogger);
+                    const page = new Markdown('path/to/file', 'path/to/file', config, mockStorage as any, mockLogger);
 
                     const actualPage = await page.getPage('path/to/file');
 
@@ -74,7 +74,7 @@ describe('Markdown', () => {
                 });
 
                 it('recurses through objects for a long path and returns the file from the last object', async () => {
-                    const page = new Markdown('root', config, mockStorage as any, mockLogger, true);
+                    const page = new Markdown('root', 'root', config, mockStorage as any, mockLogger, true);
 
                     const actualPage = await page.getPage('root/path/to/page');
 
@@ -91,7 +91,7 @@ describe('Markdown', () => {
                 it('prepends front matter to the content if none is present in the file (but file contains markdown)', async () => {
                     mockSplitFrontMatter.mockReturnValue([{}]);
                     mockYAMLparse.mockReturnValue({});
-                    const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
                     const actualPage = await page.getPage('path/to/root/file');
 
@@ -103,7 +103,7 @@ describe('Markdown', () => {
                 it('prepends front matter to the content if file is empty', async () => {
                     mockSplitFrontMatter.mockReturnValue([{}, 'some-markdown']);
                     mockYAMLparse.mockReturnValue({});
-                    const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
                     const actualPage = await page.getPage('path/to/root/file');
 
@@ -122,14 +122,14 @@ describe('Markdown', () => {
                 });
 
                 it('throws if access is restricted and no user is entered', async () => {
-                    const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
                     await expect(page.getPage('path/to/root')).rejects.toThrow(NotPermittedError);
                 });
 
                 it('throws if access is restricted and user does not have permission', async () => {
                     const user = { id: 'some-user', roles: ['role2', 'role3'] };
-                    const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
                     await expect(page.getPage('path/to/root', user)).rejects.toThrow(NotPermittedError);
                 });
@@ -137,21 +137,21 @@ describe('Markdown', () => {
                 it('does not throw if access is restricted, user does not have permission, but authentication is disabled', async () => {
                     const newConfig = { ...config, enableAuthentication: false };
                     const user = { id: 'some-user', roles: ['role2', 'role3'] };
-                    const page = new Markdown('path/to/root', newConfig, mockStorage as any, mockLogger, true);
+                    const page = new Markdown('path/to/root', 'path/to/root', newConfig, mockStorage as any, mockLogger, true);
 
                     await expect(page.getPage('path/to/root', user)).resolves.toBeDefined();
                 });
 
                 it('does not throw if access is restricted and user has permission', async () => {
                     const user = { id: 'some-user', roles: ['role1', 'role2', 'role3'] };
-                    const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
                     await expect(page.getPage('path/to/root', user)).resolves.toBeDefined();
                 });
 
                 it('does not throw if access is restricted but user has admin rights', async () => {
                     const user = { id: 'some-user', roles: ['admin'] };
-                    const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
                     await expect(page.getPage('path/to/root', user)).resolves.toBeDefined();
                 });
@@ -166,7 +166,7 @@ describe('Markdown', () => {
                     mockSplitFrontMatter.mockReturnValue([parsedYaml]);
                     mockYAMLparse.mockReturnValue(parsedYaml);
 
-                    page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
                 });
 
                 it('false if no user is entered', async () => {
@@ -186,7 +186,7 @@ describe('Markdown', () => {
                 it('true if user has no permission, but authentication is disabled', async () => {
                     const newConfig = { ...config, enableAuthentication: false };
                     const user = { id: 'some-user', roles: ['role2', 'role3'] };
-                    page = new Markdown('path/to/root', newConfig, mockStorage as any, mockLogger, true);
+                    page = new Markdown('path/to/root', 'path/to/root', newConfig, mockStorage as any, mockLogger, true);
 
                     const actualPage = await page.getPage('path/to/root', user);
 
@@ -219,7 +219,7 @@ describe('Markdown', () => {
                     mockSplitFrontMatter.mockReturnValue([parsedYaml]);
                     mockYAMLparse.mockReturnValue(parsedYaml);
 
-                    page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
                 });
 
                 it('false if the user is admin and the page has children', async () => {
@@ -265,7 +265,7 @@ describe('Markdown', () => {
                 it('throws for a root object if that object\'s root/index.md file does not exist', async () => {
                     mockStorage.contentFileExists.mockReturnValue(false);
         
-                    const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
                     await expect(page.getPage('path/to/root')).rejects.toThrow(NotFoundError);
         
                     expect(mockStorage.contentFileExists).toHaveBeenCalledWith('path/to/root/index.md');
@@ -274,7 +274,7 @@ describe('Markdown', () => {
                 it('throws for a non-root object if that object\'s content file does not exist', async () => {
                     mockStorage.contentFileExists.mockReturnValue(false);
         
-                    const page = new Markdown('path/to/file', config, mockStorage as any, mockLogger);
+                    const page = new Markdown('path/to/file', 'path/to/file', config, mockStorage as any, mockLogger);
                     await expect(page.getPage('path/to/file')).rejects.toThrow(NotFoundError);
         
                     expect(mockStorage.contentFileExists).toHaveBeenCalledWith('path/to/file.md');
@@ -285,7 +285,7 @@ describe('Markdown', () => {
                         return !file.endsWith('to.md');
                     });
 
-                    const page = new Markdown('root', config, mockStorage as any, mockLogger, true);
+                    const page = new Markdown('root', 'root', config, mockStorage as any, mockLogger, true);
                     await expect(page.getPage('root/path/to/page')).rejects.toThrow(NotFoundError);
 
                     expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(3);
@@ -300,7 +300,7 @@ describe('Markdown', () => {
                 const nonExistentPage = 'rootPath/existingPage/nonExistentPage';
 
                 beforeEach(() => {
-                    rootPage = new Markdown('rootPath', config, mockStorage as any, mockLogger, true);
+                    rootPage = new Markdown('rootPath', 'rootPath', config, mockStorage as any, mockLogger, true);
                     mockStorage.contentFileExists.mockImplementation((path: string) => {
                         return !path.includes('nonExistentPage');
                     });
@@ -368,7 +368,7 @@ describe('Markdown', () => {
                     mockSplitFrontMatter.mockReturnValue([parsedYaml]);
                     mockYAMLparse.mockReturnValue(parsedYaml);
 
-                    page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
                 });
 
                 it('throws if no user is entered', async () => {
@@ -384,7 +384,7 @@ describe('Markdown', () => {
                 it('does not throw if user has no permission, but authentication is disabled', async () => {
                     const newConfig = { ...config, enableAuthentication: false };
                     const user = { id: 'some-user', roles: ['role2', 'role3'] };
-                    page = new Markdown('path/to/root', newConfig, mockStorage as any, mockLogger, true);
+                    page = new Markdown('path/to/root', 'path/to/root', newConfig, mockStorage as any, mockLogger, true);
 
                     await expect(page.writePage('path/to/root', writeContent, user)).resolves.toBeUndefined();
                 });
@@ -411,7 +411,7 @@ describe('Markdown', () => {
                             : { restrict: 'role1', allowWrite: 'role1' }
                     ));
 
-                    page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
                     await expect(page.writePage('path/to/root/some/long/path/to/markdown', writeContent, user))
                         .rejects.toThrow(NotPermittedError);
@@ -421,7 +421,7 @@ describe('Markdown', () => {
                 it('throws if user does not have write access to the last file in the path (and only read access to the rest)', async () => {
                     const user = { id: 'some-user', roles: ['role2'] };
 
-                    page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
                     await expect(page.writePage('path/to/root/some/long/path/to/markdown', writeContent, user))
                         .rejects.toThrow(NotPermittedError);
@@ -438,7 +438,7 @@ describe('Markdown', () => {
                             : { restrict: 'role1' }
                     ));
 
-                    page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
                     await expect(page.writePage('path/to/root/some/long/path/to/markdown', writeContent, user))
                         .resolves.toBeUndefined();
@@ -454,7 +454,7 @@ describe('Markdown', () => {
                 });
 
                 it('writes to the index.md content file for a root object where the targetPath matches the first object', async () => {
-                    const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
                     await page.writePage('path/to/root', writeContent, user);
 
@@ -462,7 +462,7 @@ describe('Markdown', () => {
                 });
 
                 it('writes to the requested content file for a non-root object where the targetPath matches the first object', async () => {
-                    const page = new Markdown('path/to/file', config, mockStorage as any, mockLogger);
+                    const page = new Markdown('path/to/file', 'path/to/file', config, mockStorage as any, mockLogger);
 
                     await page.writePage('path/to/file', writeContent, user);
 
@@ -470,7 +470,7 @@ describe('Markdown', () => {
                 });
 
                 it('recurses through objects for a long path and writes to the file from the last object', async () => {
-                    const page = new Markdown('root', config, mockStorage as any, mockLogger, true);
+                    const page = new Markdown('root', 'root', config, mockStorage as any, mockLogger, true);
 
                     await page.writePage('root/path/to/page', writeContent, user);
 
@@ -491,7 +491,7 @@ describe('Markdown', () => {
                 it('for a root object if the object\'s root/index.md file does not exist', async () => {
                     mockStorage.contentFileExists.mockReturnValue(false);
         
-                    const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+                    const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
                     await expect(page.writePage('path/to/root', writeContent, user)).rejects.toThrow(NotFoundError);
         
                     expect(mockStorage.contentFileExists).toHaveBeenCalledWith('path/to/root/index.md');
@@ -500,7 +500,7 @@ describe('Markdown', () => {
                 it('for a non-root object if the object\'s content file does not exist', async () => {
                     mockStorage.contentFileExists.mockReturnValue(false);
         
-                    const page = new Markdown('path/to/file', config, mockStorage as any, mockLogger);
+                    const page = new Markdown('path/to/file', 'path/to/file', config, mockStorage as any, mockLogger);
                     await expect(page.writePage('path/to/file', writeContent, user)).rejects.toThrow(NotFoundError);
         
                     expect(mockStorage.contentFileExists).toHaveBeenCalledWith('path/to/file.md');
@@ -511,7 +511,7 @@ describe('Markdown', () => {
                         return !file.endsWith('to.md');
                     });
 
-                    const page = new Markdown('root', config, mockStorage as any, mockLogger, true);
+                    const page = new Markdown('root', 'root', config, mockStorage as any, mockLogger, true);
                     await expect(page.writePage('root/path/to/page', writeContent, user)).rejects.toThrow(NotFoundError);
 
                     expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(3);
@@ -527,7 +527,7 @@ describe('Markdown', () => {
                 const user = { id: 'some-user', roles: ['admin'] };
 
                 beforeEach(() => {
-                    rootPage = new Markdown('rootPath', config, mockStorage as any, mockLogger, true);
+                    rootPage = new Markdown('rootPath', 'rootPath', config, mockStorage as any, mockLogger, true);
                     // the first two parts of the path already exist
                     // then the subsequent parts of the path don't exist, are created, then exist (if the path is valid)
                     mockStorage.contentFileExists
@@ -598,7 +598,7 @@ describe('Markdown', () => {
     describe('deletePage', () => {
         it('throws an error if the user does not have admin access', async () => {
             const user = { id: 'some-user', roles: ['role1'] };
-            const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+            const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
             await expect(page.deletePage('path/to/root/page.md', user)).rejects.toThrow(NotPermittedError);
         });
@@ -606,7 +606,7 @@ describe('Markdown', () => {
         it('throws an error if the content file does not exist', async () => {
             const user = { id: 'some-user', roles: ['admin'] };
             mockStorage.contentFileExists.mockReturnValue(false);
-            const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+            const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
             await expect(page.deletePage('path/to/root/page', user)).rejects.toThrow(NotFoundError);
         });
@@ -615,7 +615,7 @@ describe('Markdown', () => {
             const user = { id: 'some-user', roles: ['admin'] };
             mockStorage.contentFileExists.mockReturnValue(true);
             mockStorage.listContentChildren.mockResolvedValue(['page.md', 'index.md']);
-            const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+            const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
             await expect(page.deletePage('path/to/root/page', user)).rejects.toThrow(new NotPermittedError('cannot delete markdown files which have children'));
         });
@@ -624,7 +624,7 @@ describe('Markdown', () => {
             const user = { id: 'some-user', roles: ['admin'] };
             mockStorage.contentFileExists.mockReturnValue(true);
             mockStorage.listContentChildren.mockResolvedValue([]);
-            const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+            const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
             await expect(page.deletePage('path/to/root/page', user)).resolves.toBeUndefined();
 
@@ -635,7 +635,7 @@ describe('Markdown', () => {
             const user = { id: 'some-user', roles: ['admin'] };
             mockStorage.contentFileExists.mockReturnValue(true);
             mockStorage.listContentChildren.mockResolvedValue([]);
-            const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+            const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
             await expect(page.deletePage('path/to/root/path/to/page', user)).resolves.toBeUndefined();
 
@@ -647,7 +647,7 @@ describe('Markdown', () => {
             const user = { id: 'some-user', roles: ['admin'] };
             mockStorage.contentFileExists.mockReturnValue(true);
             mockStorage.listContentChildren.mockResolvedValue([]);
-            const page = new Markdown('path/to/root', config, mockStorage as any, mockLogger, true);
+            const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
 
             await expect(page.deletePage('path/to/root', user)).rejects.toThrow(new NotPermittedError('cannot delete the root file'));
         });
@@ -662,7 +662,7 @@ describe('Markdown', () => {
             it('if the content file does not exist for a root object', async () => {
                 mockStorage.contentFileExists.mockReturnValue(false);
     
-                const page = new Markdown('root', config, mockStorage as any, mockLogger, true);
+                const page = new Markdown('root', 'root', config, mockStorage as any, mockLogger, true);
     
                 await expect(() => page.getTree())
                     .rejects.toThrow(new NotFoundError('No markdown file found matching path root'));
@@ -672,7 +672,7 @@ describe('Markdown', () => {
             it('if the content file does not exist for a non-root object', async () => {
                 mockStorage.contentFileExists.mockReturnValue(false);
     
-                const page = new Markdown('root/file', config, mockStorage as any, mockLogger);
+                const page = new Markdown('root/file', 'root/file', config, mockStorage as any, mockLogger);
     
                 await expect(() => page.getTree())
                     .rejects.toThrow(new NotFoundError('No markdown file found matching path root/file'));
@@ -689,11 +689,12 @@ describe('Markdown', () => {
                 mockSplitFrontMatter.mockReturnValue([parsedYaml]);
                 mockYAMLparse.mockReturnValue(parsedYaml);
     
-                const page = new Markdown('root/file', config, mockStorage as any, mockLogger);
+                const page = new Markdown('root/file', 'root/file', config, mockStorage as any, mockLogger);
                 const actualMetadata = await page.getTree();
     
                 const expectedMetadata = {
                     apiPath: 'root/file',
+                    uiPath: 'root/file',
                     title: 'Some Title',
                 };
                 expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledWith('root/file.md');
@@ -712,12 +713,13 @@ describe('Markdown', () => {
                 mockSplitFrontMatter.mockReturnValue([parsedYaml]);
                 mockYAMLparse.mockReturnValue(parsedYaml);
     
-                const page = new Markdown('root/file', config, mockStorage as any, mockLogger);
+                const page = new Markdown('root/file', 'root/file', config, mockStorage as any, mockLogger);
                 const actualMetadata1 = await page.getTree();
                 const actualMetadata2 = await page.getTree();
     
                 const expectedMetadata = {
                     apiPath: 'root/file',
+                    uiPath: 'root/file',
                     title: 'Some Title',
                 };
                 expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledTimes(2);
@@ -740,12 +742,13 @@ describe('Markdown', () => {
                 mockSplitFrontMatter.mockReturnValue([parsedYaml]);
                 mockYAMLparse.mockReturnValue(parsedYaml);
     
-                const page = new Markdown('root/file', config, mockStorage as any, mockLogger);
+                const page = new Markdown('root/file', 'root/file', config, mockStorage as any, mockLogger);
                 const actualMetadata1 = await page.getTree();
                 const actualMetadata2 = await page.getTree();
     
                 const expectedMetadata = {
                     apiPath: 'root/file',
+                    uiPath: 'root/file',
                     title: 'Some Title',
                 };
                 expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledTimes(2);
@@ -765,11 +768,12 @@ describe('Markdown', () => {
                 mockSplitFrontMatter.mockReturnValue([parsedYaml]);
                 mockYAMLparse.mockReturnValue(parsedYaml);
     
-                const page = new Markdown('root/file', config, mockStorage as any, mockLogger);
+                const page = new Markdown('root/file', 'root/file', config, mockStorage as any, mockLogger);
                 const actualMetadata = await page.getTree();
     
                 const expectedMetadata = {
                     apiPath: 'root/file',
+                    uiPath: 'root/file',
                     title: 'file',
                 };
                 expect(mockStorage.getContentFileModifiedTime).toHaveBeenCalledWith('root/file.md');
@@ -795,14 +799,15 @@ describe('Markdown', () => {
                 mockSplitFrontMatter.mockReturnValue(['']);
                 mockYAMLparse.mockReturnValue({});
     
-                const page = new Markdown('rootDir', config, mockStorage as any, mockLogger, true);
+                const page = new Markdown('rootDir', 'rootDir', config, mockStorage as any, mockLogger, true);
     
                 const expectedStructure = {
                     apiPath: 'rootDir',
+                    uiPath: 'rootDir',
                     children: [
-                        { title: 'rootDir', apiPath: 'rootDir' } ,
-                        { title: 'markdown1', apiPath: 'rootDir/markdown1' },
-                        { title: 'markdown2', apiPath: 'rootDir/markdown2' }
+                        { title: 'rootDir', apiPath: 'rootDir', uiPath: 'rootDir' } ,
+                        { title: 'markdown1', apiPath: 'rootDir/markdown1', uiPath: 'rootDir/markdown1' },
+                        { title: 'markdown2', apiPath: 'rootDir/markdown2', uiPath: 'rootDir/markdown2' },
                     ]
                 };
                 const structure = await page.getTree();
@@ -822,13 +827,13 @@ describe('Markdown', () => {
                 mockSplitFrontMatter.mockReturnValue(['']);
                 mockYAMLparse.mockReturnValue({});
     
-                const page = new Markdown('rootDir', config, mockStorage as any, mockLogger, false);
+                const page = new Markdown('rootDir', 'rootDir', config, mockStorage as any, mockLogger, false);
     
                 const expectedStructure = {
-                    title: 'rootDir', apiPath: 'rootDir',
+                    title: 'rootDir', apiPath: 'rootDir', uiPath: 'rootDir',
                     children: [
-                        { title: 'markdown1', apiPath: 'rootDir/markdown1'  },
-                        { title: 'markdown2', apiPath: 'rootDir/markdown2' }
+                        { title: 'markdown1', apiPath: 'rootDir/markdown1', uiPath: 'rootDir/markdown1' },
+                        { title: 'markdown2', apiPath: 'rootDir/markdown2', uiPath: 'rootDir/markdown2' },
                     ]
                 };
                 const structure = await page.getTree();
@@ -842,11 +847,12 @@ describe('Markdown', () => {
                 mockSplitFrontMatter.mockReturnValue(['']);
                 mockYAMLparse.mockReturnValue({});
     
-                const page = new Markdown('rootDir', config, mockStorage as any, mockLogger, true);
+                const page = new Markdown('rootDir', 'rootDir', config, mockStorage as any, mockLogger, true);
     
                 const expectedStructure = {
                     apiPath: 'rootDir',
-                    children: [{ title: 'rootDir', apiPath: 'rootDir' } ]
+                    uiPath: 'rootDir',
+                    children: [{ title: 'rootDir', apiPath: 'rootDir', uiPath: 'rootDir' } ]
                 };
                 const structure = await page.getTree();
                 expect(structure).toEqual(expectedStructure);
@@ -859,9 +865,9 @@ describe('Markdown', () => {
                 mockSplitFrontMatter.mockReturnValue(['']);
                 mockYAMLparse.mockReturnValue({});
     
-                const page = new Markdown('rootDir/page', config, mockStorage as any, mockLogger);
+                const page = new Markdown('rootDir/page', 'rootDir/page', config, mockStorage as any, mockLogger);
     
-                const expectedStructure = { title: 'page', apiPath: 'rootDir/page' };
+                const expectedStructure = { title: 'page', apiPath: 'rootDir/page', uiPath: 'rootDir/page' };
                 const structure = await page.getTree();
                 expect(structure).toEqual(expectedStructure);
             });
@@ -882,18 +888,18 @@ describe('Markdown', () => {
                     return {};
                 });
     
-                const page = new Markdown('rootDir', config, mockStorage as any, mockLogger);
+                const page = new Markdown('rootDir', 'rootDir', config, mockStorage as any, mockLogger);
                 const actualStructure = await page.getTree();
     
                 const expectedStructure = {
-                    title: 'rootDir', apiPath: 'rootDir',
+                    title: 'rootDir', apiPath: 'rootDir', uiPath: 'rootDir',
                     children: [
-                        { title: 'fileC', apiPath: 'rootDir/fileC', weight: 10 },
-                        { title: 'fileB', apiPath: 'rootDir/fileB', weight: 20 },
-                        { title: 'fileA', apiPath: 'rootDir/fileA', weight: 30 },
-                        { title: 'fileD', apiPath: 'rootDir/fileD' },
-                        { title: 'fileE', apiPath: 'rootDir/fileE' },
-                        { title: 'fileF', apiPath: 'rootDir/fileF' },
+                        { title: 'fileC', apiPath: 'rootDir/fileC', uiPath: 'rootDir/fileC', weight: 10 },
+                        { title: 'fileB', apiPath: 'rootDir/fileB', uiPath: 'rootDir/fileB', weight: 20 },
+                        { title: 'fileA', apiPath: 'rootDir/fileA', uiPath: 'rootDir/fileA', weight: 30 },
+                        { title: 'fileD', apiPath: 'rootDir/fileD', uiPath: 'rootDir/fileD', },
+                        { title: 'fileE', apiPath: 'rootDir/fileE', uiPath: 'rootDir/fileE', },
+                        { title: 'fileF', apiPath: 'rootDir/fileF', uiPath: 'rootDir/fileF', },
                     ]
                 };
                 expect(actualStructure).toEqual(expectedStructure);
@@ -915,25 +921,26 @@ describe('Markdown', () => {
                     return {};
                 });
     
-                const page = new Markdown('rootDir', config, mockStorage as any, mockLogger, true);
+                const page = new Markdown('rootDir', 'rootDir', config, mockStorage as any, mockLogger, true);
                 const actualStructure = await page.getTree();
     
                 const expectedStructure = {
                     apiPath: 'rootDir',
+                    uiPath: 'rootDir',
                     children: [
-                        { title: 'rootDir', apiPath: 'rootDir' },
-                        { title: 'fileC', apiPath: 'rootDir/fileC', weight: 10 },
-                        { title: 'fileB', apiPath: 'rootDir/fileB', weight: 20 },
-                        { title: 'fileA', apiPath: 'rootDir/fileA', weight: 30 },
-                        { title: 'fileD', apiPath: 'rootDir/fileD' },
-                        { title: 'fileE', apiPath: 'rootDir/fileE' },
-                        { title: 'fileF', apiPath: 'rootDir/fileF' },
+                        { title: 'rootDir', apiPath: 'rootDir', uiPath: 'rootDir' },
+                        { title: 'fileC', apiPath: 'rootDir/fileC', uiPath: 'rootDir/fileC', weight: 10 },
+                        { title: 'fileB', apiPath: 'rootDir/fileB', uiPath: 'rootDir/fileB', weight: 20 },
+                        { title: 'fileA', apiPath: 'rootDir/fileA', uiPath: 'rootDir/fileA', weight: 30 },
+                        { title: 'fileD', apiPath: 'rootDir/fileD', uiPath: 'rootDir/fileD', },
+                        { title: 'fileE', apiPath: 'rootDir/fileE', uiPath: 'rootDir/fileE', },
+                        { title: 'fileF', apiPath: 'rootDir/fileF', uiPath: 'rootDir/fileF', },
                     ]
                 };
                 expect(actualStructure).toEqual(expectedStructure);
             });
     
-            it('returns correct data for a complex deep directory structure', async () => {
+            it('returns correct data for a complex deep directory structure where uiPath equals apiPath', async () => {
                 mockStorage.contentFileExists.mockReturnValue(true);
                 mockStorage.getContentFile.mockImplementation((path) => Buffer.from(path));
                 mockStorage.listContentChildren.mockImplementation((path) => {
@@ -956,31 +963,92 @@ describe('Markdown', () => {
                     return {};
                 });
     
-                const page = new Markdown('rootDir', config, mockStorage as any, mockLogger, true);
+                const page = new Markdown('rootDir', 'rootDir', config, mockStorage as any, mockLogger, true);
                 const actualStructure = await page.getTree();
     
                 const expectedStructure = {
                     apiPath: 'rootDir',
+                    uiPath: 'rootDir',
                     children: [
-                        { title: 'rootDir', apiPath: 'rootDir' },
-                        { title: 'file1', apiPath: 'rootDir/file1'  },
-                        { title: 'file2', apiPath: 'rootDir/file2' },
+                        { title: 'rootDir', apiPath: 'rootDir', uiPath: 'rootDir' },
+                        { title: 'file1', apiPath: 'rootDir/file1', uiPath: 'rootDir/file1' },
+                        { title: 'file2', apiPath: 'rootDir/file2', uiPath: 'rootDir/file2'},
                         {
-                            title: 'firstDir', apiPath: 'rootDir/firstDir',
+                            title: 'firstDir', apiPath: 'rootDir/firstDir', uiPath: 'rootDir/firstDir',
                             children: [
-                                { title: 'file3', apiPath: 'rootDir/firstDir/file3' },
-                                { title: 'file4', apiPath: 'rootDir/firstDir/file4' },
+                                { title: 'file3', apiPath: 'rootDir/firstDir/file3', uiPath: 'rootDir/firstDir/file3' },
+                                { title: 'file4', apiPath: 'rootDir/firstDir/file4', uiPath: 'rootDir/firstDir/file4' },
                                 {
-                                    title: 'firstSubDir', apiPath: 'rootDir/firstDir/firstSubDir',
+                                    title: 'firstSubDir', apiPath: 'rootDir/firstDir/firstSubDir', uiPath: 'rootDir/firstDir/firstSubDir',
                                     children: [
-                                        { title: 'file5', apiPath: 'rootDir/firstDir/firstSubDir/file5' },
-                                        { title: 'file6', apiPath: 'rootDir/firstDir/firstSubDir/file6' },
+                                        { title: 'file5', apiPath: 'rootDir/firstDir/firstSubDir/file5', uiPath: 'rootDir/firstDir/firstSubDir/file5' },
+                                        { title: 'file6', apiPath: 'rootDir/firstDir/firstSubDir/file6', uiPath: 'rootDir/firstDir/firstSubDir/file6' },
                                         {
-                                            title: 'secondSubDir', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir',
+                                            title: 'secondSubDir', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir',
                                             children: [
-                                                { title: 'file7', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file7' },
-                                                { title: 'file8', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file8' },
-                                                { title: 'file9', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file9' },
+                                                { title: 'file7', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file7', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file7' },
+                                                { title: 'file8', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file8', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file8' },
+                                                { title: 'file9', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file9', uiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file9' },
+                                            ]
+                                        },
+                                    ]
+                                },
+                            ]
+                        },
+                    ]
+                };
+                expect(actualStructure).toEqual(expectedStructure);
+            });
+
+            it('returns correct data for a complex deep directory structure where uiPath is empty string', async () => {
+                mockStorage.contentFileExists.mockReturnValue(true);
+                mockStorage.getContentFile.mockImplementation((path) => Buffer.from(path));
+                mockStorage.listContentChildren.mockImplementation((path) => {
+                    if (path.endsWith('rootDir')) {
+                        return ['file1.md', 'file2.md', 'firstDir.md'];
+                    } else if (path.endsWith('firstDir')) {
+                        return ['firstSubDir.md', 'file3.md', 'file4.md'];
+                    } else if (path.endsWith('firstSubDir')) {
+                        return ['file5.md', 'file6.md', 'secondSubDir.md'];
+                    } else if (path.endsWith('secondSubDir')) {
+                        return ['file7.md', 'file8.md', 'file9.md'];
+                    }
+                    return [];
+                });
+                mockSplitFrontMatter.mockImplementation((path) => [path]);
+                mockYAMLparse.mockImplementation((path) => {
+                    if (path.endsWith('C.md')) return { weight: 10 };
+                    if (path.endsWith('B.md')) return { weight: 20 };
+                    if (path.endsWith('A.md')) return { weight: 30 };
+                    return {};
+                });
+    
+                const page = new Markdown('rootDir', '', config, mockStorage as any, mockLogger, true);
+                const actualStructure = await page.getTree();
+    
+                const expectedStructure = {
+                    apiPath: 'rootDir',
+                    uiPath: '',
+                    children: [
+                        { title: 'rootDir', apiPath: 'rootDir', uiPath: '' },
+                        { title: 'file1', apiPath: 'rootDir/file1', uiPath: 'file1' },
+                        { title: 'file2', apiPath: 'rootDir/file2', uiPath: 'file2'},
+                        {
+                            title: 'firstDir', apiPath: 'rootDir/firstDir', uiPath: 'firstDir',
+                            children: [
+                                { title: 'file3', apiPath: 'rootDir/firstDir/file3', uiPath: 'firstDir/file3' },
+                                { title: 'file4', apiPath: 'rootDir/firstDir/file4', uiPath: 'firstDir/file4' },
+                                {
+                                    title: 'firstSubDir', apiPath: 'rootDir/firstDir/firstSubDir', uiPath: 'firstDir/firstSubDir',
+                                    children: [
+                                        { title: 'file5', apiPath: 'rootDir/firstDir/firstSubDir/file5', uiPath: 'firstDir/firstSubDir/file5' },
+                                        { title: 'file6', apiPath: 'rootDir/firstDir/firstSubDir/file6', uiPath: 'firstDir/firstSubDir/file6' },
+                                        {
+                                            title: 'secondSubDir', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir', uiPath: 'firstDir/firstSubDir/secondSubDir',
+                                            children: [
+                                                { title: 'file7', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file7', uiPath: 'firstDir/firstSubDir/secondSubDir/file7' },
+                                                { title: 'file8', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file8', uiPath: 'firstDir/firstSubDir/secondSubDir/file8' },
+                                                { title: 'file9', apiPath: 'rootDir/firstDir/firstSubDir/secondSubDir/file9', uiPath: 'firstDir/firstSubDir/secondSubDir/file9' },
                                             ]
                                         },
                                     ]
@@ -1006,40 +1074,40 @@ describe('Markdown', () => {
             });
 
             it('returns undefined for non-root page if access is restricted and no user is entered', async () => {
-                const page = new Markdown('rootDir', config, mockStorage as any, mockLogger, false);
+                const page = new Markdown('rootDir', 'rootDir', config, mockStorage as any, mockLogger, false);
 
                 await expect(page.getTree()).resolves.toBeUndefined();
             });
 
             it('returns error for root page if access is restricted and no user is entered', async () => {
-                const page = new Markdown('rootDir', config, mockStorage as any, mockLogger, true);
+                const page = new Markdown('rootDir', 'rootDir', config, mockStorage as any, mockLogger, true);
 
                 await expect(page.getTree()).rejects.toThrow(NotPermittedError);
             });
 
             it('returns undefined for non-root page if access is restricted and user does not have permission', async () => {
-                const page = new Markdown('rootDir', config, mockStorage as any, mockLogger, false);
+                const page = new Markdown('rootDir', 'rootDir', config, mockStorage as any, mockLogger, false);
                 const user = { id: 'some-user', roles: ['role2', 'role3'] };
 
                 await expect(page.getTree(user)).resolves.toBeUndefined();
             });
 
             it('returns error for root page if access is restricted and user does not have permission', async () => {
-                const page = new Markdown('rootDir', config, mockStorage as any, mockLogger, true);
+                const page = new Markdown('rootDir', 'rootDir', config, mockStorage as any, mockLogger, true);
                 const user = { id: 'some-user', roles: ['role2', 'role3'] };
 
                 await expect(page.getTree(user)).rejects.toThrow(NotPermittedError);
             });
 
             it('returns value if access is restricted and user has permission', async () => {
-                const page = new Markdown('rootDir', config, mockStorage as any, mockLogger, true);
+                const page = new Markdown('rootDir', 'rootDir', config, mockStorage as any, mockLogger, true);
                 const user = { id: 'some-user', roles: ['role1', 'role3'] };
 
                 await expect(page.getTree(user)).resolves.toBeDefined();
             });
 
             it('returns value if access is restricted but user has admin rights', async () => {
-                const page = new Markdown('rootDir', config, mockStorage as any, mockLogger, true);
+                const page = new Markdown('rootDir', 'rootDir', config, mockStorage as any, mockLogger, true);
                 const user = { id: 'some-user', roles: ['admin'] };
 
                 await expect(page.getTree(user)).resolves.toBeDefined();

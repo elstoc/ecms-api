@@ -19,6 +19,7 @@ export class Markdown implements IMarkdown {
 
     constructor(
         private apiPath: string,
+        private uiPath: string,
         private config: Config,
         private storage: IStorageAdapter,
         private logger: Logger,
@@ -191,7 +192,8 @@ export class Markdown implements IMarkdown {
     }
 
     private getChild(childApiPath: string): IMarkdown {
-        this.children[childApiPath] ??= new Markdown(childApiPath, this.config, this.storage, this.logger);
+        const childUiPath = path.join(this.uiPath, childApiPath.split('/').slice(-1)[0] || '');
+        this.children[childApiPath] ??= new Markdown(childApiPath, childUiPath, this.config, this.storage, this.logger);
         return this.children[childApiPath];
     }
 
@@ -209,6 +211,7 @@ export class Markdown implements IMarkdown {
 
         this.metadata = {
             apiPath: apiPath ?? this.apiPath,
+            uiPath: this.uiPath,
             title: title ?? path.basename(this.apiPath),
             weight: weight ? parseInt(weight) : undefined,
             restrict, allowWrite
@@ -244,7 +247,7 @@ export class Markdown implements IMarkdown {
         if (this.isRoot) {
             // metadata for the root instance is added to the top of the list
             sortedChildren.unshift({ ...metadata });
-            return { apiPath: this.apiPath, children: sortedChildren };
+            return { apiPath: this.apiPath, uiPath: this.uiPath, children: sortedChildren };
         } else if (children.length === 0) {
             return { ...metadata };
         }

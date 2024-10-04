@@ -86,12 +86,10 @@ export class Component implements IComponent {
                 ...commonMetadata
             };
         } else if (type === ComponentTypes.markdown) {
-            const { includeNav, defaultComponent } = parsedYaml;
-            if (typeof includeNav !== 'boolean') {
-                throw new Error('Markdown components must include the includeNav parameter as a boolean');
-            }
+            const { singlePage, defaultComponent } = parsedYaml;
             return {
-                type, includeNav,
+                type,
+                singlePage: singlePage === true,
                 defaultComponent: defaultComponent === true,
                 ...commonMetadata
             };

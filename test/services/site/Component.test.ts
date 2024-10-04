@@ -113,23 +113,6 @@ describe('Component', () => {
                         .toThrow(new NotFoundError('Gallery components must include the batchSize parameter as a number'));
                 });
             });
-
-            describe('for markdown components', () => {
-                it('if includeNav is not boolean', async () => {
-                    mockStorage.contentFileExists.mockReturnValue(true);
-                    mockStorage.contentDirectoryExists.mockReturnValue(true);
-                    mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
-                    mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
-                    yamlParseMock.mockReturnValue({
-                        title: 'The Title',
-                        type: 'markdown',
-                        includeNav: 'boo'
-                    });
-        
-                    await expect(component.getMetadata()).rejects
-                        .toThrow(new NotFoundError('Markdown components must include the includeNav parameter as a boolean'));
-                });
-            });
         });
 
         describe('returns metadata', () => {
@@ -165,9 +148,8 @@ describe('Component', () => {
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
                     title: 'The Title',
-                    defaultComponent: false,
                     type: 'markdown',
-                    includeNav: true
+                    singlePage: false
                 });
     
                 const actualMetadata = await component.getMetadata();
@@ -178,7 +160,7 @@ describe('Component', () => {
                     title: 'The Title',
                     defaultComponent: false,
                     type: 'markdown',
-                    includeNav: true
+                    singlePage: false
                 };
                 expect(actualMetadata).toEqual(expectedMetadata);
             });
@@ -443,7 +425,7 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    type, batchSize: 2, includeNav: true
+                    type, batchSize: 2, singlePage: false
                 });
 
                 await expect(component.getGallery('x')).rejects
@@ -528,7 +510,7 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    type, batchSize: 2, includeNav: true
+                    type, batchSize: 2, singlePage: false
                 });
     
                 await expect(component.getMarkdown('x')).rejects
@@ -543,7 +525,7 @@ describe('Component', () => {
             mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
             yamlParseMock.mockReturnValue({
                 type: 'markdown',
-                includeNav: true
+                singlePage: false
             });
             mockMarkdown.mockImplementation(() => ({
                 name: 'mocked markdown'
@@ -614,7 +596,7 @@ describe('Component', () => {
                 mockStorage.getContentFileModifiedTime.mockReturnValue(1234);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
                 yamlParseMock.mockReturnValue({
-                    type, batchSize: 2, includeNav: true
+                    type, batchSize: 2, singlePage: false
                 });
 
                 await expect(component.getVideoDb('x')).rejects

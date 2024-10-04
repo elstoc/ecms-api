@@ -26,7 +26,7 @@ export type GalleryMetadata = ComponentMetadataCommon & {
 
 export type MarkdownMetadata = ComponentMetadataCommon & {
     type: ComponentTypes.markdown;
-    includeNav: boolean;
+    singlePage: boolean;
     defaultComponent?: boolean;
 }
 

@@ -159,7 +159,7 @@ export class Component implements IComponent {
         if (this.metadata?.type !== ComponentTypes.markdown) {
             throw new NotFoundError(`No ${ComponentTypes.markdown} component found at the path ${this.contentDir}`);
         }
-        this.markdown ??= new Markdown(this.contentDir, '', this.config, this.storage, this.logger, true);
+        this.markdown ??= new Markdown(this.contentDir, '', this.config, this.storage, this.logger, true, this.metadata.singlePage);
         return this.markdown;
     }
 

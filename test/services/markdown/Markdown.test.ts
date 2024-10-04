@@ -261,8 +261,8 @@ describe('Markdown', () => {
         });
 
         describe('when called for a non-extant file', () => {
-            describe('when the user is not admin', () => {
-                it('throws for a root object if that object\'s root/index.md file does not exist', async () => {
+            describe('throws when the user is not admin', () => {
+                it('for a root object if that object\'s root/index.md file does not exist', async () => {
                     mockStorage.contentFileExists.mockReturnValue(false);
         
                     const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true);
@@ -271,7 +271,7 @@ describe('Markdown', () => {
                     expect(mockStorage.contentFileExists).toHaveBeenCalledWith('path/to/root/index.md');
                 });
         
-                it('throws for a non-root object if that object\'s content file does not exist', async () => {
+                it('for a non-root object if that object\'s content file does not exist', async () => {
                     mockStorage.contentFileExists.mockReturnValue(false);
         
                     const page = new Markdown('path/to/file', 'path/to/file', config, mockStorage as any, mockLogger);
@@ -280,7 +280,7 @@ describe('Markdown', () => {
                     expect(mockStorage.contentFileExists).toHaveBeenCalledWith('path/to/file.md');
                 });
 
-                it('throws if any object deeper in the path does not have a markdown file associated with it', async () => {
+                it('if any object deeper in the path does not have a markdown file associated with it', async () => {
                     mockStorage.contentFileExists.mockImplementation((file) => {
                         return !file.endsWith('to.md');
                     });
@@ -292,6 +292,16 @@ describe('Markdown', () => {
                     expect(mockStorage.contentFileExists.mock.calls[0][0]).toBe('root/index.md');
                     expect(mockStorage.contentFileExists.mock.calls[1][0]).toBe('root/path.md');
                     expect(mockStorage.contentFileExists.mock.calls[2][0]).toBe('root/path/to.md');
+                });
+
+                it('if called on a singlePage component, for any path deeper than the root', async () => {
+                    mockStorage.contentFileExists.mockReturnValue(true);
+
+                    const page = new Markdown('root', 'root', config, mockStorage as any, mockLogger, true, true);
+                    await expect(page.getPage('root/path/to/page')).rejects.toThrow(NotFoundError);
+
+                    expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(1);
+                    expect(mockStorage.contentFileExists.mock.calls[0][0]).toBe('root/index.md');
                 });
             });
             
@@ -340,6 +350,21 @@ describe('Markdown', () => {
                     const user = { id: 'some-user', roles: ['admin'] };
 
                     const actualPage = await rootPage.getPage(`${nonExistentPage}/${inPath}`, user);
+                    expect(actualPage).toStrictEqual(expectedPage);
+                });
+
+                it('and called for a single page component, where the target path is not the root', async () => {
+                    const expectedPage = {
+                        content: '',
+                        pageExists: false,
+                        pathValid: false,
+                        canWrite: false,
+                        canDelete: false
+                    };
+                    const user = { id: 'some-user', roles: ['admin'] };
+                    rootPage = new Markdown('rootPath', 'rootPath', config, mockStorage as any, mockLogger, true, true);
+
+                    const actualPage = await rootPage.getPage(nonExistentPage, user);
                     expect(actualPage).toStrictEqual(expectedPage);
                 });
             });
@@ -446,7 +471,7 @@ describe('Markdown', () => {
                 });
             });
 
-            describe('updates the file correctly for a user with write access', () => {
+            describe('for a user with write access', () => {
                 const user = { id: 'some-user', roles: ['role1'] };
 
                 beforeEach(() => {
@@ -480,6 +505,15 @@ describe('Markdown', () => {
                     expect(mockStorage.contentFileExists.mock.calls[2][0]).toBe('root/path/to.md');
                     expect(mockStorage.contentFileExists.mock.calls[3][0]).toBe('root/path/to/page.md');
                     expect(mockStorage.storeContentFile).toHaveBeenCalledWith('root/path/to/page.md', writeContentBuf);
+                });
+
+                it('throws when called on a single page component, for any path deeper than the root', async () => {
+                    const page = new Markdown('root', 'root', config, mockStorage as any, mockLogger, true, true);
+
+                    await expect(page.writePage('root/path/to/page', writeContent, user)).rejects.toThrow(NotFoundError);
+
+                    expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(1);
+                    expect(mockStorage.contentFileExists.mock.calls[0][0]).toBe('root/index.md');
                 });
             });
         });
@@ -641,6 +675,18 @@ describe('Markdown', () => {
 
             expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(4);
             expect(mockStorage.deleteContentFile).toHaveBeenCalledWith('path/to/root/path/to/page.md');
+        });
+
+        it('throws for a single page component, if trying to delete a deeper file', async () => {
+            const user = { id: 'some-user', roles: ['admin'] };
+            mockStorage.contentFileExists.mockReturnValue(true);
+            mockStorage.listContentChildren.mockResolvedValue([]);
+            const page = new Markdown('path/to/root', 'path/to/root', config, mockStorage as any, mockLogger, true, true);
+
+            await expect(page.deletePage('path/to/root/path/to/page', user)).rejects.toThrow(NotFoundError);
+
+            expect(mockStorage.contentFileExists).toHaveBeenCalledTimes(1);
+            expect(mockStorage.deleteContentFile).not.toHaveBeenCalled();
         });
 
         it('throws an error when trying to delete the root page', async () => {
@@ -814,6 +860,32 @@ describe('Markdown', () => {
                 expect(structure).toEqual(expectedStructure);
             });
     
+            it('root/singlePage: only returns the index metadata', async () => {
+                mockStorage.contentFileExists.mockReturnValue(true);
+                mockStorage.getContentFile.mockResolvedValue(contentFileBuf);
+                mockStorage.listContentChildren.mockImplementation(async (directory, filterFn) => {
+                    if (directory === 'rootDir') {
+                        return ['notmarkdown.mdd', 'markdown1.md', 'markdown2.md', 'noextension', 'index.md']
+                            .filter(filterFn);
+                    }
+                    return [];
+                });
+                mockSplitFrontMatter.mockReturnValue(['']);
+                mockYAMLparse.mockReturnValue({});
+    
+                const page = new Markdown('rootDir', 'rootDir', config, mockStorage as any, mockLogger, true, true);
+    
+                const expectedStructure = {
+                    apiPath: 'rootDir',
+                    uiPath: 'rootDir',
+                    children: [
+                        { title: 'rootDir', apiPath: 'rootDir', uiPath: 'rootDir' } ,
+                    ]
+                };
+                const structure = await page.getTree();
+                expect(structure).toEqual(expectedStructure);
+            });
+
             it('non-root: lists main page and then children with non-md and index.md removed', async () => {
                 mockStorage.contentFileExists.mockReturnValue(true);
                 mockStorage.getContentFile.mockResolvedValue(contentFileBuf);

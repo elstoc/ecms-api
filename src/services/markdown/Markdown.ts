@@ -23,7 +23,8 @@ export class Markdown implements IMarkdown {
         private config: Config,
         private storage: IStorageAdapter,
         private logger: Logger,
-        private isRoot = false
+        private isRoot = false,
+        private singlePage = false
     ) {
         this.contentPath = this.isRoot
             ? `${this.apiPath}/index.md`
@@ -81,6 +82,7 @@ export class Markdown implements IMarkdown {
 
     private apiPathIsValid(targetApiPath: string): boolean {
         if (targetApiPath === this.apiPath) return true;
+        if (this.singlePage) return false;
 
         const onlyHasValidCharacters = /^[A-Za-z0-9_-]+$/;
 
@@ -173,6 +175,9 @@ export class Markdown implements IMarkdown {
     }
 
     private getNextChildInTargetPath(targetApiPath: string): IMarkdown {
+        if (this.singlePage) {
+            throw new NotFoundError('A Single Page Markdown component cannot have sub-pages');
+        }
         /* split the "target path" and "directory containing this instance's children"
            into path segment arrays */
         const targetApiPathSplit = splitPath(targetApiPath);
@@ -230,23 +235,28 @@ export class Markdown implements IMarkdown {
     public async getTree(user?: User): Promise<MarkdownTree | undefined> {
         this.throwIfNoContentFile();
         const metadata = await this.getMetadata();
+
         if (this.config.enableAuthentication && !this.userHasReadAccess(user)) {
             if (this.isRoot) {
                 throw new NotPermittedError();
             }
             return undefined;
         }
-        if (this.isRoot) {
-            this.logger.debug(`getting markdown tree at ${this.apiPath}`);
+
+        this.isRoot && this.logger.debug(`getting markdown tree at ${this.apiPath}`);
+
+        if (this.singlePage) {
+            return {apiPath: this.apiPath, uiPath: this.uiPath, children: [metadata] };
         }
+
         const childObjects = await this.getChildren();
-        const childStructPromises = childObjects.map((child) => child.getTree(user));
-        const children = await Promise.all(childStructPromises);
+        const childTreePromises = childObjects.map((child) => child.getTree(user));
+        const children = await Promise.all(childTreePromises);
         const sortedChildren = sortByWeightAndTitle<MarkdownTree>(children);
 
         if (this.isRoot) {
             // metadata for the root instance is added to the top of the list
-            sortedChildren.unshift({ ...metadata });
+            sortedChildren.unshift(metadata);
             return { apiPath: this.apiPath, uiPath: this.uiPath, children: sortedChildren };
         } else if (children.length === 0) {
             return { ...metadata };

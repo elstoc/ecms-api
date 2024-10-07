@@ -76,12 +76,9 @@ export class Component implements IComponent {
         const commonMetadata = this.getCommonMetadata(parsedYaml);
 
         if (type === ComponentTypes.gallery) {
-            const { batchSize, defaultComponent } = parsedYaml;
-            if (typeof batchSize !== 'number') {
-                throw new Error('Gallery components must include the batchSize parameter as a number');
-            }
+            const { defaultComponent } = parsedYaml;
             return {
-                type, batchSize,
+                type,
                 defaultComponent: defaultComponent === true,
                 ...commonMetadata
             };

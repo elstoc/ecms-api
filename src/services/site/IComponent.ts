@@ -20,7 +20,6 @@ export type ComponentMetadataCommon = {
 
 export type GalleryMetadata = ComponentMetadataCommon & {
     type: ComponentTypes.gallery;
-    batchSize: number;
     defaultComponent?: boolean;
 }
 

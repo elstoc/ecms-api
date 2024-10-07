@@ -75,14 +75,7 @@ export class Component implements IComponent {
 
         const commonMetadata = this.getCommonMetadata(parsedYaml);
 
-        if (type === ComponentTypes.gallery) {
-            const { defaultComponent } = parsedYaml;
-            return {
-                type,
-                defaultComponent: defaultComponent === true,
-                ...commonMetadata
-            };
-        } else if (type === ComponentTypes.markdown) {
+        if (type === ComponentTypes.markdown) {
             const { singlePage, defaultComponent } = parsedYaml;
             return {
                 type,
@@ -90,7 +83,7 @@ export class Component implements IComponent {
                 defaultComponent: defaultComponent === true,
                 ...commonMetadata
             };
-        } else if (type === ComponentTypes.videodb) {
+        } else if (type === ComponentTypes.videodb || type === ComponentTypes.gallery) {
             const { defaultComponent } = parsedYaml;
             return {
                 type,

@@ -29,7 +29,7 @@ export const createVideoDbRouter = (site: ISite): Router => {
                 const video = await videoDb.getVideo(parseInt(req.query.id as string));
                 res.json(video);
             } else if (fn === 'deleteVideo') {
-                const video = await videoDb.deleteVideo(parseInt(req.query.id as string));
+                const video = await videoDb.deleteVideo(parseInt(req.query.id as string), req.user);
                 res.json(video);
             } else if (fn === 'getVideos') {
                 const { maxLength, categories, tags, titleContains, limit, watched, mediaWatched, sortPriorityFirst, minResolution } = req.query;

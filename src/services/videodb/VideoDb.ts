@@ -295,14 +295,14 @@ export class VideoDb implements IVideoDb {
         sql += ' ORDER BY ';
 
         if (sortPriorityFirst) {
-            sql += 'priority_flag DESC, ';
+            sql += '(CASE WHEN priority_flag > 0 THEN 1 ELSE 0 END) DESC, ';
         }
 
         sql += `(
-            CASE WHEN UPPER(title) LIKE 'THE %' THEN SUBSTR(title, 5)
-                 WHEN UPPER(title) LIKE 'AN %' THEN SUBSTR(title, 4)
-                 WHEN UPPER(title) LIKE 'A %' THEN SUBSTR(title, 3)
-                 ELSE title
+            CASE WHEN UPPER(title) LIKE 'THE %' THEN UPPER(SUBSTR(title, 5))
+                 WHEN UPPER(title) LIKE 'AN %' THEN UPPER(SUBSTR(title, 4))
+                 WHEN UPPER(title) LIKE 'A %' THEN UPPER(SUBSTR(title, 3))
+                 ELSE UPPER(title)
             END
         )`;
 

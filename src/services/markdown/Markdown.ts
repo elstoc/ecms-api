@@ -151,7 +151,7 @@ export class Markdown implements IMarkdown {
     }
 
     private throwIfNotAdmin(user?: User): void {
-        if (!userIsAdmin(user)) throw new NotPermittedError();
+        if (!this.userIsAdmin(user)) throw new NotPermittedError();
     }
 
     public async deletePage(targetApiPath: string, user?: User | undefined): Promise<void> {

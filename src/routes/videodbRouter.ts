@@ -25,6 +25,9 @@ export const createVideoDbRouter = (site: ISite): Router => {
             } else if (fn === 'putVideo') {
                 await videoDb.updateVideo(req.body.video, req.user);
                 res.sendStatus(200);
+            } else if (fn === 'patchVideo') {
+                await videoDb.patchVideo(req.body, req.user);
+                res.sendStatus(200);
             } else if (fn === 'getVideo') {
                 const video = await videoDb.getVideo(parseInt(req.query.id as string));
                 res.json(video);
@@ -45,9 +48,6 @@ export const createVideoDbRouter = (site: ISite): Router => {
                 };
                 const videos = await videoDb.queryVideos(filters, parseInt(limit as string));
                 res.json(videos);
-            } else if (fn === 'patchVideos') {
-                await videoDb.updateVideos(req.body.videos, req.user);
-                res.sendStatus(200);
             }
         } catch (err: unknown) {
             next?.(err);
@@ -61,9 +61,9 @@ export const createVideoDbRouter = (site: ISite): Router => {
     router.get('/tags', async (req, res, next) => videoDbHandler(req, res, next, 'getTags'));
     router.post('/video', async (req, res, next) => videoDbHandler(req, res, next, 'postVideo'));
     router.put('/video', async (req, res, next) => videoDbHandler(req, res, next, 'putVideo'));
+    router.patch('/video', async (req, res, next) => videoDbHandler(req, res, next, 'patchVideo'));
     router.get('/video', async (req, res, next) => videoDbHandler(req, res, next, 'getVideo'));
     router.delete('/video', async (req, res, next) => videoDbHandler(req, res, next, 'deleteVideo'));
     router.get('/videos', async (req, res, next) => videoDbHandler(req, res, next, 'getVideos'));
-    router.patch('/videos', async (req, res, next) => videoDbHandler(req, res, next, 'patchVideos'));
     return router;
 };

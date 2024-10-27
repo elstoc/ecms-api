@@ -148,28 +148,14 @@ export class VideoDb implements IVideoDb {
         await this.createOrReplaceVideoTags(video.id, video.tags);
     }
 
-    public async updateVideos(videoUpdates: VideoUpdate[], user?: User): Promise<void> {
+    public async patchVideo(update: VideoUpdate, user?: User): Promise<void> {
         this.throwIfNotAdmin(user);
 
-        for (const newValue of [0, 1]) {
-            const updatedIds: number[] = [];
+        const sql = `UPDATE videos
+                     SET priority_flag = ${update.priority_flag}
+                     WHERE id = ${update.id}`;
 
-            videoUpdates.forEach((update) => {
-                if (update.priority_flag === newValue) {
-                    updatedIds.push(update.id);
-                }
-            });
-
-            if (updatedIds.length === 0) {
-                continue;
-            }
-
-            const sql = `UPDATE videos
-                         SET priority_flag = ${newValue}
-                         WHERE id IN (${updatedIds.sort().join(',')})`;
-
-            await this.database?.exec(sql);
-        }
+        await this.database?.exec(sql);
     }
 
     private async createOrReplaceVideoTags(id: number, tags?: string | null): Promise<void> {

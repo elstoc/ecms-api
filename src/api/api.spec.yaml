@@ -269,6 +269,31 @@ paths:
       responses:
         '200':
           description: OK
+    patch:
+      description: Update specific fields in a single video
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - path
+                - id
+                - priority_flag
+              properties:
+                path:
+                  type: string
+                  description: The path of the videodb component
+                id:
+                  type: integer
+                  minimum: 0
+                priority_flag:
+                  $ref: '#/components/schemas/booleanInt'
+      responses:
+        '200':
+          description: OK
     delete:
       description: Delete a video from the database
       parameters:
@@ -283,39 +308,6 @@ paths:
         '200':
           description: OK
   /videodb/videos:
-    patch:
-      description: Bulk update videos
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties: false
-              required:
-                - path
-                - videos
-              properties:
-                path:
-                  type: string
-                  description: The path of the videodb component
-                videos:
-                  type: array
-                  minItems: 1
-                  items:
-                    type: object
-                    required:
-                      - id
-                      - priority_flag
-                    properties:
-                      id:
-                        type: integer
-                        minimum: 0
-                      priority_flag:
-                        $ref: '#/components/schemas/booleanInt'
-      responses:
-        '200':
-          description: OK
     get:
       description: Get a list of videos from the database, filtering accordingly
       parameters:

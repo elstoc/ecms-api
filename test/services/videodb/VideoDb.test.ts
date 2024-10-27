@@ -723,7 +723,7 @@ describe('VideoDb', () => {
         });
     });
 
-    describe('updateVideos', () => {
+    describe('patchVideo', () => {
         beforeEach(async () => {
             mockStorage.contentFileExists.mockReturnValue(true);
             mockGet.mockResolvedValue({ ver: 4 });
@@ -737,56 +737,22 @@ describe('VideoDb', () => {
             mockStorage.getContentDb.mockResolvedValue(mockDb);
             videoDb = new VideoDb(apiPath, newConfig, mockLogger, mockStorage as any);
 
-            expect(() => videoDb.updateVideos([], regularUser)).rejects.toThrow(new NotPermittedError());
+            expect(() => videoDb.patchVideo({ id: 1, priority_flag: 0 }, regularUser)).rejects.toThrow(new NotPermittedError());
         });
 
-        it.each([0, 1])('attempts to update priorties when all priorities are set to %s', async (value: number) => {
+        it.each([0, 1])('attempts to update priorty when set to %s', async (value: number) => {
             mockGet.mockResolvedValue({ video_exists: 1 });
 
             const expectedSql = `UPDATE videos
                                  SET priority_flag = ${value}
-                                 WHERE id IN (1,2,3,4)`;
+                                 WHERE id = 99`;
 
-            await videoDb.updateVideos([
-                { id: 1, priority_flag: value as 0|1},
-                { id: 3, priority_flag: value as 0|1},
-                { id: 4, priority_flag: value as 0|1},
-                { id: 2, priority_flag: value as 0|1},
-            ]);
+            await videoDb.patchVideo({ id: 99, priority_flag: value as 0 | 1 });
 
             expect(mockExec).toHaveBeenCalledTimes(1);
             const actualSql = mockExec.mock.calls[0][0];
 
             expect(stripWhiteSpace(actualSql)).toBe(stripWhiteSpace(expectedSql));
-        });
-
-        it('attempts to update priorties when priorities are set to both 0 and 1', async () => {
-            mockGet.mockResolvedValue({ video_exists: 1 });
-
-            const expectedSql0 = `UPDATE videos
-                                  SET priority_flag = 0
-                                  WHERE id IN (1,2,3,4)`;
-            const expectedSql1 = `UPDATE videos
-                                  SET priority_flag = 1
-                                  WHERE id IN (5,6,7,8)`;
-
-            await videoDb.updateVideos([
-                { id: 1, priority_flag: 0},
-                { id: 8, priority_flag: 1},
-                { id: 7, priority_flag: 1},
-                { id: 3, priority_flag: 0},
-                { id: 5, priority_flag: 1},
-                { id: 2, priority_flag: 0},
-                { id: 6, priority_flag: 1},
-                { id: 4, priority_flag: 0},
-            ]);
-
-            expect(mockExec).toHaveBeenCalledTimes(2);
-            const actualSql0 = mockExec.mock.calls[0][0];
-            const actualSql1 = mockExec.mock.calls[1][0];
-
-            expect(stripWhiteSpace(actualSql0)).toBe(stripWhiteSpace(expectedSql0));
-            expect(stripWhiteSpace(actualSql1)).toBe(stripWhiteSpace(expectedSql1));
         });
     });
 

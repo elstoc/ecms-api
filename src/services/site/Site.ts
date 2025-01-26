@@ -6,7 +6,7 @@ import { User } from '../auth';
 import { ComponentMetadata } from './Component';
 import { Gallery } from '../gallery';
 import { Markdown } from '../markdown';
-import { IVideoDb } from '../videodb';
+import { VideoDb } from '../videodb';
 
 export type SiteConfig = {
     authEnabled: boolean;
@@ -37,7 +37,7 @@ export class Site {
         return await this.components.getMarkdown(apiPath);
     }
 
-    public async getVideoDb(apiPath: string): Promise<IVideoDb> {
+    public async getVideoDb(apiPath: string): Promise<VideoDb> {
         return await this.components.getVideoDb(apiPath);
     }
 

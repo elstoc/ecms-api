@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NotFoundError, NotPermittedError } from '../../errors';
-import { VideoDb, IVideoDb } from '.';
-import { LookupTables } from './IVideoDb';
+import { VideoDb, LookupTables } from './VideoDb';
 import { stripWhiteSpace } from '../../utils';
 
 jest.mock('../../adapters');
@@ -27,7 +26,7 @@ const regularUser = { id: 'some-user', roles: ['not-admin'] };
 const adminUser = { id: 'some-user', roles: ['admin'] };
 
 describe('VideoDb', () => {
-    let videoDb: IVideoDb;
+    let videoDb: VideoDb;
     const mockGet = jest.fn();
     const mockGetAll = jest.fn();
     const mockExec = jest.fn();

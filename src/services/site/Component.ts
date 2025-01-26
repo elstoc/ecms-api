@@ -7,7 +7,7 @@ import { Markdown } from '../markdown';
 import { StorageAdapter } from '../../adapters';
 import { NotFoundError } from '../../errors';
 import { User } from '../auth';
-import { IVideoDb, VideoDb } from '../videodb';
+import { VideoDb } from '../videodb';
 import { Logger } from 'winston';
 import { ComponentGroup } from './ComponentGroup';
 
@@ -54,7 +54,7 @@ export class Component {
     private contentYamlPath: string;
     private gallery?: Gallery;
     private markdown?: Markdown;
-    private videoDb?: IVideoDb;
+    private videoDb?: VideoDb;
     private componentGroup?: ComponentGroup;
     private metadataFromSourceTime = -1;
     private metadata?: ComponentMetadata;
@@ -190,7 +190,7 @@ export class Component {
         return this.markdown;
     }
 
-    public async getVideoDb(apiPath: string): Promise<IVideoDb> {
+    public async getVideoDb(apiPath: string): Promise<VideoDb> {
         await this.getMetadata();
         if (this.metadata?.type === ComponentTypes.componentgroup) {
             this.componentGroup ??= new ComponentGroup(this.config, this.storage, this.logger, this.contentDir);

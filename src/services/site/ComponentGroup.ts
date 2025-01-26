@@ -5,7 +5,7 @@ import { Gallery } from '../gallery';
 import { StorageAdapter } from '../../adapters';
 import { User } from '../auth';
 import { Markdown } from '../markdown';
-import { IVideoDb } from '../videodb';
+import { VideoDb } from '../videodb';
 import { Logger } from 'winston';
 
 export class ComponentGroup {
@@ -61,7 +61,7 @@ export class ComponentGroup {
         return await this.getComponentAtPath(apiPath).getMarkdown(apiPath);
     }
 
-    public async getVideoDb(apiPath: string): Promise<IVideoDb> {
+    public async getVideoDb(apiPath: string): Promise<VideoDb> {
         this.logger.debug(`Site.getVideoDb(${apiPath})`);
         return await this.getComponentAtPath(apiPath).getVideoDb(apiPath);
     }

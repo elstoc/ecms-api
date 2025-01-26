@@ -2,7 +2,6 @@ import path from 'path';
 import { Logger } from 'winston';
 
 import { DatabaseAdapter } from '../../adapters/DatabaseAdapter';
-import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoFilters, videoFields, videoWithIdFields, VideoUpdate } from './IVideoDb';
 import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { dbUpgradeSql } from './dbUpgradeSql';
 import { NotFoundError, NotPermittedError } from '../../errors';
@@ -10,9 +9,73 @@ import { Config } from '../../utils';
 import { User } from '../auth';
 import { userIsAdmin } from '../auth/utils/access';
 
+export type Video = {
+    title: string;
+    category: string;
+    director: string | null;
+    num_episodes: number | null;
+    length_mins: number | null;
+    watched: string;
+    priority_flag: number | null;
+    progress: string | null;
+    year: number | null;
+    imdb_id: string | null;
+    image_url: string | null;
+    actors: string | null;
+    plot: string | null;
+    tags: string | null;
+    primary_media_type: string | null;
+    primary_media_location: string | null;
+    primary_media_watched: string | null;
+    other_media_type: string | null;
+    other_media_location: string | null;
+    media_notes: string | null;
+}
+
+export type VideoWithId = Video & { id: number; };
+
+export const videoFields = [
+    'title', 'category', 'director', 'num_episodes', 'length_mins', 'watched', 'priority_flag', 'progress',
+    'imdb_id', 'image_url', 'year', 'actors', 'plot', 'primary_media_type', 'primary_media_location',
+    'primary_media_watched', 'other_media_type', 'other_media_location', 'media_notes'
+];
+
+export const videoWithIdFields = ['id', ...videoFields];
+
+export enum LookupTables {
+    video_category = 'l_categories',
+    video_media_type = 'l_media_types',
+    video_media_location = 'l_media_locations',
+    video_watched_status = 'l_watched_status',
+}
+
+export type LookupRow = {
+    code: string;
+    description: string;
+}
+
+export type LookupValues = {
+    [key: string]: string;
+}
+
+export type VideoFilters = {
+    maxLength?: number;
+    categories?: string[];
+    tags?: string[];
+    titleContains?: string;
+    watched?: string;
+    mediaWatched?: string;
+    sortPriorityFirst?: boolean;
+    minResolution?: string;
+}
+
+export type VideoUpdate = {
+    id: number;
+    priority_flag: 0 | 1;
+}
 const wait = (timeMs: number) => new Promise(resolve => setTimeout(resolve, timeMs));
 
-export class VideoDb implements IVideoDb {
+export class VideoDb {
     private apiPath: string;
     private initialising = false;
     private database?: DatabaseAdapter;

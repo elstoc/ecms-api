@@ -1,6 +1,5 @@
 import { basename } from 'path';
 
-import { IGalleryImage, ImageMetadata, ImageSize } from './IGalleryImage';
 import { Config } from '../../utils';
 import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';
@@ -9,13 +8,33 @@ import { getExif } from './getExif';
 import { resizeImage } from './resizeImage';
 import { Logger } from 'winston';
 
+export enum ImageSize {
+    thumb = 'thumb',
+    fhd = 'fhd',
+    forExif = 'forExif'
+}
+
+export type Dimensions = {
+    width: number | undefined;
+    height: number | undefined;
+};
+
+export type ImageMetadata = {
+    fileName: string;
+    description?: string;
+    exif: { [key: string]: string | undefined };
+    thumbDimensions: Dimensions;
+    thumbSrcUrl?: string;
+    fhdSrcUrl?: string;
+}
+
 export const RESIZE_OPTIONS = {
     thumb: { version: 1, desc: ImageSize.thumb, width: 100000, height: 300, quality: 60, stripExif: true, addBorder: true },
     fhd: { version: 1, desc: ImageSize.fhd, width: 2560, height: 1440, quality: 85, stripExif: true, addBorder: false },
     forExif: { version: 1, desc: ImageSize.forExif, width: 1, height: 1, quality: 0, stripExif: false, addBorder: false }
 };
 
-export class GalleryImage implements IGalleryImage {
+export class GalleryImage {
     private imageDataFromSourceFileTime = -1;
 
     private imageMetadata?: ImageMetadata;

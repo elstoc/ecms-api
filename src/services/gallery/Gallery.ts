@@ -1,6 +1,5 @@
 import { IGallery, GalleryContents } from './IGallery';
-import { GalleryImage } from './GalleryImage';
-import { ImageMetadata, ImageSize } from './IGalleryImage';
+import { GalleryImage, ImageMetadata, ImageSize } from './GalleryImage';
 import { Config } from '../../utils';
 import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { Logger } from 'winston';

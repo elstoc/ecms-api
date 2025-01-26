@@ -1,6 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { NotFoundError, NotPermittedError } from '../../errors';
-import { GalleryImage, IGalleryImage, ImageSize } from '..';
+import { GalleryImage, ImageSize } from '..';
 import { getExif } from './getExif';
 import { getImageDimensions } from './getImageDimensions';
 import { resizeImage } from './resizeImage';
@@ -38,7 +38,7 @@ const resizeImageMock = resizeImage as jest.Mock;
 const getImageDimensionsMock = getImageDimensions as jest.Mock;
 
 describe('GalleryImage', () => {
-    let galleryImage: IGalleryImage;
+    let galleryImage: GalleryImage;
 
     beforeEach(() => {
         mockStorage.getContentFileModifiedTime.mockReturnValue(1234);

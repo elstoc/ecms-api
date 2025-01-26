@@ -7,8 +7,8 @@ import { userHasReadAccess, userHasWriteAccess, userIsAdmin } from '../auth/util
 import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';
 import { Logger } from 'winston';
-import { User } from '../../contracts/auth.contract';
-import { MarkdownPage, MarkdownTree } from '../../contracts/markdown.contract';
+import { User } from '../../contracts/auth';
+import { MarkdownPage, MarkdownTree } from '../../contracts/markdown';
 
 export class Markdown {
     private contentPath: string;

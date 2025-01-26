@@ -9,8 +9,8 @@ import { NotFoundError } from '../../errors';
 import { VideoDb } from '../videodb';
 import { Logger } from 'winston';
 import { ComponentGroup } from './ComponentGroup';
-import { ComponentMetadata, ComponentMetadataCommon, ComponentTypes } from '../../contracts/site.contract';
-import { User } from '../../contracts/auth.contract';
+import { ComponentMetadata, ComponentMetadataCommon, ComponentTypes } from '../../contracts/site';
+import { User } from '../../contracts/auth';
 
 export class Component {
     private contentYamlPath: string;

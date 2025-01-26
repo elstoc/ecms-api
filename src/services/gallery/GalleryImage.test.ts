@@ -5,7 +5,7 @@ import { getExif } from './utils/getExif';
 import { getImageDimensions } from './utils/getImageDimensions';
 import { resizeImage } from './utils/resizeImage';
 import { RESIZE_OPTIONS } from './GalleryImage';
-import { ImageSize } from '../../contracts/gallery.contract';
+import { ImageSize } from '../../contracts/gallery';
 
 jest.mock('./utils/getExif');
 jest.mock('./utils/getImageDimensions');

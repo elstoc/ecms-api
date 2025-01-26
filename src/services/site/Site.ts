@@ -6,7 +6,7 @@ import { ComponentGroup } from './ComponentGroup';
 import { User } from '../auth';
 import { ComponentMetadata } from './IComponent';
 import { Gallery } from '../gallery';
-import { IMarkdown } from '../markdown';
+import { Markdown } from '../markdown';
 import { IVideoDb } from '../videodb';
 
 export class Site implements ISite {
@@ -28,7 +28,7 @@ export class Site implements ISite {
         return await this.components.getGallery(apiPath);
     }
 
-    public async getMarkdown(apiPath: string): Promise<IMarkdown> {
+    public async getMarkdown(apiPath: string): Promise<Markdown> {
         return await this.components.getMarkdown(apiPath);
     }
 

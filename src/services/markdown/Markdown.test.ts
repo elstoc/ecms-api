@@ -3,7 +3,6 @@ import { Markdown } from './Markdown';
 import YAML from 'yaml';
 import { splitFrontMatter } from './splitFrontMatter';
 import { NotFoundError, NotPermittedError } from '../../errors';
-import { IMarkdown } from '..';
 import path from 'path';
 
 jest.mock('yaml');
@@ -158,7 +157,7 @@ describe('Markdown', () => {
             });
 
             describe('returns canWrite', () => {
-                let page: IMarkdown;
+                let page: Markdown;
 
                 beforeEach(() => {
                     mockStorage.contentFileExists.mockReturnValue(true);
@@ -211,7 +210,7 @@ describe('Markdown', () => {
             });
 
             describe('returns canDelete', () => {
-                let page: IMarkdown;
+                let page: Markdown;
 
                 beforeEach(() => {
                     mockStorage.contentFileExists.mockReturnValue(true);
@@ -306,7 +305,7 @@ describe('Markdown', () => {
             });
             
             describe('when the user is admin', () => {
-                let rootPage: IMarkdown;
+                let rootPage: Markdown;
                 const nonExistentPage = 'rootPath/existingPage/nonExistentPage';
 
                 beforeEach(() => {
@@ -385,7 +384,7 @@ describe('Markdown', () => {
 
         describe('when called for an extant file', () => {
             describe('restricts access', () => {
-                let page: IMarkdown;
+                let page: Markdown;
 
                 beforeEach(() => {
                     mockStorage.contentFileExists.mockReturnValue(true);
@@ -556,7 +555,7 @@ describe('Markdown', () => {
             });
 
             describe('and the user is admin', () => {
-                let rootPage: IMarkdown;
+                let rootPage: Markdown;
                 const nonExistentPage = 'rootPath/existingPage/nonExistentPage';
                 const user = { id: 'some-user', roles: ['admin'] };
 

@@ -1,6 +1,6 @@
 import { User } from '../auth';
 import { Gallery } from '../gallery';
-import { IMarkdown } from '../markdown';
+import { Markdown } from '../markdown';
 import { IVideoDb } from '../videodb';
 
 export enum ComponentTypes {
@@ -45,7 +45,7 @@ export type ComponentMetadata = GalleryMetadata | MarkdownMetadata | VideoDbMeta
 export interface IComponent {
     getMetadata(user?: User): Promise<ComponentMetadata | undefined>;
     getGallery(apiPath: string): Promise<Gallery>;
-    getMarkdown(apiPath: string): Promise<IMarkdown>;
+    getMarkdown(apiPath: string): Promise<Markdown>;
     getVideoDb(apiPath: string): Promise<IVideoDb>;
     shutdown(): Promise<void>;
 }

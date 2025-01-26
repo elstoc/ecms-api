@@ -1,7 +1,6 @@
 import path from 'path';
 import YAML from 'yaml';
 
-import { IMarkdown, MarkdownPage, MarkdownTree } from './IMarkdown';
 import { Config, sortByWeightAndTitle, splitPath } from '../../utils';
 import { splitFrontMatter } from './splitFrontMatter';
 import { userHasReadAccess, userHasWriteAccess, userIsAdmin } from '../auth/utils/access';
@@ -10,11 +9,29 @@ import { NotFoundError, NotPermittedError } from '../../errors';
 import { User } from '../auth';
 import { Logger } from 'winston';
 
-export class Markdown implements IMarkdown {
+export type MarkdownTree = {
+    apiPath: string;
+    uiPath: string;
+    title?: string;
+    weight?: number;
+    restrict?: string;
+    allowWrite?: string;
+    children?: MarkdownTree[];
+}
+
+export type MarkdownPage = {
+    content: string;
+    pageExists: boolean;
+    canWrite: boolean;
+    canDelete: boolean;
+    pathValid: boolean;
+}
+
+export class Markdown {
     private contentPath: string;
     private metadata?: MarkdownTree;
     private hasFrontMatter = false;
-    private children: { [key: string]: IMarkdown } = {};
+    private children: { [key: string]: Markdown } = {};
     private metadataFromSourceFileTime = 0;
 
     constructor(
@@ -174,7 +191,7 @@ export class Markdown implements IMarkdown {
         }
     }
 
-    private getNextChildInTargetPath(targetApiPath: string): IMarkdown {
+    private getNextChildInTargetPath(targetApiPath: string): Markdown {
         if (this.singlePage) {
             throw new NotFoundError('A Single Page Markdown component cannot have sub-pages');
         }
@@ -196,7 +213,7 @@ export class Markdown implements IMarkdown {
         return this.getChild(nextChildApiPath);
     }
 
-    private getChild(childApiPath: string): IMarkdown {
+    private getChild(childApiPath: string): Markdown {
         const childUiPath = path.join(this.uiPath, childApiPath.split('/').slice(-1)[0] || '');
         this.children[childApiPath] ??= new Markdown(childApiPath, childUiPath, this.config, this.storage, this.logger);
         return this.children[childApiPath];
@@ -265,7 +282,7 @@ export class Markdown implements IMarkdown {
         return { ...metadata, children: sortedChildren };
     }
 
-    private async getChildren(): Promise<IMarkdown[]> {
+    private async getChildren(): Promise<Markdown[]> {
         const childMdFiles = await this.getChildFiles();
         return childMdFiles
             .map((childFileName) => {

@@ -1,2 +1,1 @@
-export { Markdown } from './Markdown';
-export { MarkdownTree, IMarkdown } from './IMarkdown';
+export { Markdown, MarkdownTree } from './Markdown';

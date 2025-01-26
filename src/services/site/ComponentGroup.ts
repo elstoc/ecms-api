@@ -6,7 +6,7 @@ import { Config, sortByWeightAndTitle } from '../../utils';
 import { Gallery } from '../gallery';
 import { StorageAdapter } from '../../adapters';
 import { User } from '../auth';
-import { IMarkdown } from '../markdown/IMarkdown';
+import { Markdown } from '../markdown';
 import { IVideoDb } from '../videodb';
 import { Logger } from 'winston';
 
@@ -58,7 +58,7 @@ export class ComponentGroup implements IComponentGroup {
         return this.getComponent(componentPath);
     }
 
-    public async getMarkdown(apiPath: string): Promise<IMarkdown> {
+    public async getMarkdown(apiPath: string): Promise<Markdown> {
         this.logger.debug(`Site.getMarkdown(${apiPath})`);
         return await this.getComponentAtPath(apiPath).getMarkdown(apiPath);
     }

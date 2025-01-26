@@ -3,7 +3,7 @@ import YAML from 'yaml';
 import { Config } from '../../utils';
 import { userHasReadAccess } from '../auth/utils/access';
 import { Gallery } from '../gallery';
-import { IMarkdown, Markdown } from '../markdown';
+import { Markdown } from '../markdown';
 import { IComponent, ComponentTypes, ComponentMetadataCommon, ComponentMetadata } from './IComponent';
 import { StorageAdapter } from '../../adapters';
 import { NotFoundError } from '../../errors';
@@ -16,7 +16,7 @@ import { ComponentGroup } from './ComponentGroup';
 export class Component implements IComponent {
     private contentYamlPath: string;
     private gallery?: Gallery;
-    private markdown?: IMarkdown;
+    private markdown?: Markdown;
     private videoDb?: IVideoDb;
     private componentGroup?: IComponentGroup;
     private metadataFromSourceTime = -1;
@@ -140,7 +140,7 @@ export class Component implements IComponent {
         return this.gallery;
     }
 
-    public async getMarkdown(apiPath: string): Promise<IMarkdown> {
+    public async getMarkdown(apiPath: string): Promise<Markdown> {
         await this.getMetadata();
         if (this.metadata?.type === ComponentTypes.componentgroup) {
             this.componentGroup ??= new ComponentGroup(this.config, this.storage, this.logger, this.contentDir);

@@ -5,7 +5,7 @@ import { JwtPayload } from 'jsonwebtoken';
 import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { AuthenticationError } from '../../errors';
 import { Logger } from 'winston';
-import { User } from '../../contract/auth.contract';
+import { User } from '../../contracts/auth.contract';
 
 type Token = string | undefined;
 

@@ -7,7 +7,7 @@ import { getImageDimensions } from './utils/getImageDimensions';
 import { getExif } from './utils/getExif';
 import { resizeImage } from './utils/resizeImage';
 import { Logger } from 'winston';
-import { ImageMetadata, ImageSize } from '../../contract/gallery.contract';
+import { ImageMetadata, ImageSize } from '../../contracts/gallery.contract';
 
 export const RESIZE_OPTIONS = {
     thumb: { version: 1, desc: ImageSize.thumb, width: 100000, height: 300, quality: 60, stripExif: true, addBorder: true },

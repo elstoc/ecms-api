@@ -1,6 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { Gallery } from './Gallery';
-import { ImageSize } from '../../contract/gallery.contract';
+import { ImageSize } from '../../contracts/gallery.contract';
 import { GalleryImage } from './GalleryImage';
 
 const mockStorage = {

@@ -7,8 +7,8 @@ import { dbUpgradeSql } from './dbUpgradeSql';
 import { NotFoundError, NotPermittedError } from '../../errors';
 import { Config } from '../../utils';
 import { userIsAdmin } from '../auth/utils/access';
-import { User } from '../../contract/auth.contract';
-import { Video, VideoUpdate, VideoWithId } from '../../contract/videodb.contract';
+import { User } from '../../contracts/auth.contract';
+import { Video, VideoUpdate, VideoWithId } from '../../contracts/videodb.contract';
 
 export const videoFields = [
     'title', 'category', 'director', 'num_episodes', 'length_mins', 'watched', 'priority_flag', 'progress',

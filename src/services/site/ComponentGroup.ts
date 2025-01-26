@@ -6,8 +6,8 @@ import { StorageAdapter } from '../../adapters';
 import { Markdown } from '../markdown';
 import { VideoDb } from '../videodb';
 import { Logger } from 'winston';
-import { ComponentMetadata } from '../../contract/site.contract';
-import { User } from '../../contract/auth.contract';
+import { ComponentMetadata } from '../../contracts/site.contract';
+import { User } from '../../contracts/auth.contract';
 
 export class ComponentGroup {
     private components: { [key: string]: Component } = {};

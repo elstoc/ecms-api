@@ -1,4 +1,4 @@
-import { User } from '../../../contract/auth.contract';
+import { User } from '../../../contracts/auth.contract';
 
 export const userHasWriteAccess = (user?: User, allowWrite?: string): boolean => {
     const userRoles = user?.roles ?? [];

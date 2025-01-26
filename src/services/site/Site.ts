@@ -5,8 +5,8 @@ import { ComponentGroup } from './ComponentGroup';
 import { Gallery } from '../gallery';
 import { Markdown } from '../markdown';
 import { VideoDb } from '../videodb';
-import { ComponentMetadata, SiteConfig } from '../../contract/site.contract';
-import { User } from '../../contract/auth.contract';
+import { ComponentMetadata, SiteConfig } from '../../contracts/site.contract';
+import { User } from '../../contracts/auth.contract';
 
 export class Site {
     private components: ComponentGroup;

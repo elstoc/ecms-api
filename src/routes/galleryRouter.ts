@@ -2,7 +2,7 @@ import { Router, Response, NextFunction } from 'express';
 import { RequestWithUser } from '../middleware';
 
 import { Site } from '../services';
-import { ImageSize } from '../contract/gallery.contract';
+import { ImageSize } from '../contracts/gallery.contract';
 
 export const createGalleryRouter = (site: Site): Router => {
     const galleryHandler = async (req: RequestWithUser, res: Response, next: NextFunction, fn: string): Promise<void> => {

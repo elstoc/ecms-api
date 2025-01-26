@@ -1,13 +1,28 @@
 import { Config } from '../../utils';
 import { jwtSign, jwtVerify, jwtDecode } from './jwtUtils';
 import { hashPassword, verifyPasswordWithHash } from './hashUtils';
-import { User, Token, Tokens, IAuth } from './IAuth';
 import { JwtPayload } from 'jsonwebtoken';
 import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { AuthenticationError } from '../../errors';
 import { Logger } from 'winston';
 
-export class Auth implements IAuth {
+export type User = {
+    id: string;
+    fullName?: string;
+    roles?: string[];
+    hashedPassword?: string;
+};
+
+export type Token = string | undefined;
+
+export type Tokens = {
+    id: string;
+    accessToken: Token;
+    accessTokenExpiry: number;
+    refreshToken: Token;
+}
+
+export class Auth {
     private jwtRefreshExpires = '';
     private jwtAccessExpires = '';
     private jwtRefreshSecret = '';

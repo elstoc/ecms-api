@@ -1,6 +1,6 @@
 import { Router, Response, NextFunction } from 'express';
 
-import { IAuth, Tokens } from '../services';
+import { Auth, Tokens } from '../services';
 import { RequestWithUser } from '../middleware';
 
 const sendTokens = (tokens: Tokens, res: Response): void => {
@@ -10,7 +10,7 @@ const sendTokens = (tokens: Tokens, res: Response): void => {
     res.json({ accessToken, accessTokenExpiry }).status(200);
 };
 
-export const createAuthRouter = (auth: IAuth): Router => {
+export const createAuthRouter = (auth: Auth): Router => {
     const authHandler = async (req: RequestWithUser, res: Response, next: NextFunction, fn: string): Promise<void> => {
         try {
             if (fn === 'login') {

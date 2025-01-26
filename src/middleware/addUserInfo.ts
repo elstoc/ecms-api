@@ -1,7 +1,7 @@
-import { IAuth } from '../services';
+import { Auth } from '../services';
 import { RequestHandler } from './types';
 
-export const createAddUserInfoMiddleware = (auth: IAuth): RequestHandler => async (req, res, next) => {
+export const createAddUserInfoMiddleware = (auth: Auth): RequestHandler => async (req, res, next) => {
     try {
         const user = await auth.getUserInfoFromAuthHeader(req.headers.authorization);
         req.user = user;

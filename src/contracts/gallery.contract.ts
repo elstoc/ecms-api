@@ -5,8 +5,8 @@ export enum ImageSize {
 }
 
 export type Dimensions = {
-    width: number | undefined;
-    height: number | undefined;
+    width: number;
+    height: number;
 };
 
 export type ImageMetadata = {
@@ -14,11 +14,11 @@ export type ImageMetadata = {
     description?: string;
     exif: { [key: string]: string | undefined; };
     thumbDimensions: Dimensions;
-    thumbSrcUrl?: string;
-    fhdSrcUrl?: string;
+    thumbSrcUrl: string;
+    fhdSrcUrl: string;
 };
 
 export type GalleryContents = {
     images: ImageMetadata[];
-    allImageFiles?: string[];
+    allImageFiles: string[];
 };

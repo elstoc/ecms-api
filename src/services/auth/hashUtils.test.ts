@@ -1,6 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
-import { hashPassword, verifyPasswordWithHash } from '../../../src/services/auth/hashUtils';
+import { hashPassword, verifyPasswordWithHash } from './hashUtils';
 
 describe('That hash', () => {
     it('verifies a valid password', async () => {

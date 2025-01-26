@@ -1,5 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { getExif } from '../../../src/services/gallery/getExif';
+import { getExif } from './getExif';
 import ExifReader from 'exifreader';
 const fileContents = 'some-file-content';
 const fileBuffer = Buffer.from(fileContents);

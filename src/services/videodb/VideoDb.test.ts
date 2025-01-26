@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NotFoundError, NotPermittedError } from '../../../src/errors';
-import { VideoDb, IVideoDb } from '../../../src/services/videodb';
-import { LookupTables } from '../../../src/services/videodb/IVideoDb';
-import { stripWhiteSpace } from '../../../src/utils';
+import { NotFoundError, NotPermittedError } from '../../errors';
+import { VideoDb, IVideoDb } from '.';
+import { LookupTables } from './IVideoDb';
+import { stripWhiteSpace } from '../../utils';
 
-jest.mock('../../../src/adapters');
-jest.mock('../../../src/services/videodb/dbUpgradeSql', () => ({
+jest.mock('../../adapters');
+jest.mock('./dbUpgradeSql', () => ({
     dbUpgradeSql: ['SQL v1', 'SQL v2', 'SQL v3', 'SQL v4']
 }));
 

@@ -1,5 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { Gallery, GalleryImage, ImageSize } from '../../../src/services';
+import { Gallery, GalleryImage, ImageSize } from '..';
 
 const mockStorage = {
     listContentChildren: jest.fn() as jest.Mock,
@@ -11,7 +11,7 @@ const mockLogger = {
     error: jest.fn()
 } as any;
 
-jest.mock('../../../src/services/gallery/GalleryImage');
+jest.mock('./GalleryImage');
 
 const config = { } as any;
 const imageFiles = [

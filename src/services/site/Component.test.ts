@@ -1,17 +1,17 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import YAML from 'yaml';
-import { Gallery } from '../../../src/services/gallery/Gallery';
-import { Markdown } from '../../../src/services/markdown/Markdown';
-import { VideoDb } from '../../../src/services/videodb/VideoDb';
-import { ComponentGroup } from '../../../src/services/site/ComponentGroup';
-import { Component } from '../../../src/services';
-import { NotFoundError } from '../../../src/errors';
+import { Gallery } from '../gallery/Gallery';
+import { Markdown } from '../markdown/Markdown';
+import { VideoDb } from '../videodb/VideoDb';
+import { ComponentGroup } from './ComponentGroup';
+import { Component } from '..';
+import { NotFoundError } from '../../errors';
 
 jest.mock('yaml');
-jest.mock('../../../src/services/gallery/Gallery');
-jest.mock('../../../src/services/markdown/Markdown');
-jest.mock('../../../src/services/videodb/VideoDb');
-jest.mock('../../../src/services/site/ComponentGroup');
+jest.mock('../gallery/Gallery');
+jest.mock('../markdown/Markdown');
+jest.mock('../videodb/VideoDb');
+jest.mock('./ComponentGroup');
 
 const config = {
     dataDir: '/path/to/data',

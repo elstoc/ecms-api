@@ -1,6 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import * as sizeOf from 'image-size';
-import { getImageDimensions } from '../../../src/services/gallery/getImageDimensions';
+import { getImageDimensions } from './getImageDimensions';
 
 jest.mock('image-size');
 const inFileBuffer = Buffer.from('imageFile');

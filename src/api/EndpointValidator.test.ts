@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NotFoundError } from '../../src/errors';
-import { EndpointValidator, IEndpointValidator } from '../../src/api';
+import { NotFoundError } from '../errors';
+import { EndpointValidator, IEndpointValidator } from '.';
 
 describe('EndpointValidator', () => {
     describe('getEndpointAndPathParams', () => {

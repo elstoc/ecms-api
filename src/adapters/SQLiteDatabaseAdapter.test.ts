@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Database } from 'sqlite3';
-import { SQLiteDatabaseAdapter } from '../../src/adapters/SQLiteDatabaseAdapter';
-import { IDatabaseAdapter } from '../../src/adapters/IDatabaseAdapter';
+import { SQLiteDatabaseAdapter } from './SQLiteDatabaseAdapter';
+import { IDatabaseAdapter } from './IDatabaseAdapter';
 const mockDatabase = jest.mocked(Database);
 
 jest.mock('sqlite3');

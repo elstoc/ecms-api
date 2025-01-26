@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import RefParser from '@apidevtools/json-schema-ref-parser';
-import { OASParser, IOASParser } from '../../src/api';
-import { OASParsingError } from '../../src/errors';
+import { OASParser, IOASParser } from '.';
+import { OASParsingError } from '../errors';
 
 jest.mock('@apidevtools/json-schema-ref-parser', () => ({
     dereference: jest.fn()

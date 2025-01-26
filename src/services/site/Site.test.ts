@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ISite, Site, ComponentGroup } from '../../../src/services';
+import { ISite, Site, ComponentGroup } from '..';
 
-jest.mock('../../../src/services/site/ComponentGroup');
+jest.mock('./ComponentGroup');
 
 const mockStorage = {
     listContentChildren: jest.fn() as jest.Mock,

@@ -1,7 +1,7 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { ComponentGroup, Component } from '../../../src/services';
+import { ComponentGroup, Component } from '..';
 
-jest.mock('../../../src/services/site/Component');
+jest.mock('./Component');
 
 const config = {
     dataDir: '/path/to/data',

@@ -7,26 +7,7 @@ import { getImageDimensions } from './utils/getImageDimensions';
 import { getExif } from './utils/getExif';
 import { resizeImage } from './utils/resizeImage';
 import { Logger } from 'winston';
-
-export enum ImageSize {
-    thumb = 'thumb',
-    fhd = 'fhd',
-    forExif = 'forExif'
-}
-
-export type Dimensions = {
-    width: number | undefined;
-    height: number | undefined;
-};
-
-export type ImageMetadata = {
-    fileName: string;
-    description?: string;
-    exif: { [key: string]: string | undefined };
-    thumbDimensions: Dimensions;
-    thumbSrcUrl?: string;
-    fhdSrcUrl?: string;
-}
+import { ImageMetadata, ImageSize } from '../../contract/gallery.contract';
 
 export const RESIZE_OPTIONS = {
     thumb: { version: 1, desc: ImageSize.thumb, width: 100000, height: 300, quality: 60, stripExif: true, addBorder: true },

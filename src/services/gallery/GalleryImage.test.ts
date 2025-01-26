@@ -1,10 +1,11 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { NotFoundError, NotPermittedError } from '../../errors';
-import { GalleryImage, ImageSize } from '..';
+import { GalleryImage } from '..';
 import { getExif } from './utils/getExif';
 import { getImageDimensions } from './utils/getImageDimensions';
 import { resizeImage } from './utils/resizeImage';
 import { RESIZE_OPTIONS } from './GalleryImage';
+import { ImageSize } from '../../contract/gallery.contract';
 
 jest.mock('./utils/getExif');
 jest.mock('./utils/getImageDimensions');

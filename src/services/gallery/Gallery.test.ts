@@ -1,5 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { Gallery, GalleryImage, ImageSize } from '..';
+import { Gallery, GalleryImage } from '..';
+import { ImageSize } from '../../contract/gallery.contract';
 
 const mockStorage = {
     listContentChildren: jest.fn() as jest.Mock,

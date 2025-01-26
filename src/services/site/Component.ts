@@ -6,11 +6,11 @@ import { Gallery } from '../gallery';
 import { Markdown } from '../markdown';
 import { StorageAdapter } from '../../adapters';
 import { NotFoundError } from '../../errors';
-import { User } from '../auth';
 import { VideoDb } from '../videodb';
 import { Logger } from 'winston';
 import { ComponentGroup } from './ComponentGroup';
 import { ComponentMetadata, ComponentMetadataCommon, ComponentTypes } from '../../contract/site.contract';
+import { User } from '../../contract/auth.contract';
 
 export class Component {
     private contentYamlPath: string;

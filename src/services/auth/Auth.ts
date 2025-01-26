@@ -5,13 +5,7 @@ import { JwtPayload } from 'jsonwebtoken';
 import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { AuthenticationError } from '../../errors';
 import { Logger } from 'winston';
-
-export type User = {
-    id: string;
-    fullName?: string;
-    roles?: string[];
-    hashedPassword?: string;
-};
+import { User } from '../../contract/auth.contract';
 
 export type Token = string | undefined;
 

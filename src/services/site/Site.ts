@@ -2,11 +2,11 @@ import { Logger } from 'winston';
 import { StorageAdapter } from '../../adapters';
 import { Config } from '../../utils';
 import { ComponentGroup } from './ComponentGroup';
-import { User } from '../auth';
 import { Gallery } from '../gallery';
 import { Markdown } from '../markdown';
 import { VideoDb } from '../videodb';
 import { ComponentMetadata, SiteConfig } from '../../contract/site.contract';
+import { User } from '../../contract/auth.contract';
 
 export class Site {
     private components: ComponentGroup;

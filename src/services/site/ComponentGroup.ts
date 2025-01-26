@@ -3,11 +3,11 @@ import { Component } from './Component';
 import { Config, sortByWeightAndTitle } from '../../utils';
 import { Gallery } from '../gallery';
 import { StorageAdapter } from '../../adapters';
-import { User } from '../auth';
 import { Markdown } from '../markdown';
 import { VideoDb } from '../videodb';
 import { Logger } from 'winston';
 import { ComponentMetadata } from '../../contract/site.contract';
+import { User } from '../../contract/auth.contract';
 
 export class ComponentGroup {
     private components: { [key: string]: Component } = {};

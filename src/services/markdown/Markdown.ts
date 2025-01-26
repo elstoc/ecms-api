@@ -6,8 +6,8 @@ import { splitFrontMatter } from './splitFrontMatter';
 import { userHasReadAccess, userHasWriteAccess, userIsAdmin } from '../auth/utils/access';
 import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';
-import { User } from '../auth';
 import { Logger } from 'winston';
+import { User } from '../../contract/auth.contract';
 
 export type MarkdownTree = {
     apiPath: string;

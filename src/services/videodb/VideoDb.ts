@@ -6,8 +6,8 @@ import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { dbUpgradeSql } from './dbUpgradeSql';
 import { NotFoundError, NotPermittedError } from '../../errors';
 import { Config } from '../../utils';
-import { User } from '../auth';
 import { userIsAdmin } from '../auth/utils/access';
+import { User } from '../../contract/auth.contract';
 
 export type Video = {
     title: string;

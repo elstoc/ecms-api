@@ -3,16 +3,10 @@ import { StorageAdapter } from '../../adapters';
 import { Config } from '../../utils';
 import { ComponentGroup } from './ComponentGroup';
 import { User } from '../auth';
-import { ComponentMetadata } from './Component';
 import { Gallery } from '../gallery';
 import { Markdown } from '../markdown';
 import { VideoDb } from '../videodb';
-
-export type SiteConfig = {
-    authEnabled: boolean;
-    footerText: string;
-    siteTitle: string;
-};
+import { ComponentMetadata, SiteConfig } from '../../contract/site.contract';
 
 export class Site {
     private components: ComponentGroup;

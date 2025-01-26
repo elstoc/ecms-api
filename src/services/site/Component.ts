@@ -10,45 +10,7 @@ import { User } from '../auth';
 import { VideoDb } from '../videodb';
 import { Logger } from 'winston';
 import { ComponentGroup } from './ComponentGroup';
-
-export enum ComponentTypes {
-    gallery = 'gallery',
-    markdown = 'markdown',
-    videodb = 'videodb',
-    componentgroup = 'componentgroup'
-}
-
-export type ComponentMetadataCommon = {
-    apiPath: string;
-    uiPath: string;
-    title: string;
-    weight?: number;
-    restrict?: string;
-}
-
-export type GalleryMetadata = ComponentMetadataCommon & {
-    type: ComponentTypes.gallery;
-    defaultComponent?: boolean;
-}
-
-export type MarkdownMetadata = ComponentMetadataCommon & {
-    type: ComponentTypes.markdown;
-    singlePage: boolean;
-    defaultComponent?: boolean;
-}
-
-export type VideoDbMetadata = ComponentMetadataCommon & {
-    type: ComponentTypes.videodb;
-    defaultComponent?: boolean;
-}
-
-export type ComponentGroupMetadata = ComponentMetadataCommon & {
-    type: ComponentTypes.componentgroup;
-    components: ComponentMetadata[];
-    defaultComponent: false;
-}
-
-export type ComponentMetadata = GalleryMetadata | MarkdownMetadata | VideoDbMetadata | ComponentGroupMetadata;
+import { ComponentMetadata, ComponentMetadataCommon, ComponentTypes } from '../../contract/site.contract';
 
 export class Component {
     private contentYamlPath: string;

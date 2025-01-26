@@ -11,7 +11,7 @@ export type Dimensions = {
 
 export type ImageMetadata = {
     fileName: string;
-    description?: string;
+    description: string;
     exif: { [key: string]: string | undefined; };
     thumbDimensions: Dimensions;
     thumbSrcUrl: string;

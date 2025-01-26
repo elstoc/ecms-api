@@ -1,9 +1,9 @@
 import { Router, Response, NextFunction } from 'express';
 
-import { ISite } from '../services';
+import { Site } from '../services';
 import { RequestWithUser } from '../middleware';
 
-export const createMarkdownRouter = (site: ISite): Router => {
+export const createMarkdownRouter = (site: Site): Router => {
     const markdownHandler = async (req: RequestWithUser, res: Response, next: NextFunction, fn: string): Promise<void> => {
         try {
             const path = (req.query.path ?? req.body.path) as string;

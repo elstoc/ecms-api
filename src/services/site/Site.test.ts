@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ISite, Site, ComponentGroup } from '..';
+import { Site, ComponentGroup } from '..';
 
 jest.mock('./ComponentGroup');
 
@@ -21,7 +21,7 @@ const config = {
 } as any;
 
 describe('Site', () => {
-    let site: ISite;
+    let site: Site;
     const list = jest.fn();
     const getGallery = jest.fn();
     const getMarkdown = jest.fn();

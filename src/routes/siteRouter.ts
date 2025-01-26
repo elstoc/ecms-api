@@ -1,9 +1,9 @@
 import { Router, Response, NextFunction } from 'express';
 
-import { ISite } from '../services';
+import { Site } from '../services';
 import { RequestWithUser } from '../middleware';
 
-export const createSiteRouter = (site: ISite): Router => {
+export const createSiteRouter = (site: Site): Router => {
     const siteHandler = async (req: RequestWithUser, res: Response, next: NextFunction, fn: string): Promise<void> => {
         try {
             if (fn === 'getComponents') {

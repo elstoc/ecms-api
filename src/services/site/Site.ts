@@ -1,7 +1,6 @@
 import { Logger } from 'winston';
 import { StorageAdapter } from '../../adapters';
 import { Config } from '../../utils';
-import { ISite, SiteConfig } from './ISite';
 import { ComponentGroup } from './ComponentGroup';
 import { User } from '../auth';
 import { ComponentMetadata } from './IComponent';
@@ -9,7 +8,13 @@ import { Gallery } from '../gallery';
 import { Markdown } from '../markdown';
 import { IVideoDb } from '../videodb';
 
-export class Site implements ISite {
+export type SiteConfig = {
+    authEnabled: boolean;
+    footerText: string;
+    siteTitle: string;
+};
+
+export class Site {
     private components: ComponentGroup;
 
     constructor(

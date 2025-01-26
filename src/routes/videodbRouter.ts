@@ -1,9 +1,9 @@
 import { Router, Response, NextFunction } from 'express';
 
-import { ISite } from '../services';
+import { Site } from '../services';
 import { RequestWithUser } from '../middleware';
 
-export const createVideoDbRouter = (site: ISite): Router => {
+export const createVideoDbRouter = (site: Site): Router => {
     const videoDbHandler = async (req: RequestWithUser, res: Response, next: NextFunction, fn: string): Promise<void> => {
         try {
             const path = (req.query.path ?? req.body.path) as string;

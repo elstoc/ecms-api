@@ -3,14 +3,14 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
-import { Auth, ISite } from './services';
+import { Auth, Site } from './services';
 import { createAuthRouter, createGalleryRouter, createMarkdownRouter, createSiteRouter, createVideoDbRouter } from './routes';
 import { createAddUserInfoMiddleware, createErrorHandlerMiddleware, createValidateRequestMiddleware } from './middleware';
 import { Config } from './utils';
 import { EndpointValidator, OASParser } from './api';
 import { Logger } from 'winston';
 
-export const createApp = async (config: Config, site: ISite, auth: Auth, logger: Logger): Promise<express.Express> => {
+export const createApp = async (config: Config, site: Site, auth: Auth, logger: Logger): Promise<express.Express> => {
     const corsConfig = {
         origin: [config.uiUrl],
         credentials: true

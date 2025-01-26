@@ -1,9 +1,9 @@
 import { Router, Response, NextFunction } from 'express';
 import { RequestWithUser } from '../middleware';
 
-import { ISite, ImageSize } from '../services';
+import { ImageSize, Site } from '../services';
 
-export const createGalleryRouter = (site: ISite): Router => {
+export const createGalleryRouter = (site: Site): Router => {
     const galleryHandler = async (req: RequestWithUser, res: Response, next: NextFunction, fn: string): Promise<void> => {
         try {
             const { path, size, limit, timestamp } = req.query;

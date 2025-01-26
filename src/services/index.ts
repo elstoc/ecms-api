@@ -1,4 +1,4 @@
-export { Site, ISite, ComponentGroup, IComponentGroup, Component, IComponent, ComponentMetadata } from './site';
+export { Site, ComponentGroup, IComponentGroup, Component, IComponent, ComponentMetadata } from './site';
 export { Auth, User, Token, Tokens } from './auth';
 export { Markdown } from './markdown';
 export { GalleryContents, ImageSize, Dimensions, ImageMetadata, Gallery, GalleryImage } from './gallery';

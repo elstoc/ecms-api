@@ -1,7 +1,7 @@
 import YAML from 'yaml';
 
 import { Config } from '../../utils';
-import { userHasReadAccess } from '../auth/utils/accessUtils';
+import { userHasReadAccess } from '../auth/utils/access';
 import { Gallery } from '../gallery';
 import { IMarkdown, Markdown } from '../markdown';
 import { IComponent, ComponentTypes, ComponentMetadataCommon, ComponentMetadata } from './IComponent';

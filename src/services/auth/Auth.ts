@@ -1,6 +1,6 @@
 import { Config } from '../../utils';
-import { jwtSign, jwtVerify, jwtDecode } from './utils/jwtUtils';
-import { hashPassword, verifyPasswordWithHash } from './utils/hashUtils';
+import { jwtSign, jwtVerify, jwtDecode } from './utils/jwt';
+import { hashPassword, verifyPasswordWithHash } from './utils/hash';
 import { JwtPayload } from 'jsonwebtoken';
 import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { AuthenticationError } from '../../errors';

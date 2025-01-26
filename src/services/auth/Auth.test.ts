@@ -2,11 +2,11 @@
 /* eslint-disable  @typescript-eslint/no-unused-vars */
 import { AuthenticationError } from '../../errors';
 import { Auth } from '..';
-import { hashPassword, verifyPasswordWithHash } from './utils/hashUtils';
-import { jwtSign, jwtVerify, jwtDecode } from './utils/jwtUtils';
+import { hashPassword, verifyPasswordWithHash } from './utils/hash';
+import { jwtSign, jwtVerify, jwtDecode } from './utils/jwt';
 
-jest.mock('./utils/hashUtils');
-jest.mock('./utils/jwtUtils');
+jest.mock('./utils/hash');
+jest.mock('./utils/jwt');
 
 const mockHashPassword = hashPassword as jest.Mock;
 const mockVerifyPasswordWithHash = verifyPasswordWithHash as jest.Mock;

@@ -4,7 +4,7 @@ import YAML from 'yaml';
 import { IMarkdown, MarkdownPage, MarkdownTree } from './IMarkdown';
 import { Config, sortByWeightAndTitle, splitPath } from '../../utils';
 import { splitFrontMatter } from './splitFrontMatter';
-import { userHasReadAccess, userHasWriteAccess, userIsAdmin } from '../auth/utils/accessUtils';
+import { userHasReadAccess, userHasWriteAccess, userIsAdmin } from '../auth/utils/access';
 import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';
 import { User } from '../auth';

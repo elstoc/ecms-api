@@ -1,15 +1,64 @@
 import { NotFoundError } from '../errors';
-import {
-    EndpointValidationSchemas,
-    IntegerValidationSchema,
-    ObjectValidationSchema,
-    StringValidationSchema,
-    ValidationSchema,
-    EndpointData,
-    ValidationError,
-    ArrayValidationSchema,
-} from './IEndpointValidator';
 import { convertToArray, convertToRecord, isEmpty } from './objectUtils';
+
+export type ObjectValidationSchema = {
+    type: 'object';
+    nullable: boolean;
+    fullPath: string;
+    required?: string[];
+    properties: { [key: string]: ValidationSchema };
+    additionalProperties: boolean;
+}
+
+export type ArrayValidationSchema = {
+    type: 'array';
+    nullable: boolean;
+    fullPath: string;
+    itemSchema: ValidationSchema;
+    minItems?: number;
+    pipeDelimitedString?: boolean;
+}
+
+export type StringValidationSchema = {
+    type: 'string';
+    nullable: boolean;
+    fullPath: string;
+    enum?: string[];
+    minLength?: number;
+}
+
+export type IntegerValidationSchema = {
+    type: 'integer';
+    nullable: boolean;
+    fullPath: string;
+    minimum?: number;
+    maximum?: number;
+}
+
+export type ValidationSchema = ObjectValidationSchema | ArrayValidationSchema | StringValidationSchema | IntegerValidationSchema;
+
+export type EndpointParameterValidationSchema = {
+    pathParamsSchema?: ObjectValidationSchema;
+    queryParamsSchema?: ObjectValidationSchema;
+}
+
+export type EndpointRequestBodyValidationSchema = {
+    requestBodySchema?: ObjectValidationSchema;
+    requestBodyRequired?: boolean;
+}
+
+export type EndpointValidationSchemas = EndpointParameterValidationSchema & EndpointRequestBodyValidationSchema;
+
+export type EndpointData = {
+    requestBody?: Record<string, unknown>;
+    queryParams?: Record<string, unknown>;
+    pathParams?: Record<string, unknown>;
+}
+
+export type ValidationError = {
+    property: string;
+    error: string;
+}
 
 export class EndpointValidator {
     private endpointsWithPathParams: string[] = [];

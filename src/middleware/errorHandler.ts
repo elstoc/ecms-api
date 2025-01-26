@@ -3,7 +3,7 @@ import { Logger } from 'winston';
 
 import { RequestWithUser } from './types';
 import { AuthenticationError, EndpointValidationError, NotFoundError, NotPermittedError } from '../errors';
-import { ValidationError } from '../api/IEndpointValidator';
+import { ValidationError } from '../api/EndpointValidator';
 
 interface ExtraErrors extends Error {
     validationErrors?: ValidationError[],

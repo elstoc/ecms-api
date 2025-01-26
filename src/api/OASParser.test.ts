@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import RefParser from '@apidevtools/json-schema-ref-parser';
-import { OASParser, IOASParser } from '.';
+import { OASParser } from '.';
 import { OASParsingError } from '../errors';
 
 jest.mock('@apidevtools/json-schema-ref-parser', () => ({
@@ -24,7 +24,7 @@ const buildOASSchema = (pathName: string, method: string, parameters: any, reque
 };
 
 describe('OASParser.parseAndValidateSchema', () => {
-    let oasParser: IOASParser;
+    let oasParser: OASParser;
 
     beforeEach(() => {
         oasParser = new OASParser('/path/to/api.spec.yaml');

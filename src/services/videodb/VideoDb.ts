@@ -8,7 +8,7 @@ import { dbUpgradeSql } from './dbUpgradeSql';
 import { NotFoundError, NotPermittedError } from '../../errors';
 import { Config } from '../../utils';
 import { User } from '../auth';
-import { userIsAdmin } from '../auth/accessUtils';
+import { userIsAdmin } from '../auth/utils/accessUtils';
 
 const wait = (timeMs: number) => new Promise(resolve => setTimeout(resolve, timeMs));
 

@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { AuthenticationError } from '../../errors';
+import { AuthenticationError } from '../../../errors';
 
 export const jwtSign = async (payload: object, secret: string, expiresIn: string | number): Promise<string | undefined> => {
     return new Promise((resolve, reject) => {

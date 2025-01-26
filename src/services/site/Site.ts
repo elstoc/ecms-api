@@ -5,7 +5,7 @@ import { ISite, SiteConfig } from './ISite';
 import { ComponentGroup } from './ComponentGroup';
 import { User } from '../auth';
 import { ComponentMetadata } from './IComponent';
-import { IGallery } from '../gallery';
+import { Gallery } from '../gallery';
 import { IMarkdown } from '../markdown';
 import { IVideoDb } from '../videodb';
 
@@ -24,7 +24,7 @@ export class Site implements ISite {
         return await this.components.list(user);
     }
 
-    public async getGallery(apiPath: string): Promise<IGallery> {
+    public async getGallery(apiPath: string): Promise<Gallery> {
         return await this.components.getGallery(apiPath);
     }
 

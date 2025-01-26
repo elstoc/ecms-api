@@ -1,5 +1,5 @@
 import { User } from '../auth';
-import { IGallery } from '../gallery';
+import { Gallery } from '../gallery';
 import { IMarkdown } from '../markdown';
 import { IVideoDb } from '../videodb';
 
@@ -44,7 +44,7 @@ export type ComponentMetadata = GalleryMetadata | MarkdownMetadata | VideoDbMeta
 
 export interface IComponent {
     getMetadata(user?: User): Promise<ComponentMetadata | undefined>;
-    getGallery(apiPath: string): Promise<IGallery>;
+    getGallery(apiPath: string): Promise<Gallery>;
     getMarkdown(apiPath: string): Promise<IMarkdown>;
     getVideoDb(apiPath: string): Promise<IVideoDb>;
     shutdown(): Promise<void>;

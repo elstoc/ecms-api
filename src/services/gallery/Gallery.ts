@@ -1,10 +1,14 @@
-import { IGallery, GalleryContents } from './IGallery';
 import { GalleryImage, ImageMetadata, ImageSize } from './GalleryImage';
 import { Config } from '../../utils';
 import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { Logger } from 'winston';
 
-export class Gallery implements IGallery {
+export type GalleryContents = {
+    images: ImageMetadata[];
+    allImageFiles?: string[];
+}
+
+export class Gallery {
     private apiPath: string;
     private imageCache: { [key: string]: GalleryImage } = {};
 

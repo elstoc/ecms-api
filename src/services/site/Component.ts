@@ -2,7 +2,7 @@ import YAML from 'yaml';
 
 import { Config } from '../../utils';
 import { userHasReadAccess } from '../auth/accessUtils';
-import { Gallery, IGallery } from '../gallery';
+import { Gallery } from '../gallery';
 import { IMarkdown, Markdown } from '../markdown';
 import { IComponent, ComponentTypes, ComponentMetadataCommon, ComponentMetadata } from './IComponent';
 import { StorageAdapter } from '../../adapters';
@@ -15,7 +15,7 @@ import { ComponentGroup } from './ComponentGroup';
 
 export class Component implements IComponent {
     private contentYamlPath: string;
-    private gallery?: IGallery;
+    private gallery?: Gallery;
     private markdown?: IMarkdown;
     private videoDb?: IVideoDb;
     private componentGroup?: IComponentGroup;
@@ -127,7 +127,7 @@ export class Component implements IComponent {
         }
     }
 
-    public async getGallery(apiPath: string): Promise<IGallery> {
+    public async getGallery(apiPath: string): Promise<Gallery> {
         await this.getMetadata();
         if (this.metadata?.type === ComponentTypes.componentgroup) {
             this.componentGroup ??= new ComponentGroup(this.config, this.storage, this.logger, this.contentDir);

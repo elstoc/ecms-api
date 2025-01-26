@@ -3,7 +3,7 @@ import { IComponent, ComponentMetadata } from './IComponent';
 import { IComponentGroup } from './IComponentGroup';
 import { Component } from './Component';
 import { Config, sortByWeightAndTitle } from '../../utils';
-import { IGallery } from '../gallery';
+import { Gallery } from '../gallery';
 import { StorageAdapter } from '../../adapters';
 import { User } from '../auth';
 import { IMarkdown } from '../markdown/IMarkdown';
@@ -45,7 +45,7 @@ export class ComponentGroup implements IComponentGroup {
         return this.components[apiPath];
     }
 
-    public async getGallery(apiPath: string): Promise<IGallery> {
+    public async getGallery(apiPath: string): Promise<Gallery> {
         this.logger.debug(`Site.getGallery(${apiPath})`);
         return await this.getComponentAtPath(apiPath).getGallery(apiPath);
     }

@@ -6,13 +6,12 @@ import {
     StringValidationSchema,
     ValidationSchema,
     EndpointData,
-    IEndpointValidator,
     ValidationError,
     ArrayValidationSchema,
 } from './IEndpointValidator';
 import { convertToArray, convertToRecord, isEmpty } from './objectUtils';
 
-export class EndpointValidator implements IEndpointValidator {
+export class EndpointValidator {
     private endpointsWithPathParams: string[] = [];
 
     constructor(

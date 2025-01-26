@@ -56,8 +56,3 @@ export type ValidationError = {
     property: string;
     error: string;
 }
-
-export interface IEndpointValidator {
-    validateEndpoint(endpoint: string, data: EndpointData): ValidationError[];
-    getEndpointAndPathParams(method: string, path: string): { endpoint: string, pathParams: Record<string, unknown> }
-}

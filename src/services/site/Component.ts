@@ -10,7 +10,6 @@ import { NotFoundError } from '../../errors';
 import { User } from '../auth';
 import { IVideoDb, VideoDb } from '../videodb';
 import { Logger } from 'winston';
-import { IComponentGroup } from './IComponentGroup';
 import { ComponentGroup } from './ComponentGroup';
 
 export class Component implements IComponent {
@@ -18,7 +17,7 @@ export class Component implements IComponent {
     private gallery?: Gallery;
     private markdown?: Markdown;
     private videoDb?: IVideoDb;
-    private componentGroup?: IComponentGroup;
+    private componentGroup?: ComponentGroup;
     private metadataFromSourceTime = -1;
     private metadata?: ComponentMetadata;
 

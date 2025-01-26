@@ -1,6 +1,5 @@
 import path from 'path';
 import { IComponent, ComponentMetadata } from './IComponent';
-import { IComponentGroup } from './IComponentGroup';
 import { Component } from './Component';
 import { Config, sortByWeightAndTitle } from '../../utils';
 import { Gallery } from '../gallery';
@@ -10,7 +9,7 @@ import { Markdown } from '../markdown';
 import { IVideoDb } from '../videodb';
 import { Logger } from 'winston';
 
-export class ComponentGroup implements IComponentGroup {
+export class ComponentGroup {
     private components: { [key: string]: IComponent } = {};
 
     constructor(

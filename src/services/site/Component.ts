@@ -4,7 +4,6 @@ import { Config } from '../../utils';
 import { userHasReadAccess } from '../auth/utils/access';
 import { Gallery } from '../gallery';
 import { Markdown } from '../markdown';
-import { IComponent, ComponentTypes, ComponentMetadataCommon, ComponentMetadata } from './IComponent';
 import { StorageAdapter } from '../../adapters';
 import { NotFoundError } from '../../errors';
 import { User } from '../auth';
@@ -12,7 +11,46 @@ import { IVideoDb, VideoDb } from '../videodb';
 import { Logger } from 'winston';
 import { ComponentGroup } from './ComponentGroup';
 
-export class Component implements IComponent {
+export enum ComponentTypes {
+    gallery = 'gallery',
+    markdown = 'markdown',
+    videodb = 'videodb',
+    componentgroup = 'componentgroup'
+}
+
+export type ComponentMetadataCommon = {
+    apiPath: string;
+    uiPath: string;
+    title: string;
+    weight?: number;
+    restrict?: string;
+}
+
+export type GalleryMetadata = ComponentMetadataCommon & {
+    type: ComponentTypes.gallery;
+    defaultComponent?: boolean;
+}
+
+export type MarkdownMetadata = ComponentMetadataCommon & {
+    type: ComponentTypes.markdown;
+    singlePage: boolean;
+    defaultComponent?: boolean;
+}
+
+export type VideoDbMetadata = ComponentMetadataCommon & {
+    type: ComponentTypes.videodb;
+    defaultComponent?: boolean;
+}
+
+export type ComponentGroupMetadata = ComponentMetadataCommon & {
+    type: ComponentTypes.componentgroup;
+    components: ComponentMetadata[];
+    defaultComponent: false;
+}
+
+export type ComponentMetadata = GalleryMetadata | MarkdownMetadata | VideoDbMetadata | ComponentGroupMetadata;
+
+export class Component {
     private contentYamlPath: string;
     private gallery?: Gallery;
     private markdown?: Markdown;

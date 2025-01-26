@@ -3,7 +3,7 @@ import { StorageAdapter } from '../../adapters';
 import { Config } from '../../utils';
 import { ComponentGroup } from './ComponentGroup';
 import { User } from '../auth';
-import { ComponentMetadata } from './IComponent';
+import { ComponentMetadata } from './Component';
 import { Gallery } from '../gallery';
 import { Markdown } from '../markdown';
 import { IVideoDb } from '../videodb';

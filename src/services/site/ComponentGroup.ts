@@ -1,6 +1,5 @@
 import path from 'path';
-import { IComponent, ComponentMetadata } from './IComponent';
-import { Component } from './Component';
+import { Component, ComponentMetadata } from './Component';
 import { Config, sortByWeightAndTitle } from '../../utils';
 import { Gallery } from '../gallery';
 import { StorageAdapter } from '../../adapters';
@@ -10,7 +9,7 @@ import { IVideoDb } from '../videodb';
 import { Logger } from 'winston';
 
 export class ComponentGroup {
-    private components: { [key: string]: IComponent } = {};
+    private components: { [key: string]: Component } = {};
 
     constructor(
         private config: Config,
@@ -39,7 +38,7 @@ export class ComponentGroup {
         return component.getMetadata(user);
     }
 
-    private getComponent(apiPath: string): IComponent {
+    private getComponent(apiPath: string): Component {
         this.components[apiPath] ??= new Component(this.config, apiPath, this.storage, this.logger);
         return this.components[apiPath];
     }
@@ -49,7 +48,7 @@ export class ComponentGroup {
         return await this.getComponentAtPath(apiPath).getGallery(apiPath);
     }
 
-    private getComponentAtPath(apiPath: string): IComponent {
+    private getComponentAtPath(apiPath: string): Component {
         const baseDirOfComponent = apiPath.replace(this.parentPath, '')
             .replace(/^\//, '')
             .split('/')[0];

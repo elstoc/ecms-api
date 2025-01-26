@@ -3,9 +3,9 @@ import { basename } from 'path';
 import { Config } from '../../utils';
 import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';
-import { getImageDimensions } from './getImageDimensions';
-import { getExif } from './getExif';
-import { resizeImage } from './resizeImage';
+import { getImageDimensions } from './utils/getImageDimensions';
+import { getExif } from './utils/getExif';
+import { resizeImage } from './utils/resizeImage';
 import { Logger } from 'winston';
 
 export enum ImageSize {

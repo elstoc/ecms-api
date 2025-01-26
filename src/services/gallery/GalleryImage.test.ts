@@ -1,14 +1,14 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { NotFoundError, NotPermittedError } from '../../errors';
 import { GalleryImage, ImageSize } from '..';
-import { getExif } from './getExif';
-import { getImageDimensions } from './getImageDimensions';
-import { resizeImage } from './resizeImage';
+import { getExif } from './utils/getExif';
+import { getImageDimensions } from './utils/getImageDimensions';
+import { resizeImage } from './utils/resizeImage';
 import { RESIZE_OPTIONS } from './GalleryImage';
 
-jest.mock('./getExif');
-jest.mock('./getImageDimensions');
-jest.mock('./resizeImage');
+jest.mock('./utils/getExif');
+jest.mock('./utils/getImageDimensions');
+jest.mock('./utils/resizeImage');
 
 const dataDir = '/path/to/data';
 const imagePath = 'gallery/image.jpg';

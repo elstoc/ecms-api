@@ -1,5 +1,5 @@
 import { Logger } from 'winston';
-import { IStorageAdapter } from '../../adapters';
+import { StorageAdapter } from '../../adapters';
 import { Config } from '../../utils';
 import { ISite, SiteConfig } from './ISite';
 import { ComponentGroup } from './ComponentGroup';
@@ -14,7 +14,7 @@ export class Site implements ISite {
 
     constructor(
         private config: Config,
-        storage: IStorageAdapter,
+        storage: StorageAdapter,
         private logger: Logger
     ) {
         this.components = new ComponentGroup(config, storage, logger, '');

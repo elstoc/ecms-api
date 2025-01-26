@@ -4,7 +4,7 @@ import { IComponentGroup } from './IComponentGroup';
 import { Component } from './Component';
 import { Config, sortByWeightAndTitle } from '../../utils';
 import { IGallery } from '../gallery';
-import { IStorageAdapter } from '../../adapters';
+import { StorageAdapter } from '../../adapters';
 import { User } from '../auth';
 import { IMarkdown } from '../markdown/IMarkdown';
 import { IVideoDb } from '../videodb';
@@ -15,7 +15,7 @@ export class ComponentGroup implements IComponentGroup {
 
     constructor(
         private config: Config,
-        private storage: IStorageAdapter,
+        private storage: StorageAdapter,
         private logger: Logger,
         private parentPath: string
     ) { }

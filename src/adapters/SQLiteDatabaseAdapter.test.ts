@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Database } from 'sqlite3';
 import { SQLiteDatabaseAdapter } from './SQLiteDatabaseAdapter';
-import { IDatabaseAdapter } from './IDatabaseAdapter';
+import { DatabaseAdapter } from './DatabaseAdapter';
 const mockDatabase = jest.mocked(Database);
 
 jest.mock('sqlite3');
 const dbFullPath = '/path/to/file';
 
 describe('SQLiteDatabaseAdapter', () => {
-    let adapter: IDatabaseAdapter;
+    let adapter: DatabaseAdapter;
 
     beforeEach(() => {
         adapter = new SQLiteDatabaseAdapter(dbFullPath);

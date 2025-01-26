@@ -5,7 +5,7 @@ import { userHasReadAccess } from '../auth/accessUtils';
 import { Gallery, IGallery } from '../gallery';
 import { IMarkdown, Markdown } from '../markdown';
 import { IComponent, ComponentTypes, ComponentMetadataCommon, ComponentMetadata } from './IComponent';
-import { IStorageAdapter } from '../../adapters';
+import { StorageAdapter } from '../../adapters';
 import { NotFoundError } from '../../errors';
 import { User } from '../auth';
 import { IVideoDb, VideoDb } from '../videodb';
@@ -25,7 +25,7 @@ export class Component implements IComponent {
     public constructor(
         private config: Config,
         private contentDir: string,
-        private storage: IStorageAdapter,
+        private storage: StorageAdapter,
         private logger: Logger
     ) {
         this.contentYamlPath = contentDir + '.yaml';

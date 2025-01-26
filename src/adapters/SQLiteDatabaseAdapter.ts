@@ -1,7 +1,7 @@
-import { IDatabaseAdapter } from './IDatabaseAdapter';
+import { DatabaseAdapter } from './DatabaseAdapter';
 import { Database } from 'sqlite3';
 
-export class SQLiteDatabaseAdapter implements IDatabaseAdapter {
+export class SQLiteDatabaseAdapter implements DatabaseAdapter {
     private database?: Database;
 
     public constructor(private dbFullPath: string) { }

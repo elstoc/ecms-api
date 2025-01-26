@@ -2,7 +2,7 @@
 import fs from './fs';
 import { LocalFileStorageAdapter } from '.';
 import { SQLiteDatabaseAdapter } from '.';
-import { IStorageAdapter } from './IStorageAdapter';
+import { StorageAdapter } from './StorageAdapter';
 const mockSQLiteDatabaseAdapter = jest.mocked(SQLiteDatabaseAdapter);
 
 jest.mock('./SQLiteDatabaseAdapter');
@@ -32,7 +32,7 @@ const promiseRmMock = fs.promises.rm as jest.Mock;
 const dataDir = '/path/to/data';
 
 describe('LocalFileStorageAdapter', () => {
-    let storage: IStorageAdapter;
+    let storage: StorageAdapter;
     const mockInit = jest.fn();
     const mockExec = jest.fn();
     const fileMatcher = (fileName: string) => {

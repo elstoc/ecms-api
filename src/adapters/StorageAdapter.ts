@@ -1,12 +1,12 @@
-import { IDatabaseAdapter } from './IDatabaseAdapter';
+import { DatabaseAdapter } from './DatabaseAdapter';
 
-export interface IStorageAdapter {
+export interface StorageAdapter {
     listContentChildren(contentDirPath: string, fileMatcher: (fileName: string) => boolean): Promise<string[]>;
     getContentFullPath(contentPath: string): string;
     contentFileExists(contentPath: string): boolean;
     contentDirectoryExists(contentPath: string): boolean;
     getContentFile(apiPath: string): Promise<Buffer>;
-    getContentDb(contentPath: string): Promise<IDatabaseAdapter>;
+    getContentDb(contentPath: string): Promise<DatabaseAdapter>;
     getAdminFile(adminPath: string): Promise<Buffer>;
     getGeneratedFile(apiPath: string, tag: string): Promise<Buffer>;
     storeContentFile(apiPath: string, fileBuffer: Buffer): Promise<void>;

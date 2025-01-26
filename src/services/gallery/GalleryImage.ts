@@ -2,7 +2,7 @@ import { basename } from 'path';
 
 import { IGalleryImage, ImageMetadata, ImageSize } from './IGalleryImage';
 import { Config } from '../../utils';
-import { IStorageAdapter } from '../../adapters/IStorageAdapter';
+import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';
 import { getImageDimensions } from './getImageDimensions';
 import { getExif } from './getExif';
@@ -23,7 +23,7 @@ export class GalleryImage implements IGalleryImage {
     public constructor(
         private config: Config,
         private contentPath: string,
-        private storage: IStorageAdapter,
+        private storage: StorageAdapter,
         private logger: Logger
     ) { }
     

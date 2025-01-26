@@ -5,7 +5,7 @@ import { IMarkdown, MarkdownPage, MarkdownTree } from './IMarkdown';
 import { Config, sortByWeightAndTitle, splitPath } from '../../utils';
 import { splitFrontMatter } from './splitFrontMatter';
 import { userHasReadAccess, userHasWriteAccess, userIsAdmin } from '../auth/accessUtils';
-import { IStorageAdapter } from '../../adapters/IStorageAdapter';
+import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';
 import { User } from '../auth';
 import { Logger } from 'winston';
@@ -21,7 +21,7 @@ export class Markdown implements IMarkdown {
         private apiPath: string,
         private uiPath: string,
         private config: Config,
-        private storage: IStorageAdapter,
+        private storage: StorageAdapter,
         private logger: Logger,
         private isRoot = false,
         private singlePage = false

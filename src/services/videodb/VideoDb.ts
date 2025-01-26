@@ -1,9 +1,9 @@
 import path from 'path';
 import { Logger } from 'winston';
 
-import { IDatabaseAdapter } from '../../adapters/IDatabaseAdapter';
+import { DatabaseAdapter } from '../../adapters/DatabaseAdapter';
 import { IVideoDb, LookupRow, LookupValues, LookupTables, Video, VideoWithId, VideoFilters, videoFields, videoWithIdFields, VideoUpdate } from './IVideoDb';
-import { IStorageAdapter } from '../../adapters/IStorageAdapter';
+import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { dbUpgradeSql } from './dbUpgradeSql';
 import { NotFoundError, NotPermittedError } from '../../errors';
 import { Config } from '../../utils';
@@ -15,7 +15,7 @@ const wait = (timeMs: number) => new Promise(resolve => setTimeout(resolve, time
 export class VideoDb implements IVideoDb {
     private apiPath: string;
     private initialising = false;
-    private database?: IDatabaseAdapter;
+    private database?: DatabaseAdapter;
     private dbVersion?: number;
     private lookupTableCache: { [key: string]: LookupValues } = {};
 
@@ -23,7 +23,7 @@ export class VideoDb implements IVideoDb {
         apiPath: string,
         private config: Config,
         private logger: Logger,
-        private storage: IStorageAdapter,
+        private storage: StorageAdapter,
     ) {
         this.apiPath = apiPath.replace(/^\//, '');
     }

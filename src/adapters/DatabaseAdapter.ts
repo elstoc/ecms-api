@@ -1,4 +1,4 @@
-export interface IDatabaseAdapter {
+export interface DatabaseAdapter {
     initialise(): Promise<void>;
     close(): Promise<void>;
     exec(sql: string): Promise<void>;

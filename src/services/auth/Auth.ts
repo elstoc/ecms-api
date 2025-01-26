@@ -3,7 +3,7 @@ import { jwtSign, jwtVerify, jwtDecode } from './jwtUtils';
 import { hashPassword, verifyPasswordWithHash } from './hashUtils';
 import { User, Token, Tokens, IAuth } from './IAuth';
 import { JwtPayload } from 'jsonwebtoken';
-import { IStorageAdapter } from '../../adapters/IStorageAdapter';
+import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { AuthenticationError } from '../../errors';
 import { Logger } from 'winston';
 
@@ -18,7 +18,7 @@ export class Auth implements IAuth {
 
     public constructor(
         private config: Config,
-        private storage: IStorageAdapter,
+        private storage: StorageAdapter,
         private logger: Logger
     ) {
         if (!this.config.enableAuthentication)

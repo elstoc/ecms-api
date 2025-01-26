@@ -1,4 +1,4 @@
-export { IStorageAdapter } from './IStorageAdapter';
+export { StorageAdapter } from './StorageAdapter';
 export { LocalFileStorageAdapter } from './LocalFileStorageAdapter';
-export { IDatabaseAdapter } from './IDatabaseAdapter';
+export { DatabaseAdapter } from './DatabaseAdapter';
 export { SQLiteDatabaseAdapter } from './SQLiteDatabaseAdapter';

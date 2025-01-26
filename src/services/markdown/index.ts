@@ -1,1 +1,1 @@
-export { Markdown, MarkdownTree } from './Markdown';
+export { Markdown } from './Markdown';

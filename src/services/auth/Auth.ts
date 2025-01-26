@@ -7,7 +7,7 @@ import { AuthenticationError } from '../../errors';
 import { Logger } from 'winston';
 import { User } from '../../contract/auth.contract';
 
-export type Token = string | undefined;
+type Token = string | undefined;
 
 export type Tokens = {
     id: string;

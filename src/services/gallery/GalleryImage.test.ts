@@ -1,6 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { NotFoundError, NotPermittedError } from '../../errors';
-import { GalleryImage } from '..';
+import { GalleryImage } from './GalleryImage';
 import { getExif } from './utils/getExif';
 import { getImageDimensions } from './utils/getImageDimensions';
 import { resizeImage } from './utils/resizeImage';

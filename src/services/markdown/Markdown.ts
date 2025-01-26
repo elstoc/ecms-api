@@ -8,24 +8,7 @@ import { StorageAdapter } from '../../adapters/StorageAdapter';
 import { NotFoundError, NotPermittedError } from '../../errors';
 import { Logger } from 'winston';
 import { User } from '../../contract/auth.contract';
-
-export type MarkdownTree = {
-    apiPath: string;
-    uiPath: string;
-    title?: string;
-    weight?: number;
-    restrict?: string;
-    allowWrite?: string;
-    children?: MarkdownTree[];
-}
-
-export type MarkdownPage = {
-    content: string;
-    pageExists: boolean;
-    canWrite: boolean;
-    canDelete: boolean;
-    pathValid: boolean;
-}
+import { MarkdownPage, MarkdownTree } from '../../contract/markdown.contract';
 
 export class Markdown {
     private contentPath: string;

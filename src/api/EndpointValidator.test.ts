@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NotFoundError } from '../errors';
-import { EndpointValidator, IEndpointValidator } from '.';
+import { EndpointValidator } from '.';
 
 describe('EndpointValidator', () => {
     describe('getEndpointAndPathParams', () => {
@@ -15,7 +15,7 @@ describe('EndpointValidator', () => {
             'put:/another/path/{param1}/boo': { },
         };
 
-        let validator: IEndpointValidator;
+        let validator: EndpointValidator;
 
         beforeEach(() => {
             validator = new EndpointValidator(endpointValidationSchemas);
@@ -82,7 +82,7 @@ describe('EndpointValidator', () => {
             });
     
             describe('an object to be validated', () => {
-                let validator: IEndpointValidator;
+                let validator: EndpointValidator;
     
                 it('is not an object', () => {
                     const requestBodySchema = {

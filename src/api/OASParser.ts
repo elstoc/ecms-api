@@ -1,6 +1,7 @@
 import RefParser from '@apidevtools/json-schema-ref-parser';
 
 import { OASParsingError } from '../errors';
+import { splitPath } from '../utils';
 import { convertToRecord, convertToStringArray, getRecordAtPath } from './objectUtils';
 import {
     StringValidationSchema,
@@ -12,7 +13,6 @@ import {
     EndpointRequestBodyValidationSchema,
     ArrayValidationSchema,
 } from './EndpointValidator';
-import { splitPath } from '../utils';
 
 export class OASParser {
     private validationSchemas: { [endpoint: string]: EndpointValidationSchemas } = {};

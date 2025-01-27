@@ -1,4 +1,4 @@
-import { NotFoundError } from '../errors';
+import { NotFoundError, ValidationErrorDetail } from '../errors';
 import { convertToArray, convertToRecord, isEmpty } from './objectUtils';
 
 export type ObjectValidationSchema = {
@@ -53,11 +53,6 @@ export type EndpointData = {
     requestBody?: Record<string, unknown>;
     queryParams?: Record<string, unknown>;
     pathParams?: Record<string, unknown>;
-}
-
-export type ValidationError = {
-    property: string;
-    error: string;
 }
 
 export class EndpointValidator {
@@ -116,12 +111,12 @@ export class EndpointValidator {
         return matchPathParamRx.exec(element)?.[1];
     }
 
-    public validateEndpoint(endpoint: string, data: EndpointData): ValidationError[] {
+    public validateEndpoint(endpoint: string, data: EndpointData): ValidationErrorDetail[] {
         if (!this.validationSchemas[endpoint]) {
             throw new NotFoundError(`${endpoint} not found`);
         }
 
-        const errors: ValidationError[] = [];
+        const errors: ValidationErrorDetail[] = [];
         const { requestBody, pathParams, queryParams } = data;
         const { requestBodyRequired, requestBodySchema, pathParamsSchema, queryParamsSchema } = this.validationSchemas[endpoint];
 
@@ -137,7 +132,7 @@ export class EndpointValidator {
         return errors;
     }
 
-    private validateEndpointObject(errors: ValidationError[], obj: unknown, schema: ObjectValidationSchema | undefined, objectDescription: string) {
+    private validateEndpointObject(errors: ValidationErrorDetail[], obj: unknown, schema: ObjectValidationSchema | undefined, objectDescription: string) {
         if (schema) {
             this.validateObject(errors, obj ?? {}, schema);
         } else if (!isEmpty(obj)) {
@@ -145,7 +140,7 @@ export class EndpointValidator {
         }
     }
 
-    private validateValue(errors: ValidationError[], value: unknown, validationSchema: ValidationSchema) {
+    private validateValue(errors: ValidationErrorDetail[], value: unknown, validationSchema: ValidationSchema) {
         if (validationSchema.type === 'string') {
             this.validateString(errors, value, validationSchema);
         } else if (validationSchema.type === 'integer') {
@@ -157,7 +152,7 @@ export class EndpointValidator {
         }
     }
 
-    private validateArray(errors: ValidationError[], value: unknown, validationSchema: ArrayValidationSchema): void {
+    private validateArray(errors: ValidationErrorDetail[], value: unknown, validationSchema: ArrayValidationSchema): void {
         if (validationSchema.nullable && (value === undefined || value === null)) {
             return;
         }
@@ -190,7 +185,7 @@ export class EndpointValidator {
         });
     }
 
-    private validateObject(errors: ValidationError[], value: unknown, validationSchema: ObjectValidationSchema): void {
+    private validateObject(errors: ValidationErrorDetail[], value: unknown, validationSchema: ObjectValidationSchema): void {
         if (validationSchema.nullable && (value === undefined || value === null)) {
             return;
         }
@@ -220,7 +215,7 @@ export class EndpointValidator {
         }
     }
 
-    private validateString(errors: ValidationError[], value: unknown, validationSchema: StringValidationSchema): void {
+    private validateString(errors: ValidationErrorDetail[], value: unknown, validationSchema: StringValidationSchema): void {
         if (validationSchema.nullable && (value === undefined || value === null)) {
             return;
         }
@@ -237,7 +232,7 @@ export class EndpointValidator {
         }
     }
 
-    private validateInteger(errors: ValidationError[], value: unknown, validationSchema: IntegerValidationSchema): void {
+    private validateInteger(errors: ValidationErrorDetail[], value: unknown, validationSchema: IntegerValidationSchema): void {
         if (validationSchema.nullable && (value === undefined || value === null)) {
             return;
         }
@@ -261,7 +256,7 @@ export class EndpointValidator {
         }
     }
 
-    private pushError(errors: ValidationError[], property: string, error: string): void {
+    private pushError(errors: ValidationErrorDetail[], property: string, error: string): void {
         errors.push({ property, error });
     }
 }

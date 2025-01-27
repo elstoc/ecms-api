@@ -2,11 +2,10 @@ import { NextFunction, Response } from 'express';
 import { Logger } from 'winston';
 
 import { RequestWithUser } from './types';
-import { AuthenticationError, EndpointValidationError, NotFoundError, NotPermittedError } from '../errors';
-import { ValidationError } from '../api/EndpointValidator';
+import { AuthenticationError, EndpointValidationError, NotFoundError, NotPermittedError, ValidationErrorDetail } from '../errors';
 
 interface ExtraErrors extends Error {
-    validationErrors?: ValidationError[],
+    validationErrors?: ValidationErrorDetail[],
 }
 
 export type ErrorHandler = (err: ExtraErrors, req: RequestWithUser, res: Response, next?: NextFunction) => void;

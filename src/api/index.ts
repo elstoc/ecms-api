@@ -1,2 +1,2 @@
 export { OASParser } from './OASParser';
-export { EndpointValidator, ValidationError } from './EndpointValidator';
+export { EndpointValidator } from './EndpointValidator';

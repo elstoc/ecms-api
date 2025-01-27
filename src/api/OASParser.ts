@@ -12,7 +12,7 @@ import {
     EndpointParameterValidationSchema,
     EndpointRequestBodyValidationSchema,
     ArrayValidationSchema,
-} from './EndpointValidator';
+} from './schemas';
 
 export class OASParser {
     private validationSchemas: { [endpoint: string]: EndpointValidationSchemas } = {};
